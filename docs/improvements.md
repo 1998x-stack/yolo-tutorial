@@ -13,4 +13,4 @@
 - Risk & rollback: Close Draft PR without merging, or revert its commits. No changes to main.
 - Follow-up: Browser E2E test both file:// and HTTP modes and verify all 28 links and course metadata.
 - Commit: 90f132b24822ba9dc31cdc3c0e2ac1e8d4920b1c (index); cde93033c00477fa9a86987f3a6b7c9d889afbf4 (module); 73935c5a0c0543d001c6361b2836a51884e0297b (tests)
-- PR: pending
+- PR: https://github.com/1998x-stack/yolo-tutorial/pull/1 (Draft)
