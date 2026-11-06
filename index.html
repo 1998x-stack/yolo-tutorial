@@ -284,6 +284,7 @@
     </div>
 </div>
 
+<script src="local-navigation.js"></script>
 <script>
     (function() {
         var container = document.getElementById('cardContainer');
@@ -294,6 +295,15 @@
 
         function showError(msg) {
             container.innerHTML = '<div class="state-msg error">' + msg + '</div>';
+        }
+
+        if (window.location.protocol === 'file:') {
+            window.renderOfflineChapters(container, 28);
+            emojiEl.textContent = '🤖';
+            titleEl.textContent = 'YOLO系列 · 从入门到精通';
+            subEl.textContent = '本地离线课程目录';
+            footerEl.textContent = '28章 · 离线可浏览';
+            return;
         }
 
         fetch('courses.json')
