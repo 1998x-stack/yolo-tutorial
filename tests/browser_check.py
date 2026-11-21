@@ -37,7 +37,11 @@ def main() -> None:
 
                 page.locator("#chapter-search").fill("YOLO9000")
                 assert page.locator(".chapter-card:visible").count() >= 1
+                page.locator("#chapter-search").fill("no-matching-chapter-xyz")
+                assert page.locator(".chapter-card:visible").count() == 0
+                assert page.locator("#empty-state").is_visible()
                 page.locator("#chapter-search").fill("")
+                assert not page.locator("#empty-state").is_visible()
                 page.locator("#stage-filter").select_option("foundation")
                 assert page.locator(".chapter-card:visible").count() == 5
                 page.locator("#stage-filter").select_option("all")
