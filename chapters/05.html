@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="YOLOv3 使用 Darknet-53 提取多层特征，并通过自顶向下融合在三个分辨率上预测边界框。它还采用独立 Logistic 分类器与九个锚框，形成经典的多尺度检测架构。">
+<title>第 5 章｜YOLOv3：残差骨干与三尺度检测 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
+</head>
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
+
+<aside class="sidebar" aria-label="课程导航">
+  <a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a>
+  <p class="sidebar-label">基础原理 · 01—05</p>
+  <nav><ol class="chapter-list">
+    <li><a href="01.html" data-chapter="01"><span>01</span>目标检测概述</a></li>
+    <li><a href="02.html" data-chapter="02"><span>02</span>YOLO 的设计哲学</a></li>
+    <li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1：统一回归</a></li>
+    <li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 与 YOLO9000</a></li>
+    <li><a href="05.html" data-chapter="05" aria-current="page"><span>05</span>YOLOv3：多尺度检测</a></li>
+  </ol></nav>
+  <a class="all-chapters" href="../index.html">查看全部 28 章 <span aria-hidden="true">↗</span></a>
+</aside>
+<main id="main" class="main-content">
+<article class="article">
+<header class="article-header">
+  <p class="eyebrow">FOUNDATIONS <span>／</span> CHAPTER 05</p>
+  <h1>YOLOv3：残差骨干与三尺度检测</h1>
+  <p class="article-dek">YOLOv3 使用 Darknet-53 提取多层特征，并通过自顶向下融合在三个分辨率上预测边界框。它还采用独立 Logistic 分类器与九个锚框，形成经典的多尺度检测架构。</p>
+</header>
+
+<section id="backbone">
+<h2>1. Darknet-53：把残差骨干用于实时检测</h2>
+<p>YOLOv3 用 Darknet-53 替换 YOLOv2 的 Darknet-19。它包含 53 个卷积层，交替使用 3×3 与 1×1 卷积，并加入残差捷径。残差单元把输入特征直接加到变换后的特征上，使深层网络更容易优化。</p>
+<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="残差块输出等于输入加上残差变换"><mrow><mi>y</mi><mo>=</mo><mi>x</mi><mo>+</mo><mi>F</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow></math></div>
+<p>在 416×416 输入下，骨干网络通过步长为 2 的卷积逐级下采样，形成步长分别为 8、16、32 的特征层，空间尺寸为 52×52、26×26、13×13。它们分别保留不同程度的空间细节与语义信息。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>输出层</th><th>特征图尺寸（416 输入）</th><th>相对步长</th><th>主要特点</th></tr></thead>
+<tbody>
+<tr><td>浅层输出</td><td>52×52</td><td>8</td><td>空间细节较多，适合定位较小目标</td></tr>
+<tr><td>中层输出</td><td>26×26</td><td>16</td><td>兼顾空间信息与语义信息</td></tr>
+<tr><td>深层输出</td><td>13×13</td><td>32</td><td>语义信息更强，感受野更大</td></tr>
+</tbody></table></div>
+<p>原论文在 ImageNet 256×256 单裁剪分类实验中报告 Darknet-53 Top-1 77.2%、Top-5 93.8%；同一表中 ResNet-152 的 Top-1 为 77.6%、Top-5 为 93.8%。论文报告 Darknet-53 在 Titan X、256×256 输入下约 78 FPS，ResNet-152 约 37 FPS。这里比较的是分类骨干测试，不是 YOLO 检测器 FPS。</p>
+</section>
+<section id="pyramid">
+<h2>2. 三尺度预测：把深层语义送回高分辨率特征</h2>
+<p>YOLOv3 借鉴 FPN 的自顶向下融合思路：先在最深层特征上进行卷积变换并预测一组框；随后把深层特征上采样 2 倍，与较早层的特征拼接，再经过卷积预测下一尺度；这一过程再执行一次，得到第三个、更高分辨率的预测层。</p>
+<figure class="diagram">
+<svg viewBox="0 0 900 340" role="img" aria-labelledby="pyramid-title pyramid-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="pyramid-title">YOLOv3 三尺度特征融合与预测</title><desc id="pyramid-desc">Darknet-53 输出 13、26、52 三种尺寸的特征。深层特征先预测，再上采样并与中层、浅层特征拼接，形成三个检测尺度。</desc>
+<rect x="8" y="8" width="884" height="324" rx="18" fill="#f6fafb"/>
+<g transform="translate(32 40)">
+<rect x="0" y="0" width="168" height="54" rx="9" fill="#e5eef2" stroke="#9bb7bc"/><text x="84" y="22" text-anchor="middle" font-size="15" fill="#24414a">Darknet-53</text><text x="84" y="42" text-anchor="middle" font-size="12" fill="#5c737a">共享骨干</text>
+<path d="M84 56 V92 M84 92 H26 V120 M84 92 V120 M84 92 H142 V120" fill="none" stroke="#8ca8ae" stroke-width="2"/>
+<rect x="0" y="120" width="54" height="54" rx="7" fill="#e4f0ef" stroke="#78aaa2"/><text x="27" y="152" text-anchor="middle" font-size="13" fill="#24535a">52²</text>
+<rect x="57" y="120" width="54" height="54" rx="7" fill="#e4f0ef" stroke="#78aaa2"/><text x="84" y="152" text-anchor="middle" font-size="13" fill="#24535a">26²</text>
+<rect x="114" y="120" width="54" height="54" rx="7" fill="#e4f0ef" stroke="#78aaa2"/><text x="141" y="152" text-anchor="middle" font-size="13" fill="#24535a">13²</text>
+<text x="84" y="198" text-anchor="middle" font-size="13" fill="#5c737a">步长 8 / 16 / 32</text>
+</g>
+<g transform="translate(252 45)">
+<rect x="0" y="0" width="172" height="62" rx="9" fill="#fff0df" stroke="#d4a36b"/><text x="86" y="25" text-anchor="middle" font-size="15" fill="#754719">13×13 深层特征</text><text x="86" y="46" text-anchor="middle" font-size="12" fill="#8a643b">语义强</text>
+<path d="M86 64 V94" stroke="#c47b31" stroke-width="2.5"/><path d="M79 87 L86 96 L93 87" fill="none" stroke="#c47b31" stroke-width="2.5"/>
+<rect x="0" y="100" width="172" height="54" rx="9" fill="#e4f0ef" stroke="#78aaa2"/><text x="86" y="132" text-anchor="middle" font-size="15" fill="#24535a">预测尺度 P5</text>
+<path d="M172 127 H205" stroke="#087f8c" stroke-width="2.5"/><path d="M198 120 L207 127 L198 134" fill="none" stroke="#087f8c" stroke-width="2.5"/>
+<rect x="212" y="100" width="172" height="54" rx="9" fill="#e5eef2" stroke="#9bb7bc"/><text x="298" y="132" text-anchor="middle" font-size="15" fill="#24414a">13→26 上采样 + 拼接</text>
+<path d="M298 156 V188" stroke="#087f8c" stroke-width="2.5"/><path d="M291 181 L298 190 L305 181" fill="none" stroke="#087f8c" stroke-width="2.5"/>
+<rect x="212" y="196" width="172" height="54" rx="9" fill="#e4f0ef" stroke="#78aaa2"/><text x="298" y="228" text-anchor="middle" font-size="15" fill="#24535a">预测尺度 P4</text>
+<path d="M384 223 H415" stroke="#087f8c" stroke-width="2.5"/><path d="M408 216 L417 223 L408 230" fill="none" stroke="#087f8c" stroke-width="2.5"/>
+<rect x="422" y="196" width="172" height="54" rx="9" fill="#e5eef2" stroke="#9bb7bc"/><text x="508" y="228" text-anchor="middle" font-size="15" fill="#24414a">26→52 上采样 + 拼接</text>
+<path d="M508 252 V282" stroke="#087f8c" stroke-width="2.5"/><path d="M501 275 L508 284 L515 275" fill="none" stroke="#087f8c" stroke-width="2.5"/>
+<rect x="422" y="288" width="172" height="32" rx="8" fill="#e4f0ef" stroke="#78aaa2"/><text x="508" y="309" text-anchor="middle" font-size="14" fill="#24535a">预测尺度 P3</text>
+</g>
+<g transform="translate(690 74)">
+<rect x="0" y="0" width="160" height="54" rx="9" fill="#e4f0ef" stroke="#78aaa2"/><text x="80" y="23" text-anchor="middle" font-size="15" fill="#24535a">13×13</text><text x="80" y="42" text-anchor="middle" font-size="12" fill="#5c737a">大尺度目标</text>
+<rect x="0" y="82" width="160" height="54" rx="9" fill="#e4f0ef" stroke="#78aaa2"/><text x="80" y="105" text-anchor="middle" font-size="15" fill="#24535a">26×26</text><text x="80" y="124" text-anchor="middle" font-size="12" fill="#5c737a">中尺度目标</text>
+<rect x="0" y="164" width="160" height="54" rx="9" fill="#e4f0ef" stroke="#78aaa2"/><text x="80" y="187" text-anchor="middle" font-size="15" fill="#24535a">52×52</text><text x="80" y="206" text-anchor="middle" font-size="12" fill="#5c737a">小尺度目标</text>
+</g>
+</svg>
+<figcaption>深层特征提供语义信息，上采样路径逐步引入更高分辨率的浅层特征。三个预测头的空间尺寸不同，但共享同一骨干网络。</figcaption>
+</figure>
+<p>这类结构让低分辨率特征的语义信息可以参与高分辨率位置的预测，同时浅层特征保留更精细的空间线索。YOLOv3 论文将其描述为与 Feature Pyramid Networks 相似的思路；严格来说，理解它时应关注实际的上采样、拼接与卷积路径，而不是只贴一个“FPN”标签。</p>
+</section>
+<section id="anchors">
+<h2>3. 九个锚框：每个尺度三个先验</h2>
+<p>YOLOv3 延续 YOLOv2 的维度聚类方法，在 COCO 上使用 9 个锚框，并按大小分配到三个预测尺度。原论文给出的 COCO 锚框宽高先验（以 416 输入基准的像素为单位）为；改变输入尺寸时，解码使用的特征步长和先验尺度也必须保持一致：</p>
+<div class="table-wrap"><table>
+<thead><tr><th>预测尺度</th><th>锚框宽 × 高</th><th>特征图（416 输入）</th></tr></thead>
+<tbody>
+<tr><td>13×13</td><td>(116,90)、(156,198)、(373,326)</td><td>3 个较大先验</td></tr>
+<tr><td>26×26</td><td>(30,61)、(62,45)、(59,119)</td><td>3 个中等先验</td></tr>
+<tr><td>52×52</td><td>(10,13)、(16,30)、(33,23)</td><td>3 个较小先验</td></tr>
+</tbody></table></div>
+<p>在 COCO 80 类配置下，每个位置的每个锚框预测 4 个边界框参数、1 个 objectness 和 80 个类别分数。因此每个预测头输出 3×(4+1+80)=255 个通道。对 416×416 输入，三个头合计产生：</p>
+<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="候选框总数等于三个尺度各自网格数量乘以每个位置三个锚框的和"><mrow><mn>3</mn><mo>×</mo><msup><mn>13</mn><mn>2</mn></msup><mo>+</mo><mn>3</mn><mo>×</mo><msup><mn>26</mn><mn>2</mn></msup><mo>+</mo><mn>3</mn><mo>×</mo><msup><mn>52</mn><mn>2</mn></msup><mo>=</mo><mn>10,647</mn></mrow></math></div>
+<p>这是解码前的候选框数量，不代表最终会输出 10,647 个检测结果。置信度阈值、类别分数筛选和 NMS 会进一步压缩候选集合。</p>
+</section>
+<section id="classification">
+<h2>4. 独立 Logistic 分类：允许一个框有多个标签</h2>
+<p>YOLOv1/v2 的类别预测采用每个网格一组类别条件概率；YOLOv3 则对每个预测框使用独立 Logistic 分类器，并以二元交叉熵（BCE）训练类别分数，而不是对所有类别做互斥 Softmax。</p>
+<p>这个变化适合标签可能重叠的场景。例如一个标注体系可能同时包含“person”和“woman”；Softmax 会强制类别竞争，而独立 Logistic 输出允许多个标签同时获得较高分数。推理时，每个类别的分数与框的 objectness 组合，再按类别进行筛选与 NMS。</p>
+</section>
+<section id="assignment">
+<h2>5. 训练时的正样本分配与忽略规则</h2>
+<p>YOLOv3 为每个真实目标分配一个最匹配的锚框先验，负责框学习坐标、objectness 和类别。若某个未被分配的先验与真实框的 IoU 超过 0.5，论文采用忽略策略：不把它当作普通负样本惩罚 objectness。这样可以减少“本来也是合理候选框，却被当成背景”的冲突。</p>
+<p>坐标预测使用平方误差；类别预测使用独立 Logistic 与 BCE。原论文还尝试了 Focal Loss 和双 IoU 阈值分配，但没有获得更好的结果。这提醒我们：后续论文中的常用训练技巧并不意味着在每种检测器上都能带来收益。</p>
+</section>
+<section id="results">
+<h2>6. COCO 结果：AP 与 AP50 必须分开读</h2>
+<p>YOLOv3 论文报告的 608×608 模型在 COCO test-dev 上达到 AP 33.0、AP50 57.9、AP75 34.4。其小、中、大目标 AP 分别为 18.3、35.4、41.9。原始报告还指出，该配置在 Titan X 上的推理时间约为 51 ms。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>指标</th><th>YOLOv3 608</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>AP</td><td>33.0</td><td>IoU 0.50:0.95 的平均 AP</td></tr>
+<tr><td>AP50</td><td>57.9</td><td>IoU=0.50</td></tr>
+<tr><td>AP75</td><td>34.4</td><td>IoU=0.75</td></tr>
+<tr><td>AP<sub>S</sub></td><td>18.3</td><td>小目标</td></tr>
+<tr><td>AP<sub>M</sub></td><td>35.4</td><td>中目标</td></tr>
+<tr><td>AP<sub>L</sub></td><td>41.9</td><td>大目标</td></tr>
+</tbody></table></div>
+<p>YOLOv3 的 AP50 与 RetinaNet 接近，但在 COCO 的 AP（0.50:0.95）上仍有差距。原论文明确指出，模型在旧式 IoU=0.50 指标上表现突出，但在更严格的 COCO 平均 AP 上并非最优。正确解读结果时，不能只摘取最醒目的 AP50。</p>
+<div class="callout warning"><strong>数字校正：</strong>原仓库旧表格把 AP<sub>L</sub> 写成 49.1；原论文 Table 3 中 YOLOv3 608 的 AP<sub>L</sub> 是 41.9。49.1 不是该模型对应的大目标 AP。</div>
+</section>
+<section id="takeaways">
+<h2>7. 架构层面的结论</h2>
+<ul>
+<li>Darknet-53 提供更深的残差特征提取能力，并在三个空间分辨率上输出特征。</li>
+<li>FPN-inspired 的自顶向下融合路径把深层语义信息传给高分辨率预测层。</li>
+<li>九个锚框按三个尺度分配，每个尺度预测框、objectness 与类别分数。</li>
+<li>独立 Logistic 分类允许多标签输出；训练时使用 BCE。</li>
+<li>COCO AP、AP50、AP75 与尺度 AP 衡量的是不同方面，必须按原始协议分别报告。</li>
+</ul>
+</section>
+<section id="references">
+<h2>参考资料</h2>
+<ol class="references">
+<li>Redmon & Farhadi, <a href="https://arxiv.org/abs/1804.02767" target="_blank" rel="noreferrer">YOLOv3: An Incremental Improvement</a>，重点参阅 §2.1–2.4 与 Table 2–3。</li>
+<li>Lin et al., <a href="https://arxiv.org/abs/1612.03144" target="_blank" rel="noreferrer">Feature Pyramid Networks for Object Detection</a>.</li>
+<li>COCO Consortium, <a href="https://cocodataset.org/dataset/detection-eval.htm" target="_blank" rel="noreferrer">COCO Detection Evaluation</a>.</li>
+</ol>
+</section>
+</article>
+<nav class="chapter-nav" aria-label="章节切换">
+  <a href="04.html" class="previous"><small>上一章</small><strong>← YOLOv2 与 YOLO9000</strong></a>
+  <a href="../index.html" class="chapter-index"><span aria-hidden="true">▦</span> 全部章节</a>
+  <a href="../index.html" class="next"><small>课程目录</small><strong>查看完整路线 →</strong></a>
+</nav>
+<footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>
+</main>
+</div>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

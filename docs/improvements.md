@@ -14,3 +14,10 @@
 - Follow-up: Browser E2E test both file:// and HTTP modes and verify all 28 links and course metadata.
 - Commit: 90f132b24822ba9dc31cdc3c0e2ac1e8d4920b1c (index); cde93033c00477fa9a86987f3a6b7c9d889afbf4 (module); 73935c5a0c0543d001c6361b2836a51884e0297b (tests)
 - PR: https://github.com/1998x-stack/yolo-tutorial/pull/1 (Draft)
+
+### 2026-11-21 — Course architecture and foundation batch (01–05)
+- Scope: reorganize all 28 canonical chapter pages under `chapters/`, preserve root chapter URLs as noindex redirects, move shared assets under `assets/`, and rebuild the course homepage/README.
+- Content: rewrite chapters 01–05 as self-contained technical articles with original inline SVG, native MathML, paper references, corrected benchmark context, and an evidence ledger.
+- Engineering: static homepage cards (no runtime JSON fetch), search and stage filtering as progressive enhancement, `AGENTS.md` content rules, local-link/static tests, Chromium desktop/mobile browser checks, and a GitHub Actions quality workflow.
+- Technical audit notes: distinguish YOLOv1's 2015 arXiv submission from CVPR 2016 publication; separate YOLOv2 ablation rows from final resolution benchmarks; describe YOLO9000 WordTree as hierarchical joint classification/detection rather than prompt-based open-vocabulary detection; correct YOLOv3 COCO AP_L to 41.9.
+- Validation: GitHub Actions Quality run #9 (run ID 44912512867) passed. All 9 Python static tests passed; Chromium checked the homepage and chapters 01–05 at 1440, 768, 390, and 360 px, verified search/filter and empty-state behavior, MathML rendering/focus, print visibility, horizontal overflow, and browser errors (none).

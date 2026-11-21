@@ -1,380 +1,169 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>课程目录</title>
-    <link rel="stylesheet" href="theme.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            background: linear-gradient(145deg, #f9fcf5 0%, #e8f3e8 100%);
-            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', system-ui, -apple-system, sans-serif;
-            padding: 2rem 1.5rem 1rem;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container {
-            display: block;
-            max-width: 1400px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.70);
-            backdrop-filter: blur(2px);
-            border-radius: 48px 48px 32px 32px;
-            padding: 2rem 2rem 1.5rem;
-            box-shadow: 0 20px 40px rgba(90, 140, 100, 0.15), 0 8px 20px rgba(0, 30, 20, 0.08);
-            border: 1px solid rgba(255, 245, 200, 0.5);
-        }
-
-        .header {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: baseline;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-            border-bottom: 4px solid #f7d44a;
-            padding-bottom: 0.75rem;
-        }
-
-        .header h1 {
-            font-size: 2.4rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #2b7a4b, #3f9e6b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 2px 8px rgba(60, 140, 80, 0.12);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .header h1 .emoji {
-            font-size: 2.2rem;
-            filter: drop-shadow(0 2px 4px rgba(255, 200, 50, 0.3));
-        }
-
-        .header .sub {
-            font-size: 1rem;
-            background: #fef7e0;
-            padding: 0.3rem 1.2rem;
-            border-radius: 40px;
-            color: #3f6b4a;
-            font-weight: 600;
-            border: 1px solid #f3d98a;
-            box-shadow: 0 2px 6px rgba(200, 160, 50, 0.1);
-            white-space: nowrap;
-        }
-
-        .course-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.2rem;
-            margin: 1.8rem 0 1.2rem;
-        }
-
-        .card {
-            background: #ffffff;
-            border-radius: 28px;
-            padding: 1rem 1.2rem 1rem 1.2rem;
-            box-shadow: 0 6px 14px rgba(70, 120, 80, 0.08), 0 2px 6px rgba(0, 0, 0, 0.02);
-            transition: all 0.2s ease;
-            border: 1px solid rgba(210, 230, 200, 0.5);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            backdrop-filter: blur(2px);
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 14px 24px rgba(70, 140, 90, 0.15), 0 4px 12px rgba(40, 100, 60, 0.05);
-            border-color: #b8d9b0;
-            background: #fefefc;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: baseline;
-            gap: 0.4rem;
-            margin-bottom: 0.4rem;
-            flex-wrap: wrap;
-        }
-
-        .chapter-num {
-            font-size: 1.1rem;
-            font-weight: 700;
-            background: #f5d142;
-            color: #2a5a3a;
-            padding: 0 0.6rem;
-            border-radius: 40px;
-            line-height: 1.6;
-            display: inline-block;
-            box-shadow: inset 0 -2px 0 #dbb42c;
-            letter-spacing: 0.3px;
-            min-width: 2.2rem;
-            text-align: center;
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            font-weight: 650;
-            color: #1f4d33;
-            letter-spacing: -0.3px;
-            line-height: 1.3;
-            flex: 1;
-        }
-
-        .topic-list {
-            list-style: none;
-            margin-top: 0.3rem;
-            padding-left: 0.2rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.2rem 0.6rem;
-        }
-
-        .topic-list li {
-            font-size: 0.8rem;
-            color: #2d543a;
-            background: #f1f9ee;
-            padding: 0.1rem 0.7rem 0.2rem 1.2rem;
-            border-radius: 30px;
-            line-height: 1.6;
-            position: relative;
-            border: 1px solid #dcebd4;
-            box-shadow: inset 0 1px 2px white;
-        }
-
-        .topic-list li::before {
-            content: "⚡";
-            position: absolute;
-            left: 4px;
-            top: 0px;
-            font-size: 0.7rem;
-            color: #e5b13b;
-        }
-
-        .card-footer {
-            margin-top: 0.6rem;
-            display: flex;
-            justify-content: flex-end;
-            border-top: 1px dashed #d4e8d0;
-            padding-top: 0.5rem;
-        }
-
-        .card-footer a {
-            background: #b7d8b0;
-            color: #1f452b;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.85rem;
-            padding: 0.2rem 1.2rem;
-            border-radius: 40px;
-            transition: 0.15s;
-            border: 1px solid #8fb88a;
-            box-shadow: 0 2px 4px rgba(60, 120, 60, 0.1);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .card-footer a::after {
-            content: "→";
-            font-size: 1rem;
-            transition: transform 0.1s;
-        }
-
-        .card-footer a:hover {
-            background: #f7d44a;
-            border-color: #dbb42c;
-            color: #1f3d28;
-            box-shadow: 0 4px 8px rgba(200, 160, 40, 0.2);
-            transform: scale(1.02);
-        }
-
-        .card-footer a:active {
-            transform: scale(0.96);
-        }
-
-        .footer {
-            margin-top: 2.5rem;
-            text-align: center;
-            font-size: 1rem;
-            color: #3b6b47;
-            background: #f2fcee;
-            padding: 0.8rem 2rem;
-            border-radius: 60px;
-            display: inline-block;
-            border: 1px solid #c6dfbe;
-            box-shadow: 0 2px 8px rgba(80, 130, 70, 0.08);
-            font-weight: 500;
-            letter-spacing: 0.3px;
-            backdrop-filter: blur(2px);
-        }
-
-        .footer span {
-            background: #f9eec1;
-            padding: 0.1rem 0.8rem;
-            border-radius: 30px;
-            margin: 0 4px;
-        }
-
-        @media (max-width: 640px) {
-            body { padding: 1rem 0.8rem; }
-            .container { padding: 1.2rem 1rem; border-radius: 32px; }
-            .header h1 { font-size: 1.8rem; }
-            .header .sub { font-size: 0.75rem; padding: 0.2rem 0.8rem; }
-            .course-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .card-title { font-size: 1.05rem; }
-            .topic-list li { font-size: 0.7rem; }
-        }
-
-        @media (min-width: 768px) and (max-width: 1024px) {
-            .course-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        .container::before {
-            content: "";
-            display: block;
-            height: 6px;
-            width: 120px;
-            background: linear-gradient(90deg, #f7d44a, #7fc47c, #4aa0b0, #f7b07a);
-            border-radius: 10px;
-            margin-bottom: 0.2rem;
-        }
-
-        .card:nth-child(6n+1) .chapter-num { background: #f7b07a; color: #3d2e1a; }
-        .card:nth-child(6n+2) .chapter-num { background: #a7d4a0; color: #1f452b; }
-        .card:nth-child(6n+3) .chapter-num { background: #f5d44a; color: #2f4d2a; }
-        .card:nth-child(6n+4) .chapter-num { background: #b3d9e8; color: #1a3f4a; }
-        .card:nth-child(6n+5) .chapter-num { background: #f7c6c6; color: #5a2e2e; }
-        .card:nth-child(6n) .chapter-num { background: #c4b3e0; color: #2f2a4a; }
-
-        .state-msg {
-            text-align: center;
-            padding: 3rem;
-            color: #5f7f66;
-            font-size: 1.1rem;
-        }
-        .state-msg.error {
-            color: #b91c1c;
-            background: #fef2f2;
-            border-radius: 20px;
-            margin: 1rem 0;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="一套覆盖目标检测原理、YOLO 架构演进、训练、评估与部署的 28 章中文学习教程。">
+<title>YOLO 目标检测教程｜从检测原理到工程部署</title>
+<link rel="stylesheet" href="assets/theme.css">
 </head>
-<body>
-<div class="container">
-    <div class="header">
-        <h1><span class="emoji"></span><span class="title-text"></span></h1>
-        <div class="sub"></div>
-    </div>
-
-    <div id="cardContainer" class="course-grid"></div>
-
-    <div style="text-align:center;">
-        <div class="footer"></div>
-    </div>
-</div>
-
-<script src="local-navigation.js"></script>
-<script>
-    (function() {
-        var container = document.getElementById('cardContainer');
-        var emojiEl = document.querySelector('.header .emoji');
-        var titleEl = document.querySelector('.header .title-text');
-        var subEl = document.querySelector('.header .sub');
-        var footerEl = document.querySelector('.footer');
-
-        function showError(msg) {
-            container.innerHTML = '<div class="state-msg error">' + msg + '</div>';
-        }
-
-        if (window.location.protocol === 'file:') {
-            window.renderOfflineChapters(container, 28);
-            emojiEl.textContent = '🤖';
-            titleEl.textContent = 'YOLO系列 · 从入门到精通';
-            subEl.textContent = '本地离线课程目录';
-            footerEl.textContent = '28章 · 离线可浏览';
-            return;
-        }
-
-        fetch('courses.json')
-            .then(function(res) {
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                return res.json();
-            })
-            .then(function(data) {
-                document.title = data.title + ' · 课程目录';
-                emojiEl.textContent = data.emoji;
-                titleEl.textContent = data.title;
-                subEl.textContent = data.subtitle;
-                footerEl.innerHTML = '<span>' + data.chapterCount + '章</span> 实战体系 · 从入门到精通';
-
-                if (!data.chapters || data.chapters.length === 0) {
-                    showError('暂无课程数据');
-                    return;
-                }
-
-                container.innerHTML = '';
-                data.chapters.forEach(function(course) {
-                    var card = document.createElement('div');
-                    card.className = 'card';
-
-                    var headerDiv = document.createElement('div');
-                    headerDiv.className = 'card-header';
-
-                    var numSpan = document.createElement('span');
-                    numSpan.className = 'chapter-num';
-                    numSpan.textContent = course.num;
-
-                    var titleSpan = document.createElement('span');
-                    titleSpan.className = 'card-title';
-                    titleSpan.textContent = course.title;
-
-                    headerDiv.appendChild(numSpan);
-                    headerDiv.appendChild(titleSpan);
-                    card.appendChild(headerDiv);
-
-                    if (course.topics && course.topics.length > 0) {
-                        var topicUl = document.createElement('ul');
-                        topicUl.className = 'topic-list';
-                        course.topics.forEach(function(topic) {
-                            var li = document.createElement('li');
-                            li.textContent = topic;
-                            topicUl.appendChild(li);
-                        });
-                        card.appendChild(topicUl);
-                    }
-
-                    var footerDiv = document.createElement('div');
-                    footerDiv.className = 'card-footer';
-                    var link = document.createElement('a');
-                    link.href = course.file;
-                    link.textContent = '开始学习 ';
-                    footerDiv.appendChild(link);
-                    card.appendChild(footerDiv);
-
-                    container.appendChild(card);
-                });
-            })
-            .catch(function(err) {
-                showError('课程数据加载失败: ' + err.message + '。请刷新页面重试。');
-            });
-    })();
-</script>
-
-<noscript>
-    <div style="background:#fcf0d9; padding:1rem; border-radius:20px; text-align:center; color:#92400e;">
-        请启用 JavaScript 以浏览课程目录。
-    </div>
-</noscript>
+<body class="home-page">
+<a class="skip-link" href="#course-map">跳到课程目录</a>
+<header class="site-header">
+  <a href="index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>28 章系统课程</span></div>
+</header>
+<main class="home-shell">
+<section class="home-hero">
+  <p class="hero-kicker">COMPUTER VISION / OBJECT DETECTION</p>
+  <h1>从一张图像，<br>到可靠的目标检测系统。</h1>
+  <p>沿着检测任务、YOLO 架构、训练策略、评估协议与部署工程逐步建立完整知识体系。课程围绕具体问题组织内容。第一批 01–05 章已重构为独立文章，其余章节将按同一标准继续审计和升级。</p>
+  <div class="hero-actions">
+    <a class="hero-primary" href="chapters/01.html">从第 01 章开始 <span aria-hidden="true">→</span></a>
+    <a class="hero-secondary" href="#course-map">浏览全部 28 章</a>
+  </div>
+</section>
+<section class="home-stats" aria-label="课程概况">
+  <div class="stat"><strong>28</strong><span>课程章节</span></div>
+  <div class="stat"><strong>5</strong><span>学习阶段</span></div>
+  <div class="stat"><strong>3</strong><span>早期架构里程碑</span></div>
+  <div class="stat"><strong>01</strong><span>从原理到部署的完整路径</span></div>
+</section>
+<section class="home-section" aria-labelledby="roadmap-title">
+  <div class="section-heading"><div><h2 id="roadmap-title">学习路线</h2><p>先理解检测任务，再看架构如何解决具体限制，最后把模型放进真实数据和硬件环境。</p></div></div>
+  <div class="phase-grid">
+    <div class="phase-card"><b>PHASE 01</b><h3>基础与 YOLOv1–v3</h3><p>从检测任务、指标和单阶段思想出发，拆解 YOLOv1、YOLOv2/9000 与 YOLOv3。</p><a href="#stage-foundation">查看本阶段 →</a></div>
+<div class="phase-card"><b>PHASE 02</b><h3>检测组件与训练</h3><p>进入工程训练、骨干网络、特征融合、损失函数、数据增强与后处理。</p><a href="#stage-architecture">查看本阶段 →</a></div>
+<div class="phase-card"><b>PHASE 03</b><h3>现代 YOLO 架构</h3><p>了解不同研究与工程分支的模型设计，辨析无锚框、梯度与注意力机制。</p><a href="#stage-ultralytics">查看本阶段 →</a></div>
+<div class="phase-card"><b>PHASE 04</b><h3>轻量化与部署</h3><p>围绕模型压缩、目标尺度、推理引擎与边缘设备建立部署路径。</p><a href="#stage-optimization">查看本阶段 →</a></div>
+<div class="phase-card"><b>PHASE 05</b><h3>数据、评估与实战</h3><p>从数据标注到训练评估，再到多模态应用、行业案例与综合项目。</p><a href="#stage-practice">查看本阶段 →</a></div>
+  </div>
+</section>
+<section class="home-section" id="course-map" aria-labelledby="course-title">
+  <div class="section-heading"><div><h2 id="course-title">全部课程</h2><p>按主题筛选，或直接搜索模型名称、概念和技术组件。</p></div></div>
+  <div class="filterbar">
+    <label class="sr-only" for="chapter-search">搜索章节</label>
+    <input id="chapter-search" type="search" placeholder="搜索：IoU、Darknet-53、NMS、TensorRT…" autocomplete="off">
+    <label class="sr-only" for="stage-filter">筛选学习阶段</label>
+    <select id="stage-filter">
+      <option value="all">全部学习阶段</option>
+      <option value="foundation">01 · 基础与 YOLOv1–v3</option>
+<option value="architecture">02 · 检测组件与训练</option>
+<option value="ultralytics">03 · 现代 YOLO 架构</option>
+<option value="optimization">04 · 轻量化与部署</option>
+<option value="practice">05 · 数据、评估与实战</option>
+    </select>
+    <span class="result-count" id="result-count" aria-live="polite">显示 28 / 28 篇</span>
+  </div>
+  <div id="chapter-groups"><section class="chapter-group" id="stage-foundation" data-stage="foundation">
+<h3>01 · 基础与 YOLOv1–v3 <span>01–05 · 5 篇</span></h3>
+<div class="chapter-grid"><a class="chapter-card" href="chapters/01.html" data-stage="foundation" data-search="01 目标检测概述 检测任务定义 · IoU/mAP/FPS指标 · 单阶段 vs 双阶段 · 经典数据集与场景">
+  <span class="card-number">CHAPTER 01</span><strong>目标检测概述</strong><small>检测任务定义 · IoU/mAP/FPS指标 · 单阶段 vs 双阶段 · 经典数据集与场景</small>
+</a>
+<a class="chapter-card" href="chapters/02.html" data-stage="foundation" data-search="02 YOLO设计哲学 统一回归框架 · 端到端检测 · 速度-精度权衡 · YOLO发展谱系">
+  <span class="card-number">CHAPTER 02</span><strong>YOLO设计哲学</strong><small>统一回归框架 · 端到端检测 · 速度-精度权衡 · YOLO发展谱系</small>
+</a>
+<a class="chapter-card" href="chapters/03.html" data-stage="foundation" data-search="03 YOLOv1详解 S×S网格机制 · 边界框回归 · 损失函数设计 · CVPR 2016原始论文">
+  <span class="card-number">CHAPTER 03</span><strong>YOLOv1详解</strong><small>S×S网格机制 · 边界框回归 · 损失函数设计 · CVPR 2016原始论文</small>
+</a>
+<a class="chapter-card" href="chapters/04.html" data-stage="foundation" data-search="04 YOLOv2/YOLO9000 Anchor Box聚类 · 批归一化 · 多尺度训练 · WordTree 9000类">
+  <span class="card-number">CHAPTER 04</span><strong>YOLOv2/YOLO9000</strong><small>Anchor Box聚类 · 批归一化 · 多尺度训练 · WordTree 9000类</small>
+</a>
+<a class="chapter-card" href="chapters/05.html" data-stage="foundation" data-search="05 YOLOv3核心架构 Darknet-53残差骨干 · FPN三分支检测 · 逻辑回归分类 · COCO 57.9 AP50">
+  <span class="card-number">CHAPTER 05</span><strong>YOLOv3核心架构</strong><small>Darknet-53残差骨干 · FPN三分支检测 · 逻辑回归分类 · COCO 57.9 AP50</small>
+</a></div>
+</section>
+<section class="chapter-group" id="stage-architecture" data-stage="architecture">
+<h3>02 · 检测组件与训练 <span>06–14 · 9 篇</span></h3>
+<div class="chapter-grid"><a class="chapter-card" href="chapters/06.html" data-stage="architecture" data-search="06 YOLOv3工程实战 训练配置与损失计算 · 数据增强 · 多尺度训练策略 · NMS后处理">
+  <span class="card-number">CHAPTER 06</span><strong>YOLOv3工程实战</strong><small>训练配置与损失计算 · 数据增强 · 多尺度训练策略 · NMS后处理</small>
+</a>
+<a class="chapter-card" href="chapters/07.html" data-stage="architecture" data-search="07 YOLOv4集大成 CSPDarknet-53 · Mosaic与CIoU · Mish激活函数 · BoF/BoS方法论">
+  <span class="card-number">CHAPTER 07</span><strong>YOLOv4集大成</strong><small>CSPDarknet-53 · Mosaic与CIoU · Mish激活函数 · BoF/BoS方法论</small>
+</a>
+<a class="chapter-card" href="chapters/08.html" data-stage="architecture" data-search="08 锚框机制与聚类 K-means锚框设计 · 锚框分配策略 · 多尺度锚框 · Anchor-free演进">
+  <span class="card-number">CHAPTER 08</span><strong>锚框机制与聚类</strong><small>K-means锚框设计 · 锚框分配策略 · 多尺度锚框 · Anchor-free演进</small>
+</a>
+<a class="chapter-card" href="chapters/09.html" data-stage="architecture" data-search="09 损失函数演进 IoU→GIoU→DIoU→CIoU · DFL分布损失 · BCE分类损失 · 回归损失对比">
+  <span class="card-number">CHAPTER 09</span><strong>损失函数演进</strong><small>IoU→GIoU→DIoU→CIoU · DFL分布损失 · BCE分类损失 · 回归损失对比</small>
+</a>
+<a class="chapter-card" href="chapters/10.html" data-stage="architecture" data-search="10 特征金字塔FPN 多尺度特征融合 · 自上而下路径 · PANet双向融合 · 小目标检测提升">
+  <span class="card-number">CHAPTER 10</span><strong>特征金字塔FPN</strong><small>多尺度特征融合 · 自上而下路径 · PANet双向融合 · 小目标检测提升</small>
+</a>
+<a class="chapter-card" href="chapters/11.html" data-stage="architecture" data-search="11 数据增强策略 Mosaic增强 · MixUp与CutMix · SAT自对抗训练 · 增强流水线推荐">
+  <span class="card-number">CHAPTER 11</span><strong>数据增强策略</strong><small>Mosaic增强 · MixUp与CutMix · SAT自对抗训练 · 增强流水线推荐</small>
+</a>
+<a class="chapter-card" href="chapters/12.html" data-stage="architecture" data-search="12 骨干网络对比 Darknet→CSPDarknet · EfficientRep架构 · C2f模块设计 · GELAN骨干">
+  <span class="card-number">CHAPTER 12</span><strong>骨干网络对比</strong><small>Darknet→CSPDarknet · EfficientRep架构 · C2f模块设计 · GELAN骨干</small>
+</a>
+<a class="chapter-card" href="chapters/13.html" data-stage="architecture" data-search="13 Neck与Head设计 SPP/SPPF模块 · PANet路径聚合 · 解耦头设计 · TaskAlignedAssigner">
+  <span class="card-number">CHAPTER 13</span><strong>Neck与Head设计</strong><small>SPP/SPPF模块 · PANet路径聚合 · 解耦头设计 · TaskAlignedAssigner</small>
+</a>
+<a class="chapter-card" href="chapters/14.html" data-stage="architecture" data-search="14 NMS与后处理 NMS原理与实现 · Soft-NMS · DIoU-NMS · NMS-free训练">
+  <span class="card-number">CHAPTER 14</span><strong>NMS与后处理</strong><small>NMS原理与实现 · Soft-NMS · DIoU-NMS · NMS-free训练</small>
+</a></div>
+</section>
+<section class="chapter-group" id="stage-ultralytics" data-stage="ultralytics">
+<h3>03 · 现代 YOLO 架构 <span>15–18 · 4 篇</span></h3>
+<div class="chapter-grid"><a class="chapter-card" href="chapters/15.html" data-stage="ultralytics" data-search="15 YOLOv5入门 Ultralytics生态 · CSPDarknet+SPPF · Anchor自动学习 · ONNX/TensorRT导出">
+  <span class="card-number">CHAPTER 15</span><strong>YOLOv5入门</strong><small>Ultralytics生态 · CSPDarknet+SPPF · Anchor自动学习 · ONNX/TensorRT导出</small>
+</a>
+<a class="chapter-card" href="chapters/16.html" data-stage="ultralytics" data-search="16 YOLOv8新特性 Anchor-free检测 · C2f模块 · 解耦头与DFL · 多任务统一框架">
+  <span class="card-number">CHAPTER 16</span><strong>YOLOv8新特性</strong><small>Anchor-free检测 · C2f模块 · 解耦头与DFL · 多任务统一框架</small>
+</a>
+<a class="chapter-card" href="chapters/17.html" data-stage="ultralytics" data-search="17 YOLOv9/v10前沿 PGI梯度编程 · GELAN结构 · NMS-free训练 · 一致双分配">
+  <span class="card-number">CHAPTER 17</span><strong>YOLOv9/v10前沿</strong><small>PGI梯度编程 · GELAN结构 · NMS-free训练 · 一致双分配</small>
+</a>
+<a class="chapter-card" href="chapters/18.html" data-stage="ultralytics" data-search="18 YOLO11/v12演进 C2PSA注意力 · C3k2模块 · Attention架构 · CNN+Transformer融合">
+  <span class="card-number">CHAPTER 18</span><strong>YOLO11/v12演进</strong><small>C2PSA注意力 · C3k2模块 · Attention架构 · CNN+Transformer融合</small>
+</a></div>
+</section>
+<section class="chapter-group" id="stage-optimization" data-stage="optimization">
+<h3>04 · 轻量化与部署 <span>19–22 · 4 篇</span></h3>
+<div class="chapter-grid"><a class="chapter-card" href="chapters/19.html" data-stage="optimization" data-search="19 模型轻量化 通道剪枝 · INT8量化 · 知识蒸馏 · 结构重参数化">
+  <span class="card-number">CHAPTER 19</span><strong>模型轻量化</strong><small>通道剪枝 · INT8量化 · 知识蒸馏 · 结构重参数化</small>
+</a>
+<a class="chapter-card" href="chapters/20.html" data-stage="optimization" data-search="20 小目标检测优化 多尺度训练 · 注意力特征增强 · SAHI切片 · Copy-Paste增强">
+  <span class="card-number">CHAPTER 20</span><strong>小目标检测优化</strong><small>多尺度训练 · 注意力特征增强 · SAHI切片 · Copy-Paste增强</small>
+</a>
+<a class="chapter-card" href="chapters/21.html" data-stage="optimization" data-search="21 部署与推理加速 ONNX导出 · TensorRT优化 · OpenVINO · 推理性能基准">
+  <span class="card-number">CHAPTER 21</span><strong>部署与推理加速</strong><small>ONNX导出 · TensorRT优化 · OpenVINO · 推理性能基准</small>
+</a>
+<a class="chapter-card" href="chapters/22.html" data-stage="optimization" data-search="22 边缘设备部署 Jetson平台 · NCNN/TNN/MNN · FPGA加速 · 功耗-精度权衡">
+  <span class="card-number">CHAPTER 22</span><strong>边缘设备部署</strong><small>Jetson平台 · NCNN/TNN/MNN · FPGA加速 · 功耗-精度权衡</small>
+</a></div>
+</section>
+<section class="chapter-group" id="stage-practice" data-stage="practice">
+<h3>05 · 数据、评估与实战 <span>23–28 · 6 篇</span></h3>
+<div class="chapter-grid"><a class="chapter-card" href="chapters/23.html" data-stage="practice" data-search="23 数据标注与格式 LabelImg/CVAT · COCO/YOLO/VOC格式 · 数据集组织 · 标注质量控制">
+  <span class="card-number">CHAPTER 23</span><strong>数据标注与格式</strong><small>LabelImg/CVAT · COCO/YOLO/VOC格式 · 数据集组织 · 标注质量控制</small>
+</a>
+<a class="chapter-card" href="chapters/24.html" data-stage="practice" data-search="24 训练流水线搭建 Ultralytics CLI · 超参数配置 · 训练监控Wandb · 常见训练问题">
+  <span class="card-number">CHAPTER 24</span><strong>训练流水线搭建</strong><small>Ultralytics CLI · 超参数配置 · 训练监控Wandb · 常见训练问题</small>
+</a>
+<a class="chapter-card" href="chapters/25.html" data-stage="practice" data-search="25 模型评估与调优 PR曲线与混淆矩阵 · mAP指标详解 · 误差分析 · Bad Case复盘">
+  <span class="card-number">CHAPTER 25</span><strong>模型评估与调优</strong><small>PR曲线与混淆矩阵 · mAP指标详解 · 误差分析 · Bad Case复盘</small>
+</a>
+<a class="chapter-card" href="chapters/26.html" data-stage="practice" data-search="26 YOLO+多模态 YOLO-World开放词汇 · YOLO+CLIP · SAM分割 · ByteTrack跟踪">
+  <span class="card-number">CHAPTER 26</span><strong>YOLO+多模态</strong><small>YOLO-World开放词汇 · YOLO+CLIP · SAM分割 · ByteTrack跟踪</small>
+</a>
+<a class="chapter-card" href="chapters/27.html" data-stage="practice" data-search="27 行业实战案例 自动驾驶 · 安防监控 · 工业质检 · 智慧农业">
+  <span class="card-number">CHAPTER 27</span><strong>行业实战案例</strong><small>自动驾驶 · 安防监控 · 工业质检 · 智慧农业</small>
+</a>
+<a class="chapter-card" href="chapters/28.html" data-stage="practice" data-search="28 综合实训项目 数据采集 · 模型训练 · 评估迭代 · 部署上线">
+  <span class="card-number">CHAPTER 28</span><strong>综合实训项目</strong><small>数据采集 · 模型训练 · 评估迭代 · 部署上线</small>
+</a></div>
+</section></div>
+  <p class="empty-state" id="empty-state" role="status" hidden>没有找到匹配的章节。试试更短的关键词，或切换学习阶段。</p>
+</section>
+<section class="home-section">
+  <div class="home-note">
+    <h3>建议的学习方式</h3>
+    <p>先读章节中的问题定义和结构图，再核对公式、张量尺寸与训练/推理流程。阅读实验结果时，务必同时检查数据集版本、评估指标、输入分辨率和硬件配置。第一批 01–05 章可独立阅读；06–28 章保留现有内容，本轮只调整目录与资源路径，尚未完成逐篇内容审计。</p>
+  </div>
+</section>
+<footer class="home-footer"><span>YOLO 目标检测教程 · 中文技术学习资料</span><span>静态 HTML · 可通过本地 HTTP 服务离线学习</span></footer>
+</main>
+<script src="assets/site.js" defer></script>
 </body>
 </html>

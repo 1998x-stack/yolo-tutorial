@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "article": "chapters/04.html",
+  "evidence_standard": "Each factual or quantitative anchor is mapped to a primary/official source, precise locator, and verification status.",
+  "claims": [
+    {
+      "id": "04-01",
+      "claim": "YOLOv2 使用 anchor boxes，并通过训练集框宽高的 K-means 聚类生成维度先验；距离使用 1−IoU。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "§2 Better; Dimension Clusters",
+      "status": "verified",
+      "notes": "先验应由训练集标注统计，不能用测试集标签调参。"
+    },
+    {
+      "id": "04-02",
+      "claim": "YOLOv2 论文选择 k=5 作为模型复杂度与召回率的折中；VOC 2007 上 5 个 IoU 聚类中心的平均 IoU 为 61.0。",
+      "kind": "quantitative",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "§2 Better, Table 1",
+      "status": "verified",
+      "notes": "这里的 61.0 是先验框与真实框的平均 IoU，不是检测 AP。"
+    },
+    {
+      "id": "04-03",
+      "claim": "Darknet-19 包含 19 个卷积层和 5 个最大池化层。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "§3 Faster; Table 6",
+      "status": "verified",
+      "notes": "骨干网络结构。"
+    },
+    {
+      "id": "04-04",
+      "claim": "Passthrough 将 26×26×512 特征重排为 13×13×2048，再与深层特征拼接。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "§2 Better, Fine-Grained Features",
+      "status": "verified",
+      "notes": "用于向检测头传递更细粒度特征；YOLOv2 仍在单个 13×13 输出尺度预测。"
+    },
+    {
+      "id": "04-05",
+      "claim": "YOLOv2 多尺度训练每 10 个 batch 从 320 到 608、步长 32 的输入尺寸中抽取。",
+      "kind": "training",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "§2 Better, Multi-Scale Training",
+      "status": "verified",
+      "notes": "这是训练输入尺寸变化，不等同于多个检测头。"
+    },
+    {
+      "id": "04-06",
+      "claim": "WordTree 用层级条件概率组织类别；YOLO9000 联合 COCO 检测与 ImageNet 分类数据训练，构建 9,418 节点类别树。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "§4 Stronger; WordTree",
+      "status": "verified",
+      "notes": "不是通过自然语言 prompt 任意指定类别的现代开放词汇检测。"
+    },
+    {
+      "id": "04-07",
+      "claim": "VOC 2007 test 上同一 YOLOv2 权重在 416 输入时为 76.8 mAP/67 FPS，在 544 输入时为 78.6 mAP/40 FPS。",
+      "kind": "quantitative",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "§2 Better, Table 3",
+      "status": "verified",
+      "notes": "论文注明计时硬件为原版 GeForce GTX Titan X；不同输入尺寸使用同一组权重。"
+    }
+  ]
+}

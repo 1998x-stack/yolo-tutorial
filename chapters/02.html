@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="YOLO 把目标检测从候选区域流水线改写为整图上的密集预测。它的核心不是一句“只看一次”，而是共享特征、统一输出空间，以及在延迟约束下平衡精度与召回。">
+<title>第 2 章｜YOLO 的设计哲学：用一次预测完成整图检测 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
+</head>
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
+
+<aside class="sidebar" aria-label="课程导航">
+  <a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a>
+  <p class="sidebar-label">基础原理 · 01—05</p>
+  <nav><ol class="chapter-list">
+    <li><a href="01.html" data-chapter="01"><span>01</span>目标检测概述</a></li>
+    <li><a href="02.html" data-chapter="02" aria-current="page"><span>02</span>YOLO 的设计哲学</a></li>
+    <li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1：统一回归</a></li>
+    <li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 与 YOLO9000</a></li>
+    <li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3：多尺度检测</a></li>
+  </ol></nav>
+  <a class="all-chapters" href="../index.html">查看全部 28 章 <span aria-hidden="true">↗</span></a>
+</aside>
+<main id="main" class="main-content">
+<article class="article">
+<header class="article-header">
+  <p class="eyebrow">FOUNDATIONS <span>／</span> CHAPTER 02</p>
+  <h1>YOLO 的设计哲学：用一次预测完成整图检测</h1>
+  <p class="article-dek">YOLO 把目标检测从候选区域流水线改写为整图上的密集预测。它的核心不是一句“只看一次”，而是共享特征、统一输出空间，以及在延迟约束下平衡精度与召回。</p>
+</header>
+
+<section id="why">
+<h2>1. 为什么要把检测压缩成一次预测？</h2>
+<p>在两阶段检测流程中，模型先回答“哪些区域值得检查”，再回答“每个区域里是什么”。这种分工合理，却引入候选区域生成、区域特征提取和候选框精修等环节。YOLO 的关键选择是：让一个共享卷积网络直接从整张图像预测目标位置与类别，把检测建模为统一的密集回归任务。</p>
+<figure class="diagram">
+<svg viewBox="0 0 900 310" role="img" aria-labelledby="paradigm-title paradigm-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="paradigm-title">两阶段检测与 YOLO 单阶段预测的流程差异</title><desc id="paradigm-desc">左侧先产生候选区域，再进行区域分类与框回归；右侧共享图像特征后直接输出密集预测，并通过后处理得到检测结果。</desc>
+<rect x="8" y="8" width="884" height="294" rx="18" fill="#f6fafb"/>
+<text x="34" y="42" font-size="18" font-weight="700" fill="#24414a">两阶段检测</text>
+<g transform="translate(28 66)">
+<rect x="0" y="0" width="142" height="70" rx="10" fill="#e0ecee" stroke="#9bb7bc"/><text x="71" y="30" text-anchor="middle" font-size="15" fill="#24414a">输入图像</text><text x="71" y="51" text-anchor="middle" font-size="12" fill="#5c737a">image</text>
+<path d="M148 35 H174" stroke="#54757c" stroke-width="2.5"/><path d="M169 29 L176 35 L169 41" fill="none" stroke="#54757c" stroke-width="2.5"/>
+<rect x="182" y="0" width="142" height="70" rx="10" fill="#e7f0f6" stroke="#83a8bb"/><text x="253" y="30" text-anchor="middle" font-size="15" fill="#24414a">候选区域 RPN</text><text x="253" y="51" text-anchor="middle" font-size="12" fill="#5c737a">region proposals</text>
+<path d="M330 35 H356" stroke="#54757c" stroke-width="2.5"/><path d="M351 29 L358 35 L351 41" fill="none" stroke="#54757c" stroke-width="2.5"/>
+<rect x="364" y="0" width="142" height="70" rx="10" fill="#e7f0f6" stroke="#83a8bb"/><text x="435" y="30" text-anchor="middle" font-size="15" fill="#24414a">RoI 特征</text><text x="435" y="51" text-anchor="middle" font-size="12" fill="#5c737a">region features</text>
+<path d="M512 35 H538" stroke="#54757c" stroke-width="2.5"/><path d="M533 29 L540 35 L533 41" fill="none" stroke="#54757c" stroke-width="2.5"/>
+<rect x="546" y="0" width="142" height="70" rx="10" fill="#e7f0f6" stroke="#83a8bb"/><text x="617" y="30" text-anchor="middle" font-size="15" fill="#24414a">分类 + 框精修</text><text x="617" y="51" text-anchor="middle" font-size="12" fill="#5c737a">classification / box</text>
+<path d="M694 35 H720" stroke="#54757c" stroke-width="2.5"/><path d="M715 29 L722 35 L715 41" fill="none" stroke="#54757c" stroke-width="2.5"/>
+<rect x="728" y="0" width="118" height="70" rx="10" fill="#d9efeb" stroke="#6eaaa0"/><text x="787" y="40" text-anchor="middle" font-size="15" fill="#24414a">检测结果</text>
+</g>
+<path d="M28 165 H870" stroke="#d2e0e3" stroke-dasharray="5 6"/>
+<text x="34" y="202" font-size="18" font-weight="700" fill="#087f8c">YOLO 单阶段检测</text>
+<g transform="translate(28 222)">
+<rect x="0" y="0" width="142" height="58" rx="10" fill="#e0ecee" stroke="#9bb7bc"/><text x="71" y="34" text-anchor="middle" font-size="15" fill="#24414a">输入图像</text>
+<path d="M148 29 H174" stroke="#087f8c" stroke-width="2.5"/><path d="M169 23 L176 29 L169 35" fill="none" stroke="#087f8c" stroke-width="2.5"/>
+<rect x="182" y="0" width="210" height="58" rx="10" fill="#dff1f0" stroke="#69a9a2"/><text x="287" y="25" text-anchor="middle" font-size="15" fill="#24414a">共享特征提取</text><text x="287" y="44" text-anchor="middle" font-size="12" fill="#5c737a">one feature backbone</text>
+<path d="M398 29 H424" stroke="#087f8c" stroke-width="2.5"/><path d="M419 23 L426 29 L419 35" fill="none" stroke="#087f8c" stroke-width="2.5"/>
+<rect x="432" y="0" width="210" height="58" rx="10" fill="#dff1f0" stroke="#69a9a2"/><text x="537" y="25" text-anchor="middle" font-size="15" fill="#24414a">密集框与类别预测</text><text x="537" y="44" text-anchor="middle" font-size="12" fill="#5c737a">boxes + scores</text>
+<path d="M648 29 H674" stroke="#087f8c" stroke-width="2.5"/><path d="M669 23 L676 29 L669 35" fill="none" stroke="#087f8c" stroke-width="2.5"/>
+<rect x="682" y="0" width="164" height="58" rx="10" fill="#d9efeb" stroke="#6eaaa0"/><text x="764" y="25" text-anchor="middle" font-size="15" fill="#24414a">阈值 / NMS</text><text x="764" y="44" text-anchor="middle" font-size="12" fill="#5c737a">post-processing</text>
+</g>
+</svg>
+<figcaption>YOLO 省去显式的候选区域阶段，但检测输出仍需解码、阈值筛选，经典版本还需要 NMS 去除重复框。</figcaption>
+</figure>
+<p>YOLOv1 的论文将检测写成从图像像素到边界框坐标与类别概率的回归问题。一次网络评估同时预测图像中的多个目标，而不是对每个候选区域重复运行分类器。这里的“一次看”指模型的单次前向评估，不意味着整个推理系统只包含一个算子。</p>
+</section>
+<section id="dense">
+<h2>2. 密集预测：把整张图变成统一的输出空间</h2>
+<p>YOLOv1 将图像划分为 <em>S×S</em> 网格。某个目标的中心点落在哪个网格，该网格就负责预测这个目标。每个网格预测 B 个边界框及其置信度，并预测一组类别条件概率。对于 VOC 配置，S=7、B=2、C=20，最终输出为 7×7×30。</p>
+<p>这种输出形式把多个目标统一放进一个固定尺寸张量。模型可以利用整张图像的特征做预测，因此不仅看到局部纹理，也能利用场景上下文；但网格责任分配也带来明显限制：同一个网格只输出一组类别概率，两个中心落在同一网格的不同类别目标会产生冲突。</p>
+</section>
+<section id="tradeoff">
+<h2>3. 全局上下文与速度—精度权衡</h2>
+<p>YOLO 的整图训练与推理让每个位置的预测可以利用全局上下文。原始论文报告，在其 VOC 诊断实验中，YOLO 的背景误检少于 Fast R-CNN；论文也明确指出 YOLO 更容易出现定位错误，尤其是小目标。这两点并不矛盾：全局信息有助于判断场景中是否存在目标，却不能自动恢复低分辨率特征中已经丢失的细节。</p>
+<div class="callout info"><strong>把“快”拆成可测量的指标。</strong>速度不仅由模型层数决定，还受输入尺寸、骨干网络、显存带宽、推理后端、批大小和 NMS 影响。部署时应在目标硬件上测量端到端延迟，而不是只依据论文里的单一 FPS。</div>
+<p>因此，YOLO 的设计目标不是“无条件追求最快”，而是在实时约束下找到可接受的精度。输入分辨率提高通常有利于保留小目标细节，但会增加计算量；更大的骨干网络可能提升表征能力，也可能让延迟超出业务预算。工程选型本质上是在精度、延迟、吞吐、功耗与显存之间寻找 Pareto 解。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>设计选择</th><th>可能收益</th><th>需要付出的代价</th></tr></thead>
+<tbody>
+<tr><td>单次密集预测</td><td>共享特征，推理路径直接</td><td>正负样本极不均衡，输出中存在大量候选框</td></tr>
+<tr><td>整图上下文</td><td>利用场景信息，减少部分背景误报</td><td>网格分配与低分辨率特征会限制密集小目标</td></tr>
+<tr><td>提高输入分辨率</td><td>保留更细粒度的空间信息</td><td>显存与计算量通常随分辨率增长</td></tr>
+<tr><td>增加检测头或特征尺度</td><td>覆盖不同尺寸目标</td><td>增加分支、输出与训练匹配复杂度</td></tr>
+</tbody></table></div>
+</section>
+<section id="principles">
+<h2>4. 从 YOLOv1 到后续架构：哪些思想延续了下来？</h2>
+<p>YOLO 家族并不是一个始终由同一团队维护、每代都只在上一代上修改的单线产品。早期的 YOLOv1、YOLOv2/YOLO9000 与 YOLOv3 由 Joseph Redmon 和合作者提出；此后出现了不同研究团队和工程生态中的 YOLO 实现。比较版本时必须注明具体论文、代码库和模型配置，不能只看“v几”的名称。</p>
+<div class="timeline">
+<div><b>2015 / 2016</b><strong>YOLOv1</strong><span>把检测写成整图上的统一回归任务。</span></div>
+<div><b>2016 / 2017</b><strong>YOLOv2 / YOLO9000</strong><span>引入锚框、维度聚类、细粒度特征与跨数据集联合训练。</span></div>
+<div><b>2018</b><strong>YOLOv3</strong><span>采用 Darknet-53、三尺度预测与独立 Logistic 类别分类。</span></div>
+<div><b>2020 以后</b><strong>多条工程与研究分支</strong><span>围绕特征融合、训练策略、无锚框预测、部署和端到端后处理持续演进。</span></div>
+</div>
+<p>从早期三代中可以提炼出几条可迁移的设计原则：</p>
+<ol>
+<li><strong>共享计算：</strong>尽量让多个检测位置复用同一套特征提取结果。</li>
+<li><strong>明确预测契约：</strong>规定每个位置负责哪些目标、输出哪些几何量和类别分数。</li>
+<li><strong>把尺度作为架构问题：</strong>目标尺寸差异需要通过分辨率、特征层级或多尺度训练来处理。</li>
+<li><strong>让速度与精度共同接受验证：</strong>不能用单一 benchmark 数字代替目标场景测试。</li>
+</ol>
+</section>
+<section id="boundaries">
+<h2>5. 单阶段不是“没有后处理”</h2>
+<p>YOLOv1 的原始流程包含置信度阈值筛选，多个框可能指向同一目标，因此通常还会使用非极大值抑制（NMS）。后续一些 YOLO 变体才专门研究 NMS-free 训练与推理。把所有 YOLO 版本统称为“完全端到端且不需要后处理”，会混淆模型训练图与部署推理图。</p>
+<p>同样，单阶段和两阶段描述的是预测架构的组织方式，并不能直接推出模型质量、训练难度或部署成本。选择检测器时应先明确业务约束，再对齐数据集、指标、输入尺寸和推理环境。</p>
+</section>
+<section id="references">
+<h2>参考资料</h2>
+<ol class="references">
+<li>Redmon et al., <a href="https://arxiv.org/abs/1506.02640" target="_blank" rel="noreferrer">You Only Look Once: Unified, Real-Time Object Detection</a>（arXiv 首次提交于 2015；发表于 CVPR 2016）。</li>
+<li>Redmon & Farhadi, <a href="https://arxiv.org/abs/1612.08242" target="_blank" rel="noreferrer">YOLO9000: Better, Faster, Stronger</a>（2016 预印本；CVPR 2017）。</li>
+<li>Redmon & Farhadi, <a href="https://arxiv.org/abs/1804.02767" target="_blank" rel="noreferrer">YOLOv3: An Incremental Improvement</a>（2018 技术报告）。</li>
+</ol>
+</section>
+</article>
+<nav class="chapter-nav" aria-label="章节切换">
+  <a href="01.html" class="previous"><small>上一章</small><strong>← 目标检测概述</strong></a>
+  <a href="../index.html" class="chapter-index"><span aria-hidden="true">▦</span> 全部章节</a>
+  <a href="03.html" class="next"><small>下一章</small><strong>YOLOv1：统一回归 →</strong></a>
+</nav>
+<footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>
+</main>
+</div>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "article": "chapters/03.html",
+  "evidence_standard": "Each factual or quantitative anchor is mapped to a primary/official source, precise locator, and verification status.",
+  "claims": [
+    {
+      "id": "03-01",
+      "claim": "VOC 配置的 YOLOv1 使用 S=7、B=2、C=20，输出张量为 7×7×30。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§2 Unified Detection; Figure 2",
+      "status": "verified",
+      "notes": "每个框 5 个值，每个网格共享一组 20 类条件概率。"
+    },
+    {
+      "id": "03-02",
+      "claim": "YOLOv1 框置信度定义为 Pr(Object)×IoU；推理类别分数为类别条件概率乘以框置信度。",
+      "kind": "formula",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§2 Unified Detection, Eq. (1)",
+      "status": "verified",
+      "notes": "按原论文符号解释。"
+    },
+    {
+      "id": "03-03",
+      "claim": "YOLOv1 检测网络有 24 个卷积层和 2 个全连接层；Fast YOLO 有 9 个卷积层。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§2.1 Network Design",
+      "status": "verified",
+      "notes": "检测网络结构与 Fast YOLO 的网络规模。"
+    },
+    {
+      "id": "03-04",
+      "claim": "YOLOv1 预训练前 20 个卷积层，检测输入从 224×224 提高到 448×448。",
+      "kind": "training",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§2.2 Training",
+      "status": "verified",
+      "notes": "原论文的 ImageNet 预训练与检测微调流程。"
+    },
+    {
+      "id": "03-05",
+      "claim": "YOLOv1 损失使用 λ_coord=5、λ_noobj=0.5，并按预测框与真实框 IoU 选择 responsible predictor。",
+      "kind": "formula",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§2.2 Training, Eq. (3)",
+      "status": "verified",
+      "notes": "教学页面将完整损失拆为四类作用项。"
+    },
+    {
+      "id": "03-06",
+      "claim": "VOC 2007 test 上论文报告 YOLO 为 63.4 mAP、45 FPS，Fast YOLO 为 52.7 mAP、155 FPS。",
+      "kind": "quantitative",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§4.1, Table 1",
+      "status": "verified",
+      "notes": "论文 Table 1 的训练数据标为 2007+2012；速度测量需保留论文原始硬件口径。"
+    },
+    {
+      "id": "03-07",
+      "claim": "YOLOv1 的网格责任分配限制同一网格的类别表达，并使密集小目标与异常长宽比更难定位。",
+      "kind": "limitation",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§2.4 Limitations",
+      "status": "verified",
+      "notes": "直接依据原论文限制分析。"
+    }
+  ]
+}
