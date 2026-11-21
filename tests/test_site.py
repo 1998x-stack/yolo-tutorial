@@ -66,7 +66,7 @@ class SiteStructureTests(unittest.TestCase):
 
     def test_every_local_html_link_resolves(self):
         pages = list(ROOT.glob("*.html")) + list((ROOT / "chapters").glob("*.html"))
-        self.assertEqual(len(pages), 56)
+        self.assertEqual(len(pages), 57)
         for page in pages:
             _, parser = read_page(page)
             for raw in parser.links:
