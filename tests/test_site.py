@@ -59,6 +59,7 @@ class SiteStructureTests(unittest.TestCase):
         self.assertEqual(content.count('class="chapter-card"'), 28)
         self.assertIn('id="chapter-search"', content)
         self.assertIn('id="stage-filter"', content)
+        self.assertIn('id="empty-state" role="status" hidden', content)
         self.assertIn('src="assets/site.js"', content)
         self.assertNotIn("fetch(", content)
         self.assertTrue((ROOT / "assets/theme.css").is_file())
