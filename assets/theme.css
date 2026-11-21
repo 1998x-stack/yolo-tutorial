@@ -199,7 +199,7 @@ button, input, select { font: inherit; }
 .chapter-card .card-number { color: var(--amber); font-size: .72rem; font-weight: 850; letter-spacing: .12em; }
 .chapter-card strong { margin: 5px 0 7px; color: #1b3942; font-size: .98rem; line-height: 1.4; }
 .chapter-card small { color: var(--muted); font-size: .78rem; line-height: 1.6; }
-.empty-state { display: none; padding: 26px; border: 1px dashed #b7cacc; border-radius: 12px; text-align: center; color: var(--muted); background: #fff; }
+.empty-state { padding: 26px; border: 1px dashed #b7cacc; border-radius: 12px; text-align: center; color: var(--muted); background: #fff; }\n.chapter-card[hidden], .chapter-group[hidden], .empty-state[hidden] { display: none !important; }\n.empty-state:not([hidden]) { display: block; }
 .home-note { padding: 20px 22px; border: 1px solid #dbe7e8; border-radius: 14px; background: #edf5f4; color: #385860; }
 .home-note h3 { margin: 0 0 8px; font-size: 1rem; }
 .home-note p { margin: 0; font-size: .88rem; line-height: 1.8; }
