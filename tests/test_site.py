@@ -129,7 +129,8 @@ class SiteStructureTests(unittest.TestCase):
             math_attrs = re.findall(r"<math\b([^>]*)>", content, flags=re.IGNORECASE)
             for attrs in math_attrs:
                 self.assertRegex(attrs, r'aria-label="[^"]+"', num)
-            self.assertNotRegex(content, r"<svg\b[\s\S]*?<math\b", num)
+            for svg in re.findall(r"<svg\b[\s\S]*?</svg>", content, flags=re.IGNORECASE):
+                self.assertNotIn("<math", svg.lower(), num)
             equation_count = content.count('class="equation"')
             self.assertEqual(content.count('class="equation" tabindex="0"'), equation_count, num)
 
