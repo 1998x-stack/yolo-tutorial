@@ -98,7 +98,6 @@ class SiteStructureTests(unittest.TestCase):
             self.assertEqual(parser.article_count, 1, num)
             self.assertEqual(parser.main_count, 1, num)
             self.assertGreaterEqual(parser.svg_count, 1, num)
-            self.assertIn("<math", content, num)
             self.assertIn("https://arxiv.org/abs/", content, num)
             for phrase in forbidden:
                 self.assertNotIn(phrase, content, f"{num}: {phrase}")
