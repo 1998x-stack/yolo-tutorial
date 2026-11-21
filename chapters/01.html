@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="目标检测把图像内容转化为一组可计算的目标实例：每个实例都有类别、位置和置信度。理解输出契约与评估协议，是正确阅读 YOLO 架构和实验结果的起点。">
+<title>第 1 章｜目标检测：让模型回答“是什么、在哪里” · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
+</head>
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
+
+<aside class="sidebar" aria-label="课程导航">
+  <a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a>
+  <p class="sidebar-label">基础原理 · 01—05</p>
+  <nav><ol class="chapter-list">
+    <li><a href="01.html" data-chapter="01"><span>01</span>目标检测概述</a></li>
+    <li><a href="02.html" data-chapter="02"><span>02</span>YOLO 的设计哲学</a></li>
+    <li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1：统一回归</a></li>
+    <li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 与 YOLO9000</a></li>
+    <li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3：多尺度检测</a></li>
+  </ol></nav>
+  <a class="all-chapters" href="../index.html">查看全部 28 章 <span aria-hidden="true">↗</span></a>
+</aside>
+<main id="main" class="main-content">
+<article class="article">
+<header class="article-header">
+  <p class="eyebrow">FOUNDATIONS <span>／</span> CHAPTER 01</p>
+  <h1>目标检测：让模型回答“是什么、在哪里”</h1>
+  <p class="article-dek">目标检测把图像内容转化为一组可计算的目标实例：每个实例都有类别、位置和置信度。理解输出契约与评估协议，是正确阅读 YOLO 架构和实验结果的起点。</p>
+</header>
+
+<section id="task">
+<h2>1. 一张图像，需要回答三个问题</h2>
+<p>给定一张街景图像，计算机视觉系统至少可能承担三种不同任务：判断整张图像属于什么类别、找出每个目标的位置，或者为每个像素分配语义标签。它们共享图像特征，却要求模型输出不同粒度的信息。</p>
+<figure class="diagram">
+<svg viewBox="0 0 900 300" role="img" aria-labelledby="det-title det-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="det-title">分类、目标检测与分割的输出差异</title><desc id="det-desc">同一张街景图像分别产生整图标签、带类别的边界框，以及像素级分割区域。</desc>
+<rect x="8" y="8" width="884" height="284" rx="18" fill="#f6fafb"/>
+<g transform="translate(28 34)">
+<rect width="250" height="176" rx="12" fill="#dbe9e9"/>
+<rect x="0" y="106" width="250" height="70" fill="#b6c9c8"/>
+<path d="M0 120 L250 120 M0 140 L250 140" stroke="#eef5f4" stroke-width="3" stroke-dasharray="18 12"/>
+<rect x="28" y="48" width="45" height="68" rx="6" fill="#536b70"/><circle cx="50" cy="36" r="16" fill="#d4a27b"/>
+<rect x="143" y="66" width="68" height="48" rx="7" fill="#2f6875"/><circle cx="159" cy="117" r="9" fill="#243b43"/><circle cx="194" cy="117" r="9" fill="#243b43"/>
+<text x="125" y="204" text-anchor="middle" fill="#24414a" font-size="18" font-weight="700">原始图像</text>
+</g>
+<g transform="translate(326 34)">
+<rect width="250" height="176" rx="12" fill="#dbe9e9"/>
+<rect x="0" y="106" width="250" height="70" fill="#b6c9c8"/>
+<path d="M0 120 L250 120 M0 140 L250 140" stroke="#eef5f4" stroke-width="3" stroke-dasharray="18 12"/>
+<rect x="28" y="48" width="45" height="68" rx="6" fill="#536b70"/><circle cx="50" cy="36" r="16" fill="#d4a27b"/>
+<rect x="143" y="66" width="68" height="48" rx="7" fill="#2f6875"/><circle cx="159" cy="117" r="9" fill="#243b43"/><circle cx="194" cy="117" r="9" fill="#243b43"/>
+<rect x="23" y="16" width="58" height="106" rx="4" fill="none" stroke="#087f8c" stroke-width="3"/>
+<rect x="137" y="58" width="80" height="66" rx="4" fill="none" stroke="#c47b31" stroke-width="3"/>
+<rect x="23" y="0" width="66" height="20" rx="5" fill="#087f8c"/><text x="56" y="15" fill="white" font-size="12" text-anchor="middle">person</text>
+<rect x="137" y="38" width="66" height="20" rx="5" fill="#c47b31"/><text x="170" y="53" fill="white" font-size="12" text-anchor="middle">car</text>
+<text x="125" y="204" text-anchor="middle" fill="#24414a" font-size="18" font-weight="700">目标检测：框 + 类别</text>
+</g>
+<g transform="translate(624 34)">
+<rect width="250" height="176" rx="12" fill="#dbe9e9"/>
+<rect x="0" y="106" width="250" height="70" fill="#b6c9c8"/>
+<path d="M0 120 L250 120 M0 140 L250 140" stroke="#eef5f4" stroke-width="3" stroke-dasharray="18 12"/>
+<path d="M25 48 Q48 13 75 38 L75 118 L25 118Z" fill="#167f8b" opacity=".82"/>
+<path d="M141 65 Q177 47 214 64 L214 113 L141 113Z" fill="#c47b31" opacity=".85"/>
+<rect x="24" y="15" width="56" height="106" rx="4" fill="none" stroke="#087f8c" stroke-width="2"/>
+<rect x="139" y="57" width="77" height="59" rx="4" fill="none" stroke="#c47b31" stroke-width="2"/>
+<text x="125" y="204" text-anchor="middle" fill="#24414a" font-size="18" font-weight="700">实例分割：像素掩膜</text>
+</g>
+<text x="450" y="272" text-anchor="middle" fill="#5a7279" font-size="14">同一输入，不同输出契约：整图标签 → 目标级位置 → 像素级区域</text>
+</svg>
+<figcaption>目标检测输出每个实例的类别与矩形边界框；它不负责描述框内每个像素的精确轮廓。</figcaption>
+</figure>
+<div class="table-wrap"><table>
+<thead><tr><th>任务</th><th>模型要回答什么</th><th>典型输出</th><th>空间粒度</th></tr></thead>
+<tbody>
+<tr><td>图像分类</td><td>整张图最可能是什么？</td><td>类别及其概率</td><td>整图</td></tr>
+<tr><td>目标检测</td><td>有哪些目标？每个在哪里？</td><td>多个边界框、类别、置信度</td><td>实例级矩形框</td></tr>
+<tr><td>语义分割</td><td>每个像素属于什么语义类别？</td><td>像素类别图</td><td>像素级，不区分同类实例</td></tr>
+<tr><td>实例分割</td><td>每个目标的精确轮廓是什么？</td><td>每个实例的掩膜与类别</td><td>像素级，并区分实例</td></tr>
+</tbody></table></div>
+<p>一个检测结果通常写成 <code>(x_min, y_min, x_max, y_max, class, score)</code>。坐标表示矩形框左上角和右下角，类别说明目标是什么，置信度用于排序和阈值筛选。实际项目还要明确坐标是否归一化、是否采用中心点宽高格式，以及坐标对应原图还是缩放后的输入图。</p>
+</section>
+<section id="iou">
+<h2>2. 边界框有多准确：IoU</h2>
+<p>检测器给出一个预测框，标注数据提供一个真实框。仅仅判断二者是否相交不够：一个只覆盖目标一小角的框也可能相交。交并比（Intersection over Union，IoU）用交集面积占并集面积的比例衡量重叠程度：</p>
+<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动">
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="IoU 等于预测框与真实框的交集面积除以并集面积">
+<mrow><mi>IoU</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mo>∩</mo><mi>B</mi></mrow><mrow><mi>A</mi><mo>∪</mo><mi>B</mi></mrow></mfrac></mrow>
+</math>
+</div>
+<p>IoU 的范围为 0 到 1。0 表示没有重叠，1 表示两个框完全重合。评估时通常设定匹配阈值，例如 IoU≥0.5；但“匹配成功”还取决于类别是否正确、预测置信度排序，以及一个真实目标是否已经被更高分预测匹配。</p>
+<pre><code>def box_iou(a, b):
+    # a、b 均为 (x1, y1, x2, y2)，坐标采用同一尺度
+    ax1, ay1, ax2, ay2 = a
+    bx1, by1, bx2, by2 = b
+
+    iw = max(0.0, min(ax2, bx2) - max(ax1, bx1))
+    ih = max(0.0, min(ay2, by2) - max(ay1, by1))
+    intersection = iw * ih
+
+    area_a = max(0.0, ax2 - ax1) * max(0.0, ay2 - ay1)
+    area_b = max(0.0, bx2 - bx1) * max(0.0, by2 - by1)
+    union = area_a + area_b - intersection
+    return intersection / union if union > 0 else 0.0
+
+a = (50, 50, 150, 150)
+b = (100, 100, 200, 200)
+print(f"{box_iou(a, b):.3f}")  # 0.143</code></pre>
+<p>这个实现刻意处理了退化框：若宽或高为负，面积按 0 计算；若并集面积为 0，返回 0 而不是产生除零错误。两个框必须使用同一坐标系，否则 IoU 没有意义。</p>
+</section>
+<section id="metrics">
+<h2>3. 从单个框到整个数据集：Precision、Recall 与 AP</h2>
+<p>目标检测不仅要框得准，还要尽量找全目标、减少误报。对某一类别和给定评估规则：</p>
+<ul>
+<li><strong>Precision（精确率）</strong>：所有被模型报出的检测中，有多少是真的。<math class="math-inline" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="TP 除以 TP 加 FP"><mfrac><mi>TP</mi><mrow><mi>TP</mi><mo>+</mo><mi>FP</mi></mrow></mfrac></math></li>
+<li><strong>Recall（召回率）</strong>：所有真实目标中，有多少被模型找到了。<math class="math-inline" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="TP 除以 TP 加 FN"><mfrac><mi>TP</mi><mrow><mi>TP</mi><mo>+</mo><mi>FN</mi></mrow></mfrac></math></li>
+<li><strong>AP（Average Precision）</strong>：按置信度从高到低扫描预测，得到 Precision–Recall 曲线，并按指定插值协议计算曲线下面积。</li>
+<li><strong>mAP</strong>：对评估类别的 AP 求平均。不同基准对 IoU 阈值和插值规则的定义可能不同。</li>
+</ul>
+<p>匹配不是简单地“每个预测各找一个最近真实框”。评估器通常按类别、图像和置信度顺序进行一对一匹配：同一个真实目标不能被多个预测重复记为 TP，重复框会成为 FP。忽略区域、crowd 标注、最大检测数等规则也会影响结果，因此复现实验必须固定评估实现和配置。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>指标</th><th>评估口径</th><th>适合回答的问题</th></tr></thead>
+<tbody>
+<tr><td>AP@0.5</td><td>IoU 阈值固定为 0.50</td><td>检测框是否达到较宽松的重叠要求？</td></tr>
+<tr><td>AP@0.75</td><td>IoU 阈值固定为 0.75</td><td>定位是否更精确？</td></tr>
+<tr><td>COCO AP</td><td>IoU 从 0.50 到 0.95，步长 0.05，再对类别求平均</td><td>模型在多种定位严格度下是否稳定？</td></tr>
+<tr><td>AP<sub>S</sub> / AP<sub>M</sub> / AP<sub>L</sub></td><td>按目标面积分组评估</td><td>模型在哪种目标尺度上薄弱？</td></tr>
+</tbody></table></div>
+<div class="callout info"><strong>比较数字前先对齐协议。</strong>COCO 的主指标 AP 对 10 个 IoU 阈值求平均；AP<sub>50</sub> 才是 IoU=0.50 的单阈值指标。COCO 官方评估页还定义了小、中、大目标分组。把 AP@0.5 与 COCO AP 当成同一指标比较，会得出错误结论。</div>
+</section>
+<section id="latency">
+<h2>4. 实时性不只是 FPS</h2>
+<p>FPS 表示单位时间处理的帧数，延迟表示单个输入从进入系统到结果可用所花的时间。两者相关但不等价：批处理可以提高吞吐量，却可能增加单帧等待时间。对视频系统，至少要分别测量解码、预处理、模型前向、解码输出、NMS 和数据传输。</p>
+<p>因此论文中的 FPS 只能在相同硬件、输入尺寸、批大小、精度模式、推理框架和计时边界下比较。Titan X 上的历史 FPS 不能直接预测现代 GPU、CPU 或边缘设备上的速度。</p>
+</section>
+<section id="datasets">
+<h2>5. 数据集定义了模型被怎样评价</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>数据集</th><th>类别规模</th><th>标注特点</th><th>常见用途</th></tr></thead>
+<tbody>
+<tr><td>PASCAL VOC</td><td>20 类</td><td>经典矩形框标注；VOC 2007 常用于 AP@0.5 基准</td><td>早期检测器对比与教学实验</td></tr>
+<tr><td>MS COCO</td><td>80 类</td><td>复杂上下文、多目标与尺度分布；提供 bbox、segmentation 等标注</td><td>现代通用检测器的核心基准</td></tr>
+<tr><td>ImageNet DET</td><td>200 类</td><td>大规模检测类别；与分类数据结合时需处理标签层级差异</td><td>大类别空间检测研究</td></tr>
+</tbody></table></div>
+<p>数据集的类别体系、目标尺寸、遮挡程度、标注策略和训练/测试划分都不同。一个模型在 VOC 上取得高 AP，并不意味着它能在 COCO、航拍图像或工业缺陷数据上保持相同水平。评估数字必须同时附带数据集版本、split、指标和模型输入尺寸。</p>
+</section>
+<section id="families">
+<h2>6. 两阶段与单阶段检测器</h2>
+<p>两阶段检测器先生成候选区域，再对候选区域分类并精修边界框。Faster R-CNN 用 Region Proposal Network（RPN）学习候选区域，减少了早期 Selective Search 的外部依赖。单阶段检测器则在密集特征位置上直接预测类别和边界框，YOLO 与 SSD 是代表性路线。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>维度</th><th>两阶段路线</th><th>单阶段路线</th></tr></thead>
+<tbody>
+<tr><td>计算流程</td><td>候选区域 → RoI 特征 → 分类与回归</td><td>共享特征 → 密集预测 → 后处理</td></tr>
+<tr><td>设计重点</td><td>候选区域质量与区域级精修</td><td>密集样本分配、类别不平衡与高效解码</td></tr>
+<tr><td>工程权衡</td><td>模块较多，便于区域级精修</td><td>结构通常更直接，适合低延迟部署</td></tr>
+</tbody></table></div>
+<p>这不是“准确与速度”的绝对二分。现代单阶段检测器可以达到很高精度，两阶段检测器也有高速实现；最终表现取决于骨干网络、特征融合、样本分配、训练数据和推理实现。</p>
+</section>
+<section id="references">
+<h2>参考资料</h2>
+<ol class="references">
+<li>Everingham et al., <a href="http://host.robots.ox.ac.uk/pascal/VOC/" target="_blank" rel="noreferrer">The PASCAL Visual Object Classes Challenge</a>.</li>
+<li>Lin et al., <a href="https://arxiv.org/abs/1405.0312" target="_blank" rel="noreferrer">Microsoft COCO: Common Objects in Context</a>.</li>
+<li>COCO Consortium, <a href="https://cocodataset.org/dataset/detection-eval.htm" target="_blank" rel="noreferrer">Detection Evaluation: metrics and evaluation protocol</a>.</li>
+<li>Russakovsky et al., <a href="https://arxiv.org/abs/1409.0575" target="_blank" rel="noreferrer">ImageNet Large Scale Visual Recognition Challenge</a>；ILSVRC 检测任务的 200 类定义见 <a href="https://image-net.org/challenges/LSVRC/2016/index.php" target="_blank" rel="noreferrer">官方挑战说明</a>.</li>
+<li>Ren et al., <a href="https://arxiv.org/abs/1506.01497" target="_blank" rel="noreferrer">Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks</a>.</li>
+</ol>
+</section>
+</article>
+<nav class="chapter-nav" aria-label="章节切换">
+  <a href="../index.html" class="previous"><small>课程入口</small><strong>← 返回课程首页</strong></a>
+  <a href="../index.html" class="chapter-index"><span aria-hidden="true">▦</span> 全部章节</a>
+  <a href="02.html" class="next"><small>下一章</small><strong>YOLO 的设计哲学 →</strong></a>
+</nav>
+<footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>
+</main>
+</div>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

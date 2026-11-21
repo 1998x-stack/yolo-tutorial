@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="YOLOv1 将整张图像映射为固定网格上的边界框与类别预测。7×7 网格、每格两个框和一组类别概率，定义了它的能力边界，也解释了后续锚框与多尺度改进的动机。">
+<title>第 3 章｜YOLOv1：把目标检测写成统一回归 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
+</head>
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
+
+<aside class="sidebar" aria-label="课程导航">
+  <a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a>
+  <p class="sidebar-label">基础原理 · 01—05</p>
+  <nav><ol class="chapter-list">
+    <li><a href="01.html" data-chapter="01"><span>01</span>目标检测概述</a></li>
+    <li><a href="02.html" data-chapter="02"><span>02</span>YOLO 的设计哲学</a></li>
+    <li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1：统一回归</a></li>
+    <li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 与 YOLO9000</a></li>
+    <li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3：多尺度检测</a></li>
+  </ol></nav>
+  <a class="all-chapters" href="../index.html">查看全部 28 章 <span aria-hidden="true">↗</span></a>
+</aside>
+<main id="main" class="main-content">
+<article class="article">
+<header class="article-header">
+  <p class="eyebrow">FOUNDATIONS <span>／</span> CHAPTER 03</p>
+  <h1>YOLOv1：把目标检测写成统一回归</h1>
+  <p class="article-dek">YOLOv1 将整张图像映射为固定网格上的边界框与类别预测。7×7 网格、每格两个框和一组类别概率，定义了它的能力边界，也解释了后续锚框与多尺度改进的动机。</p>
+</header>
+
+<section id="grid">
+<h2>1. 网格责任分配：目标中心决定由谁预测</h2>
+<p>YOLOv1 的输入尺寸为 448×448。对于 PASCAL VOC 的实验配置，图像被划分为 7×7 个网格，每个网格覆盖 64×64 像素。若目标边界框中心落在某个网格内，该网格就负责预测这个目标。注意，负责关系由<strong>中心点</strong>决定，而不是由边界框与网格相交的面积决定。</p>
+<figure class="diagram">
+<svg viewBox="0 0 900 320" role="img" aria-labelledby="grid-title grid-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="grid-title">YOLOv1 的 7×7 网格与中心点责任分配</title><desc id="grid-desc">左侧图像被划分为七乘七网格，中心点落在高亮网格中的目标由该网格负责；右侧展示每个网格预测两个框和一组类别概率。</desc>
+<rect x="8" y="8" width="884" height="304" rx="18" fill="#f6fafb"/>
+<g transform="translate(46 30)">
+<rect width="252" height="252" rx="10" fill="#e6eff0"/>
+<rect x="0" y="0" width="252" height="252" fill="none" stroke="#a9c0c3"/>
+<path d="M36 0 V252 M0 36 H252" stroke="#b6c9cc" stroke-width="1.4"/><path d="M72 0 V252 M0 72 H252" stroke="#b6c9cc" stroke-width="1.4"/><path d="M108 0 V252 M0 108 H252" stroke="#b6c9cc" stroke-width="1.4"/><path d="M144 0 V252 M0 144 H252" stroke="#b6c9cc" stroke-width="1.4"/><path d="M180 0 V252 M0 180 H252" stroke="#b6c9cc" stroke-width="1.4"/><path d="M216 0 V252 M0 216 H252" stroke="#b6c9cc" stroke-width="1.4"/>
+<rect x="108" y="72" width="36" height="36" fill="#a9dcda" opacity=".95"/>
+<rect x="76" y="47" width="100" height="137" rx="5" fill="none" stroke="#087f8c" stroke-width="3"/>
+<circle cx="126" cy="115" r="5" fill="#c47b31" stroke="#fff" stroke-width="2"/>
+<path d="M126 115 L126 90" stroke="#c47b31" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="126" y="280" text-anchor="middle" font-size="16" fill="#24414a" font-weight="700">7 × 7 个网格</text>
+</g>
+<g transform="translate(360 46)">
+<text x="0" y="0" font-size="18" font-weight="700" fill="#24414a">单个网格输出 30 个数值</text>
+<rect x="0" y="24" width="500" height="54" rx="9" fill="#e2f0f0" stroke="#8ab8b7"/>
+<g fill="#24535a" font-size="15" text-anchor="middle">
+<text x="48" y="56">x₁</text><text x="96" y="56">y₁</text><text x="144" y="56">w₁</text><text x="192" y="56">h₁</text><text x="240" y="56">C₁</text>
+<text x="292" y="56">x₂</text><text x="340" y="56">y₂</text><text x="388" y="56">w₂</text><text x="436" y="56">h₂</text><text x="484" y="56">C₂</text>
+</g>
+<path d="M0 90 V104 H250 V90 M250 104 H500 V90" stroke="#087f8c" stroke-width="2" fill="none"/>
+<text x="125" y="127" text-anchor="middle" font-size="14" fill="#087f8c">预测框 1：5 个值</text><text x="375" y="127" text-anchor="middle" font-size="14" fill="#087f8c">预测框 2：5 个值</text>
+<rect x="0" y="150" width="500" height="54" rx="9" fill="#fff0df" stroke="#d4a36b"/>
+<text x="250" y="182" text-anchor="middle" font-size="15" fill="#754719">20 个类别条件概率：P(class | object)</text>
+<text x="0" y="240" font-size="15" fill="#24414a">7 × 7 × (2 × 5 + 20) = 7 × 7 × 30</text>
+<text x="0" y="268" font-size="13" fill="#5c737a">全图输出共 1,470 个标量；每格只有一组类别概率。</text>
+</g>
+</svg>
+<figcaption>每个网格预测两个候选框，但类别条件概率只预测一组。这是 YOLOv1 输出结构中最重要、也最容易被忽略的约束。</figcaption>
+</figure>
+<p>每个预测框包含五个数值：中心点偏移 <code>x,y</code>、宽高 <code>w,h</code> 和置信度 <code>confidence</code>。中心点坐标相对于当前网格归一化到 0–1；宽高相对于整张输入图像归一化。一个网格的两个框共享一组 20 类条件概率，因此模型不能在同一个网格内独立表达两个不同类别目标。</p>
+</section>
+<section id="confidence">
+<h2>2. 置信度不是单纯的“物体概率”</h2>
+<p>YOLOv1 将框置信度定义为目标存在概率与预测框和真实框的 IoU 的乘积：</p>
+<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="confidence 等于目标存在概率乘以预测框和真实框的交并比"><mrow><mi>Confidence</mi><mo>=</mo><mi>Pr</mi><mo>(</mo><mi>Object</mi><mo>)</mo><mo>·</mo><mi>IoU</mi><mo>(</mo><mi>box</mi><mo>,</mo><mi>ground truth</mi><mo>)</mo></mrow></math></div>
+<p>若该网格没有目标，置信度目标值为 0；若有目标，负责预测的框以当前预测框和真实框的 IoU 作为置信度目标。推理时，类别条件概率与框置信度相乘，得到类别相关分数：</p>
+<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="类别分数等于类别条件概率乘以框置信度"><mrow><mi>Score</mi><mo>(</mo><mi>class</mi><mo>)</mo><mo>=</mo><mi>Pr</mi><mo>(</mo><mi>class</mi><mo>|</mo><mi>Object</mi><mo>)</mo><mo>·</mo><mi>Confidence</mi></mrow></math></div>
+<p>这让一个框的分数同时反映“是否有目标”“框是否贴合目标”和“目标属于该类别的可能性”。因此，置信度和类别概率不能互换，也不应把 YOLOv1 的置信度解释成现代分类头中的普通 softmax 概率。</p>
+</section>
+<section id="architecture">
+<h2>3. 网络结构：24 个卷积层与两个全连接层</h2>
+<p>YOLOv1 的检测网络包含 24 个卷积层，后接两个全连接层。架构受到 GoogLeNet 启发，交替使用 1×1 降维卷积和 3×3 卷积，但没有直接使用 Inception 模块。卷积层提取整图特征，全连接层将特征映射为固定尺寸的 7×7×30 输出。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>组成</th><th>作用</th><th>论文配置</th></tr></thead>
+<tbody>
+<tr><td>特征预训练</td><td>先学习通用视觉表征</td><td>前 20 个卷积层，在 ImageNet 224×224 上预训练</td></tr>
+<tr><td>检测网络扩展</td><td>增加检测所需的特征变换与预测层</td><td>再加入 4 个卷积层和 2 个全连接层</td></tr>
+<tr><td>检测输入</td><td>提高空间细节</td><td>448×448</td></tr>
+<tr><td>输出头</td><td>生成网格预测张量</td><td>7×7×30（VOC：20 类）</td></tr>
+</tbody></table></div>
+<p>论文还报告了 Fast YOLO：它使用 9 个卷积层和更少的滤波器，目标是把实时速度推到更高。Fast YOLO 与标准 YOLO 的区别是网络规模，而不是输出任务定义。</p>
+</section>
+<section id="loss">
+<h2>4. 损失函数：让框、置信度与类别共同学习</h2>
+<p>YOLOv1 使用平方误差损失，并通过不同权重平衡几类目标。把完整损失按作用拆开，可写成：</p>
+<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="总损失等于加权定位损失、目标置信度损失、加权无目标置信度损失与分类损失之和"><mrow><mi>ℒ</mi><mo>=</mo><msub><mi>λ</mi><mi>coord</mi></msub><msub><mi>ℒ</mi><mi>box</mi></msub><mo>+</mo><msub><mi>ℒ</mi><mi>obj</mi></msub><mo>+</mo><msub><mi>λ</mi><mi>noobj</mi></msub><msub><mi>ℒ</mi><mi>noobj</mi></msub><mo>+</mo><msub><mi>ℒ</mi><mi>class</mi></msub></mrow></math></div>
+<div class="table-wrap"><table>
+<thead><tr><th>损失部分</th><th>计算对象</th><th>设计理由</th></tr></thead>
+<tbody>
+<tr><td>定位损失</td><td>负责预测目标的框之 x、y、√w、√h</td><td>提高坐标误差权重；平方根缓和大框与小框的尺度差异</td></tr>
+<tr><td>目标置信度</td><td>负责框的置信度与 IoU 目标值</td><td>让置信度同时编码存在性和定位质量</td></tr>
+<tr><td>无目标置信度</td><td>没有负责目标的预测框</td><td>降低大量背景网格对梯度的支配</td></tr>
+<tr><td>分类损失</td><td>包含目标的网格的一组类别概率</td><td>只在网格有目标时计算条件分类误差</td></tr>
+</tbody></table></div>
+<p>论文使用 <code>λ_coord = 5</code> 和 <code>λ_noobj = 0.5</code>。在每个包含目标的网格中，两个框预测器里与真实框 IoU 最大的一个被指定为 responsible predictor；只有它承担该目标的定位与正置信度损失。这个动态分配会让不同预测器逐渐形成对不同框形状和尺度的偏好。</p>
+</section>
+<section id="limits">
+<h2>5. 结构约束如何变成模型局限？</h2>
+<ul>
+<li><strong>网格冲突：</strong>一个网格只有一组类别条件概率，多个中心落在同一网格的目标难以同时表示。</li>
+<li><strong>小目标定位：</strong>7×7 的粗粒度责任划分与较低分辨率特征不利于密集小目标。</li>
+<li><strong>定位误差：</strong>全连接层直接回归坐标，没有锚框几何先验约束。</li>
+<li><strong>尺度泛化：</strong>固定网格和输出结构难以覆盖多种尺寸与长宽比的目标。</li>
+</ul>
+<p>这些限制不是“模型没有学好”这么简单，而是由输出空间和责任分配规则直接决定的。理解约束来源，才能判断后续版本的改动到底解决了什么问题。</p>
+</section>
+<section id="results">
+<h2>6. 论文结果：速度优势与定位代价同时存在</h2>
+<p>在 PASCAL VOC 2007 test 上，原论文报告标准 YOLO 达到 63.4 mAP、45 FPS；Fast YOLO 达到 52.7 mAP、155 FPS。作为同一论文的历史实验，这组数字说明了当时单次前向检测的速度潜力，也显示更小网络会牺牲一定精度。它们不是现代硬件上的速度承诺，也不能脱离论文测试配置与 VOC 评估口径比较。</p>
+<div class="callout warning"><strong>不要把历史基准当成今天的选型结论。</strong>模型运行时间会随 GPU、框架、输入尺寸和预处理/NMS 计时边界变化。复现实验时应先锁定论文配置，再在目标设备上独立测量。</div>
+</section>
+<section id="references">
+<h2>参考资料</h2>
+<ol class="references">
+<li>Redmon et al., <a href="https://arxiv.org/abs/1506.02640" target="_blank" rel="noreferrer">You Only Look Once: Unified, Real-Time Object Detection</a>，重点参阅 §2、§2.1、§2.2 与 VOC 2007 实验表。</li>
+<li>论文版本与提交记录：<a href="https://arxiv.org/abs/1506.02640" target="_blank" rel="noreferrer">arXiv:1506.02640</a>（v1 于 2015-06-08 提交；最终版本记录于 2016-05-09）。</li>
+</ol>
+</section>
+</article>
+<nav class="chapter-nav" aria-label="章节切换">
+  <a href="02.html" class="previous"><small>上一章</small><strong>← YOLO 的设计哲学</strong></a>
+  <a href="../index.html" class="chapter-index"><span aria-hidden="true">▦</span> 全部章节</a>
+  <a href="04.html" class="next"><small>下一章</small><strong>YOLOv2 与 YOLO9000 →</strong></a>
+</nav>
+<footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>
+</main>
+</div>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

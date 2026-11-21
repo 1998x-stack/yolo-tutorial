@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "article": "chapters/02.html",
+  "evidence_standard": "Each factual or quantitative anchor is mapped to a primary/official source, precise locator, and verification status.",
+  "claims": [
+    {
+      "id": "02-01",
+      "claim": "YOLO 将整张图像的检测写成单网络的密集回归预测，而非逐个候选区域运行分类器。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§1 Introduction; §2 Unified Detection",
+      "status": "verified",
+      "notes": "论文原始设计目标。"
+    },
+    {
+      "id": "02-02",
+      "claim": "YOLOv1 单次前向预测之后仍可使用置信度阈值与 NMS；NMS 用于抑制重复框。",
+      "kind": "inference",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§2.3 Inference",
+      "status": "verified",
+      "notes": "论文指出 NMS 可处理多个网格对同一目标的重复预测，并报告其 mAP 增益。"
+    },
+    {
+      "id": "02-03",
+      "claim": "两阶段检测器包含候选区域生成与区域分类/回归；Faster R-CNN 使用 RPN 生成候选区域。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1506.01497",
+      "locator": "Region Proposal Network",
+      "status": "verified",
+      "notes": "与 YOLO 单阶段预测的架构差异对照。"
+    },
+    {
+      "id": "02-04",
+      "claim": "YOLOv1 论文报告全图上下文有助于减少背景误报，但定位错误仍是其主要误差来源。",
+      "kind": "interpretation",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§1 Introduction; §2.4 Limitations; §4.2 Error Analysis",
+      "status": "verified",
+      "notes": "不把全局上下文夸大为定位精度保证。"
+    },
+    {
+      "id": "02-05",
+      "claim": "YOLOv1 的 arXiv 首次提交时间为 2015-06-08，论文发表于 CVPR 2016。",
+      "kind": "historical",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "arXiv submission history; bibliographic record",
+      "status": "verified",
+      "notes": "区分预印本提交与会议发表。"
+    },
+    {
+      "id": "02-06",
+      "claim": "YOLO9000 论文于 2016 年提交 arXiv，并发表于 CVPR 2017；YOLOv3 是 2018 技术报告。",
+      "kind": "historical",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "arXiv history; conference publication",
+      "status": "verified",
+      "notes": "YOLOv3 日期依据其技术报告页面。"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "article": "chapters/05.html",
+  "evidence_standard": "Each factual or quantitative anchor is mapped to a primary/official source, precise locator, and verification status.",
+  "claims": [
+    {
+      "id": "05-01",
+      "claim": "Darknet-53 包含 53 个卷积层，使用残差捷径，并作为 YOLOv3 特征提取骨干。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.4 Feature Extractor",
+      "status": "verified",
+      "notes": "架构说明按 YOLOv3 原始技术报告。"
+    },
+    {
+      "id": "05-02",
+      "claim": "YOLOv3 使用三个尺度预测，并通过上采样与较早层特征拼接形成高分辨率预测特征。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.3 Predictions Across Scales",
+      "status": "verified",
+      "notes": "论文称该结构与 FPN 概念相似；页面使用 FPN-inspired 而不声称完全等同于原始 FPN。"
+    },
+    {
+      "id": "05-03",
+      "claim": "COCO 配置每尺度三个框、80 个类别分数与 objectness/box 参数，共 255 个输出通道。",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.3 Predictions Across Scales",
+      "status": "verified",
+      "notes": "3×(4+1+80)=255。"
+    },
+    {
+      "id": "05-04",
+      "claim": "YOLOv3 对每个框使用独立 Logistic 类别预测和 binary cross-entropy，而不是互斥 Softmax。",
+      "kind": "training",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.2 Class Prediction",
+      "status": "verified",
+      "notes": "适合标签可能重叠的多标签场景。"
+    },
+    {
+      "id": "05-05",
+      "claim": "YOLOv3 608×608 在 COCO test-dev 上的 AP/AP50/AP75/AP_S/AP_M/AP_L 为 33.0/57.9/34.4/18.3/35.4/41.9。",
+      "kind": "quantitative",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§3, Table 3",
+      "status": "verified",
+      "notes": "AP 为 COCO IoU 0.50:0.95 指标；AP50、AP75 与尺度 AP 分别报告。"
+    },
+    {
+      "id": "05-06",
+      "claim": "YOLOv3 COCO 大目标 AP_L 应为 41.9，而不是 49.1。",
+      "kind": "correction",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§3, Table 3, YOLOv3 608 row",
+      "status": "verified",
+      "notes": "对照原论文表格核正旧仓库中的数值。"
+    }
+  ]
+}
