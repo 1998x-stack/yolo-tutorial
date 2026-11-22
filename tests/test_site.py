@@ -221,6 +221,40 @@ class SiteStructureTests(unittest.TestCase):
         self.assertIn('src="../assets/nms-demo.js"',content)
         self.assertTrue((ROOT/"assets"/"nms-demo.js").is_file())
 
+    def test_fifth_batch_articles_labs_evidence_and_navigation(self):
+        for i in range(21, 29):
+            num = f"{i:02d}"
+            content, parser = read_page(ROOT / "chapters" / f"{num}.html")
+            self.assertEqual((parser.h1_count, parser.main_count, parser.article_count), (1, 1, 1), num)
+            self.assertGreaterEqual(parser.svg_count, 1, num)
+            self.assertIn(f'data-chapter="{num}" aria-current="page"', content, num)
+            self.assertIn('class="references"', content, num)
+            self.assertIn(f'id="lab-input-{num}"', content, num)
+            self.assertIn(f'id="lab-output-{num}" role="status" aria-live="polite"', content, num)
+            self.assertIn('src="../assets/lab-21-28.js"', content, num)
+            ledger = json.loads((ROOT / "docs" / "evidence" / f"{num}.json").read_text(encoding="utf-8"))
+            self.assertEqual(ledger["article"], f"chapters/{num}.html")
+            self.assertGreaterEqual(len(ledger["claims"]), 6, num)
+            for claim in ledger["claims"]:
+                self.assertTrue(claim.get("source_url"), (num, claim))
+                self.assertTrue(claim.get("locator"), (num, claim))
+                self.assertIn(claim.get("status"), {"verified", "derived", "illustrative", "unverified"})
+
+    def test_fifth_batch_standalone_svgs_match_inline(self):
+        for i in range(21, 29):
+            num = f"{i:02d}"
+            content = (ROOT / "chapters" / f"{num}.html").read_text(encoding="utf-8")
+            svgs = re.findall(r"<svg\b[\s\S]*?</svg>", content, flags=re.IGNORECASE)
+            exported = sorted((ROOT / "assets" / "figures").glob(f"chapter-{num}-*.svg"))
+            self.assertEqual(len(svgs), len(exported), num)
+            for inline, path in zip(svgs, exported):
+                self.assertEqual(inline, path.read_text(encoding="utf-8").strip(), path.name)
+                root = ET.fromstring(path.read_text(encoding="utf-8"))
+                self.assertTrue(root.attrib.get("viewBox"))
+                tags = {node.tag.split("}")[-1] for node in root.iter()}
+                self.assertIn("title", tags)
+                self.assertIn("desc", tags)
+
     def test_corrected_yolov3_large_object_ap_is_present(self):
         content = (ROOT / "chapters" / "05.html").read_text(encoding="utf-8")
         self.assertIn("41.9", content)

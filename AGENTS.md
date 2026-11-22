@@ -34,7 +34,7 @@ Every chapter is an independent article. A reader arriving from search, a bookma
 
 ## Repository conventions
 
-- Canonical chapter pages live in `chapters/NN.html`. Chapters 01–20 have been rewritten and reviewed as of 2026-11-22; 21–28 still need deep editorial/technical review.
+- Canonical chapter pages live in `chapters/NN.html`. Chapters 01–20 were rewritten and reviewed as of 2026-11-22; 21–28 were rebuilt to the same self-contained article contract (shell, SVG figure, accessible MathML, local interactive lab, evidence ledger).
 - Root `NN.html` files are compatibility redirects; do not author chapter content there.
 - `courses.json` is the structured course catalogue; keep all 28 entries and their `file` paths in sync.
 - `index.html` is a static, file://-compatible course home. Do not make initial rendering depend on fetch().
