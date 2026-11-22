@@ -17,7 +17,7 @@
 <section class="home-hero">
   <p class="hero-kicker">COMPUTER VISION / OBJECT DETECTION</p>
   <h1>从一张图像，<br>到可靠的目标检测系统。</h1>
-  <p>沿着检测任务、YOLO 架构、训练策略、评估协议与部署工程逐步建立完整知识体系。课程围绕具体问题组织内容。前 10 章已经按照独立文章标准重构，并配套原始文献、图解与实验工具；其余章节将继续分批审计。</p>
+  <p>沿着检测任务、YOLO 架构、训练策略、评估协议与部署工程逐步建立完整知识体系。课程围绕具体问题组织内容。前 15 章已按独立文章标准重构，并配套原始文献、图解与实验工具；其余章节将继续分批审计。</p>
   <div class="hero-actions">
     <a class="hero-primary" href="chapters/01.html">从第 01 章开始 <span aria-hidden="true">→</span></a>
     <a class="hero-secondary" href="#course-map">浏览全部 28 章</a>
@@ -26,8 +26,8 @@
 <section class="home-stats" aria-label="课程概况">
   <div class="stat"><strong>28</strong><span>课程章节</span></div>
   <div class="stat"><strong>5</strong><span>学习阶段</span></div>
-  <div class="stat"><strong>3</strong><span>早期架构里程碑</span></div>
-  <div class="stat"><strong>01</strong><span>从原理到部署的完整路径</span></div>
+  <div class="stat"><strong>15</strong><span>已深度重构的章节</span></div>
+  <div class="stat"><strong>16</strong><span>独立可读的 SVG 机制图</span></div>
 </section>
 <section class="home-section" aria-labelledby="roadmap-title">
   <div class="section-heading"><div><h2 id="roadmap-title">学习路线</h2><p>先理解检测任务，再看架构如何解决具体限制，最后把模型放进真实数据和硬件环境。</p></div></div>
@@ -90,23 +90,23 @@
 <a class="chapter-card" href="chapters/10.html" data-stage="architecture" data-search="10 特征金字塔 FPN 横向连接与上采样 · Add vs Concat · PANet / BiFPN · 张量形状检查">
   <span class="card-number">CHAPTER 10</span><strong>特征金字塔 FPN</strong><small>横向连接与上采样 · Add vs Concat · PANet / BiFPN · 张量形状检查</small>
 </a>
-<a class="chapter-card" href="chapters/11.html" data-stage="architecture" data-search="11 数据增强策略 Mosaic增强 · MixUp与CutMix · SAT自对抗训练 · 增强流水线推荐">
-  <span class="card-number">CHAPTER 11</span><strong>数据增强策略</strong><small>Mosaic增强 · MixUp与CutMix · SAT自对抗训练 · 增强流水线推荐</small>
+<a class="chapter-card" href="chapters/11.html" data-stage="architecture" data-search="11 数据增强策略 翻转裁剪与标签同步 · Mosaic 几何拼接 · MixUp / CutMix / Copy-Paste · SAT 与消融协议">
+  <span class="card-number">CHAPTER 11</span><strong>数据增强策略</strong><small>翻转裁剪与标签同步 · Mosaic 几何拼接 · MixUp / CutMix / Copy-Paste · SAT 与消融协议</small>
 </a>
-<a class="chapter-card" href="chapters/12.html" data-stage="architecture" data-search="12 骨干网络对比 Darknet→CSPDarknet · EfficientRep架构 · C2f模块设计 · GELAN骨干">
-  <span class="card-number">CHAPTER 12</span><strong>骨干网络对比</strong><small>Darknet→CSPDarknet · EfficientRep架构 · C2f模块设计 · GELAN骨干</small>
+<a class="chapter-card" href="chapters/12.html" data-stage="architecture" data-search="12 骨干网络与计算效率 Darknet-19 / Darknet-53 · CSP 分流与梯度路径 · EfficientRep 重参数化 · C2f / GELAN">
+  <span class="card-number">CHAPTER 12</span><strong>骨干网络与计算效率</strong><small>Darknet-19 / Darknet-53 · CSP 分流与梯度路径 · EfficientRep 重参数化 · C2f / GELAN</small>
 </a>
-<a class="chapter-card" href="chapters/13.html" data-stage="architecture" data-search="13 Neck与Head设计 SPP/SPPF模块 · PANet路径聚合 · 解耦头设计 · TaskAlignedAssigner">
-  <span class="card-number">CHAPTER 13</span><strong>Neck与Head设计</strong><small>SPP/SPPF模块 · PANet路径聚合 · 解耦头设计 · TaskAlignedAssigner</small>
+<a class="chapter-card" href="chapters/13.html" data-stage="architecture" data-search="13 Neck 与 Head 设计 SPP / SPPF 池化等价 · FPN / PAN 融合 · 解耦检测头 · TaskAlignedAssigner">
+  <span class="card-number">CHAPTER 13</span><strong>Neck 与 Head 设计</strong><small>SPP / SPPF 池化等价 · FPN / PAN 融合 · 解耦检测头 · TaskAlignedAssigner</small>
 </a>
-<a class="chapter-card" href="chapters/14.html" data-stage="architecture" data-search="14 NMS与后处理 NMS原理与实现 · Soft-NMS · DIoU-NMS · NMS-free训练">
-  <span class="card-number">CHAPTER 14</span><strong>NMS与后处理</strong><small>NMS原理与实现 · Soft-NMS · DIoU-NMS · NMS-free训练</small>
+<a class="chapter-card" href="chapters/14.html" data-stage="architecture" data-search="14 NMS 与后处理 Hard NMS 交互实验 · Soft-NMS / DIoU-NMS · Weighted Boxes Fusion · YOLOv10 NMS-Free">
+  <span class="card-number">CHAPTER 14</span><strong>NMS 与后处理</strong><small>Hard NMS 交互实验 · Soft-NMS / DIoU-NMS · Weighted Boxes Fusion · YOLOv10 NMS-Free</small>
 </a></div>
 </section>
 <section class="chapter-group" id="stage-ultralytics" data-stage="ultralytics">
 <h3>03 · 现代 YOLO 架构 <span>15–18 · 4 篇</span></h3>
-<div class="chapter-grid"><a class="chapter-card" href="chapters/15.html" data-stage="ultralytics" data-search="15 YOLOv5入门 Ultralytics生态 · CSPDarknet+SPPF · Anchor自动学习 · ONNX/TensorRT导出">
-  <span class="card-number">CHAPTER 15</span><strong>YOLOv5入门</strong><small>Ultralytics生态 · CSPDarknet+SPPF · Anchor自动学习 · ONNX/TensorRT导出</small>
+<div class="chapter-grid"><a class="chapter-card" href="chapters/15.html" data-stage="ultralytics" data-search="15 YOLOv5 v7.0 实战 C3 / SPPF / PAN-style · 经典 Anchor Decode · AutoAnchor 与数据审计 · 训练 / 验证 / ONNX 导出">
+  <span class="card-number">CHAPTER 15</span><strong>YOLOv5 v7.0 实战</strong><small>C3 / SPPF / PAN-style · 经典 Anchor Decode · AutoAnchor 与数据审计 · 训练 / 验证 / ONNX 导出</small>
 </a>
 <a class="chapter-card" href="chapters/16.html" data-stage="ultralytics" data-search="16 YOLOv8新特性 Anchor-free检测 · C2f模块 · 解耦头与DFL · 多任务统一框架">
   <span class="card-number">CHAPTER 16</span><strong>YOLOv8新特性</strong><small>Anchor-free检测 · C2f模块 · 解耦头与DFL · 多任务统一框架</small>
@@ -159,7 +159,7 @@
 <section class="home-section">
   <div class="home-note">
     <h3>建议的学习方式</h3>
-    <p>先读章节中的问题定义和结构图，再核对公式、张量尺寸与训练/推理流程。阅读实验结果时，务必同时检查数据集版本、评估指标、输入分辨率和硬件配置。01–10 章已完成重构和技术证据审计；11–28 章保留现有内容，尚未完成逐篇技术复核。</p>
+    <p>先读章节中的问题定义和结构图，再核对公式、张量尺寸与训练/推理流程。阅读实验结果时，务必同时检查数据集版本、评估指标、输入分辨率和硬件配置。01–15 章已完成独立文章重构与逐篇证据审计；16–28 章仍待深入技术复核。</p>
   </div>
 </section>
 <footer class="home-footer"><span>YOLO 目标检测教程 · 中文技术学习资料</span><span>静态 HTML · 可通过本地 HTTP 服务离线学习</span></footer>

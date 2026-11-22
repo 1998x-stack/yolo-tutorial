@@ -1,301 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第14章 NMS与后处理 — YOLO教程</title>
-    <link rel="stylesheet" href="../assets/theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="模型输出的数千个候选框往往指向同一个物体。NMS 以类别、分数、IoU 和明确的排序规则去重；Soft-NMS、DIoU-NMS 与 NMS-Free 则改变不同的环节。">
+<title>第 14 章｜NMS 与后处理：从重复候选框到可靠检测列表 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
 </head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🤖 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 目标检测概述</a></li>
-            <li><a href="02.html">第2章 YOLO设计哲学</a></li>
-            <li><a href="03.html">第3章 YOLOv1详解</a></li>
-            <li><a href="04.html">第4章 YOLOv2/YOLO9000</a></li>
-            <li><a href="05.html">第5章 YOLOv3核心架构</a></li>
-            <li><a href="06.html">第6章 YOLOv3工程实战</a></li>
-            <li><a href="07.html">第7章 YOLOv4集大成</a></li>
-            <li><a href="08.html">第8章 锚框机制与聚类</a></li>
-            <li><a href="09.html">第9章 损失函数演进</a></li>
-            <li><a href="10.html">第10章 特征金字塔FPN</a></li>
-            <li><a href="11.html">第11章 数据增强策略</a></li>
-            <li><a href="12.html">第12章 骨干网络对比</a></li>
-            <li><a href="13.html">第13章 Neck与Head设计</a></li>
-            <li><a href="14.html" class="active">第14章 NMS与后处理</a></li>
-            <li><a href="15.html">第15章 YOLOv5入门</a></li>
-            <li><a href="16.html">第16章 YOLOv8新特性</a></li>
-            <li><a href="17.html">第17章 YOLOv9/v10前沿</a></li>
-            <li><a href="18.html">第18章 YOLO11/v12演进</a></li>
-            <li><a href="19.html">第19章 模型轻量化</a></li>
-            <li><a href="20.html">第20章 小目标检测优化</a></li>
-            <li><a href="21.html">第21章 部署与推理加速</a></li>
-            <li><a href="22.html">第22章 边缘设备部署</a></li>
-            <li><a href="23.html">第23章 数据标注与格式</a></li>
-            <li><a href="24.html">第24章 训练流水线搭建</a></li>
-            <li><a href="25.html">第25章 模型评估与调优</a></li>
-            <li><a href="26.html">第26章 YOLO+多模态</a></li>
-            <li><a href="27.html">第27章 行业实战案例</a></li>
-            <li><a href="28.html">第28章 综合实训项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
 
-<h2>第14章 NMS与后处理</h2>
-
-<p>大家好，我是你们的讲师。NMS这个看似简单的小步骤，却常常成为部署时最容易被忽视的性能瓶颈。你可能调试了半天模型精度，最后发现问题出在后处理的参数设置上。从原始的贪心NMS到Soft-NMS再到DIoU-NMS，每一次改进都在解决"如何去掉冗余框"这个问题。</p>
-
-<p>目标检测模型在推理时，会输出大量冗余的预测框——一个物体可能被几十个框同时命中。后处理的任务就是：从这些候选框中筛选出最终的、最精确的检测结果。</p>
-
-<h2>14.1 NMS的基本算法</h2>
-
-<p>NMS（Non-Maximum Suppression，非极大值抑制）是最经典的后处理方法。它的核心思想很简单：对于同一类别的重叠框，只保留得分最高的那个。</p>
-
-<p>标准NMS的算法流程：</p>
-
-<pre><code>def nms(boxes, scores, iou_threshold=0.5):
-    """Non-Maximum Suppression"""
-    # boxes: (N, 4) 格式为 [x1, y1, x2, y2]
-    # scores: (N,) 每个框的得分
-
-    # 按得分降序排序
-    indices = np.argsort(scores)[::-1]
-    keep = []
-
-    while len(indices) > 0:
-        # 保留当前得分最高的框
-        i = indices[0]
-        keep.append(i)
-
-        # 计算其余框与当前框的IoU
-        ious = compute_iou(boxes[i], boxes[indices[1:]])
-
-        # 保留IoU小于阈值的框（抑制高重叠的框）
-        mask = ious < iou_threshold
-        indices = indices[1:][mask]
-
-    return keep</code></pre>
-
-<p>这个算法的时间复杂度是O(N²)，其中N是预测框的数量。对于大部分场景，N=几千到几万个，NMS的开销并不大。但在某些特殊场景——比如密集人群检测，一个图像中可能有数千个目标，NMS的时间就会显著增加。</p>
-
-<table>
-    <tr>
-        <th>NMS变体</th>
-        <th>核心机制</th>
-        <th>抑制策略</th>
-        <th>适用场景</th>
-    </tr>
-    <tr>
-        <td>贪心NMS</td>
-        <td>IoU > 阈值 → 直接丢弃</td>
-        <td>硬抑制</td>
-        <td>稀疏场景</td>
-    </tr>
-    <tr>
-        <td>Soft-NMS</td>
-        <td>IoU 越高 → 得分衰减越大</td>
-        <td>软抑制（线性/高斯）</td>
-        <td>密集人群、遮挡场景</td>
-    </tr>
-    <tr>
-        <td>DIoU-NMS</td>
-        <td>中心点距离 + IoU 联合判据</td>
-        <td>硬抑制（改进判据）</td>
-        <td>遮挡严重场景</td>
-    </tr>
-    <tr>
-        <td>Weighted NMS</td>
-        <td>多个框加权融合为一个</td>
-        <td>融合替代抑制</td>
-        <td>高精度需求场景</td>
-    </tr>
-    <tr>
-        <td>NMS-free（v10）</td>
-        <td>训练时消除冗余预测</td>
-        <td>无NMS</td>
-        <td>实时性极高场景</td>
-    </tr>
-</table>
-
-<h2>14.2 Soft-NMS</h2>
-
-<p>标准NMS有一个严重的问题：如果两个真实物体靠得非常近，它们的检测框会有很高的IoU。标准NMS会将得分较低的那个直接丢弃，导致漏检。</p>
-
-<p>Soft-NMS的解决方案是：<strong>不要直接删除，而是降低得分</strong>。具体来说，当两个框的IoU很高时，不是将低分框丢弃，而是将其得分乘以一个衰减系数：</p>
-
-<pre><code>def soft_nms(boxes, scores, sigma=0.5, score_threshold=0.001):
-    """Soft-NMS: 高斯衰减"""
-    indices = np.argsort(scores)[::-1]
-    keep = []
-
-    while len(indices) > 0:
-        i = indices[0]
-        keep.append(i)
-
-        # 计算其余框与当前框的IoU
-        ious = compute_iou(boxes[i], boxes[indices[1:]])
-
-        # 高斯衰减：得分 *= exp(-IoU² / σ)
-        scores[indices[1:]] *= np.exp(-ious ** 2 / sigma)
-
-        # 移除得分低于阈值的框
-        mask = scores[indices[1:]] > score_threshold
-        indices = indices[1:][mask]
-
-    return keep</code></pre>
-
-<div class="tip">
-    <strong>Soft-NMS的实际效果：</strong> 在COCO数据集上，Soft-NMS相比标准NMS可以提升0.5-1.0%的AP，特别是在AP_S（小物体）和AP_M（中物体）指标上提升更明显。更重要的是，Soft-NMS几乎不需要额外的计算开销——它只是修改了抑制策略，没有改变算法结构。对于大多数场景，高斯Soft-NMS（σ=0.5）是一个安全且有效的默认选择。
+<aside class="sidebar" aria-label="课程导航"><a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a><p class="sidebar-label">ARCHITECTURE / TRAINING · 01—15</p><nav><ol class="chapter-list"><li><a href="01.html" data-chapter="01"><span>01</span>检测概述</a></li><li><a href="02.html" data-chapter="02"><span>02</span>YOLO 哲学</a></li><li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1</a></li><li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 / 9000</a></li><li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3 架构</a></li><li><a href="06.html" data-chapter="06"><span>06</span>YOLOv3 工程</a></li><li><a href="07.html" data-chapter="07"><span>07</span>YOLOv4</a></li><li><a href="08.html" data-chapter="08"><span>08</span>锚框与聚类</a></li><li><a href="09.html" data-chapter="09"><span>09</span>检测损失</a></li><li><a href="10.html" data-chapter="10"><span>10</span>特征金字塔</a></li><li><a href="11.html" data-chapter="11"><span>11</span>数据增强</a></li><li><a href="12.html" data-chapter="12"><span>12</span>骨干网络</a></li><li><a href="13.html" data-chapter="13"><span>13</span>Neck 与 Head</a></li><li><a href="14.html" data-chapter="14" aria-current="page"><span>14</span>NMS 与后处理</a></li><li><a href="15.html" data-chapter="15"><span>15</span>YOLOv5</a></li></ol></nav><a class="all-chapters" href="../index.html">查看全部 28 章 ↗</a></aside>
+<main id="main" class="main-content">
+<article class="article"><header class="article-header"><p class="eyebrow">POSTPROCESSING <span>／</span> CHAPTER 14</p><h1>NMS 与后处理：从重复候选框到可靠检测列表</h1><p class="article-dek">模型输出的数千个候选框往往指向同一个物体。NMS 以类别、分数、IoU 和明确的排序规则去重；Soft-NMS、DIoU-NMS 与 NMS-Free 则改变不同的环节。</p></header>
+<section id="motivation"><h2>1. 为什么前向推理完成后仍然需要后处理</h2>
+<p>密集检测器对一幅图像的多个网格位置和不同尺度输出框。靠近一个真实目标的位置可能得到几个相似的高分预测：它们并不是“模型检测出了五个不同目标”，而是同一个目标有多个候选表示。Non-Maximum Suppression（NMS）在同一类别的候选中优先保留高分框，再抑制与它重叠太多的低分框，形成更紧凑的检测列表。</p>
+<p>必须先分清<strong>分类/置信度阈值</strong>和<strong>NMS IoU 阈值</strong>：前者决定低分候选是否进场，后者决定两个框是否被当成重复。NMS IoU 阈值越低，去重通常越激进；阈值越高，更多相似框可能同时保留。NMS 并不是可微分的框回归损失，也不是模型训练时的正样本匹配器。</p>
+<figure class="diagram" tabindex="0" aria-label="三个相邻预测框的逐类别 NMS">
+<svg viewBox="0 0 900 330" role="img" aria-labelledby="c14a-title c14a-desc" xmlns="http://www.w3.org/2000/svg"><title id="c14a-title">NMS 在重叠框之间保留最高分候选</title><desc id="c14a-desc">A 与 B 均是同一类别且重叠严重，NMS 在默认阈值0.5时保留分数0.95的A并抑制0.88的B；另一目标C不重叠，另一类别的D可在逐类抑制中保留。</desc>
+<rect x="8" y="8" width="884" height="314" rx="18" fill="#f6fafb"/>
+<g fill="#24414a" font-size="17" font-weight="700" text-anchor="middle"><text x="208" y="41">NMS 前（四个候选）</text><text x="698" y="41">逐类别 NMS 后</text></g>
+<g transform="translate(38 73)"><rect width="356" height="200" rx="12" fill="#e6eff1" stroke="#afc5ca"/><rect x="39" y="40" width="120" height="116" fill="#087f8c" fill-opacity=".12" stroke="#087f8c" stroke-width="4"/><rect x="53" y="52" width="120" height="116" fill="none" stroke="#c47b31" stroke-width="4" stroke-dasharray="6 5"/><rect x="233" y="35" width="98" height="124" fill="none" stroke="#6c5b91" stroke-width="4"/><rect x="43" y="44" width="120" height="116" fill="none" stroke="#327f59" stroke-width="3" stroke-dasharray="2 6"/><g font-size="13" fill="#24414a"><text x="42" y="29">A: cat .95</text><text x="147" y="182">B: cat .88</text><text x="230" y="27">C: cat .72</text><text x="22" y="191">D: dog .80</text></g></g>
+<path d="M405 171 H489 M478 162 L489 171 L478 180" fill="none" stroke="#087f8c" stroke-width="3"/>
+<g transform="translate(503 73)"><rect width="356" height="200" rx="12" fill="#e6eff1" stroke="#afc5ca"/><rect x="39" y="40" width="120" height="116" fill="#087f8c" fill-opacity=".12" stroke="#087f8c" stroke-width="4"/><rect x="233" y="35" width="98" height="124" fill="none" stroke="#6c5b91" stroke-width="4"/><rect x="43" y="44" width="120" height="116" fill="none" stroke="#327f59" stroke-width="3" stroke-dasharray="2 6"/><g font-size="13" fill="#24414a"><text x="42" y="29">A: cat .95</text><text x="230" y="27">C: cat .72</text><text x="22" y="191">D: dog .80</text></g></g>
+<text x="452" y="307" text-anchor="middle" fill="#5b7379" font-size="14">A/B 同类 IoU≈0.681，阈值 0.5 时 B 被抑制；跨类 D 按类别单独处理</text>
+</svg><figcaption>使用明确的 class-aware NMS 语义：A、B 同类且重叠严重，B 被删；D 属于另一类别，即使与 A 高重叠也不能因为跨类别竞争被误删。</figcaption></figure></section>
+<section id="hard"><h2>2. Hard NMS 的贪心循环与手算结果</h2>
+<p>流程是：① 按类别分组；② 在一组内按 score 从高到低排序；③ 保留最高分框 M；④ 计算其他同类框与 M 的 IoU，抑制 <code>IoU &gt; t</code> 的候选；⑤ 对剩余框重复，直到空集或满足 <code>max_det</code> 限制。不同库可能使用 <code>≥</code> 而不是 <code>&gt;</code>，以及不同的相同分数排序规则；需要记录这些细节才能逐条复现。</p>
+<p>用连续坐标框 A=<code>(40,40,140,140)</code>、B=<code>(50,50,150,150)</code>，交面积是 <code>90×90=8100</code>，两框面积各 <code>10000</code>，并集为 <code>11900</code>，所以 IoU 为 <code>8100/11900≈0.680672</code>。当阈值 t=0.5，A 的分数 .95 较高，因此 A 保留而 B 抑制。另一框 C 与 A/B 不相交，仍可保留；若另一个类的框 D 恰好覆盖 A，<strong>逐类别</strong> NMS 仍应保留 D。</p>
+<div class="equation" tabindex="0" role="region" aria-label="IoU 几何计算与硬 NMS 条件，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="重叠交并比是八千一百除以一万一千九百，约零点六八零六七二"><mrow><mi>IoU</mi><mo>(</mo><mi>A</mi><mo>,</mo><mi>B</mi><mo>)</mo><mo>=</mo><mfrac><mn>8100</mn><mn>11900</mn></mfrac><mo>≈</mo><mn>0.680672</mn></mrow></math></div>
+<pre><code>python -m labs.nms_reference
+# hard class-wise NMS (IoU threshold=0.5)
+# A(cat), D(dog), C(cat) 保留；B(cat) 被抑制
+# soft-linear 会降低 B 的分数，但不一定完全删除
+# 坐标约定 xyxy，无“+1像素”面积约定</code></pre><p>本仓库的 <a href="../labs/nms_reference.py">纯 Python 参考实现</a> 支持按类别的 Hard NMS 与 Soft-NMS；它显式处理空输入、非法框、负分数、相同分数排序和分数阈值。它不是 CUDA/TensorRT 生产环境中的性能优化内核。</p></section>
+<section id="interactive"><h2>3. 亲自改变 IoU 阈值：多留下一个框会发生什么？</h2>
+<p>下面保持四个候选框的位置与分数不变，调整 NMS 阈值与算法。图中的默认阈值 0.50；当阈值升到 0.80，A/B 的重叠低于阈值，Hard NMS 应同时保留两个同类候选。</p>
+<div class="callout info">
+<label for="nms-threshold">NMS IoU 阈值：<output id="nms-threshold-value">0.50</output></label>
+<input id="nms-threshold" type="range" min="0.20" max="0.90" step="0.05" value="0.50" style="width:min(100%,350px);display:block;margin:12px 0;">
+<label for="nms-mode">抑制方式</label>
+<select id="nms-mode" style="margin:8px 0 0 12px;padding:7px 11px;border:1px solid #a5c6c5;border-radius:8px"><option value="hard">Hard NMS</option><option value="soft">Soft-NMS（linear）</option></select>
+<p><output id="nms-demo-output" aria-live="polite">Hard NMS: 保留 A(cat)、D(dog)、C(cat)；B(cat) 被抑制。</output></p>
 </div>
-
-<h2>14.3 DIoU-NMS</h2>
-
-<p>DIoU-NMS是YOLOv4中引入的一种改进NMS。它的核心思想改变了抑制判据：标准NMS使用IoU来决定是否抑制，而DIoU-NMS使用<strong>DIoU度量</strong>作为判据。</p>
-
-<p>DIoU度量的计算公式我们已经不陌生了：</p>
-
-<pre><code>DIoU = IoU - ρ²(center1, center2) / c²
-
-其中 ρ 是两个中心点的欧氏距离，
-c 是同时包含两个框的最小外接矩形的对角线长度。</code></pre>
-
-<p>DIoU-NMS的抑制判据为：</p>
-
-<pre><code>if DIoU(M, B_i) >= iou_threshold:
-    抑制 B_i
-else:
-    保留 B_i</code></pre>
-
-<p>当两个框的中心点距离较远时，即使它们的IoU很大，DIoU-NMS也不会抑制它们。这对于密集场景特别有效——想象一下停在一起的自行车，每个自行车的框之间IoU很高，但中心点距离是不同的，DIoU-NMS会正确保留它们。</p>
-
-<div class="highlight">
-    <strong>什么时候用DIoU-NMS？</strong> 如果你的检测场景中存在大量密集排列的同类物体（如停车场中的车辆、货架上的商品、人群中的行人），DIoU-NMS通常比标准NMS好。在YOLOv4的实验中，DIoU-NMS相比普通NMS在COCO上AP提升了约0.8%，AP_S提升了约1.3%。
+<p>Soft-NMS 在 IoU 超阈值时不直接丢弃 B，而是降低它的分数：<code>0.88 × (1−0.680672) ≈ 0.2810</code>。在本示例指定的最低分数 0.25 下，B 仍能保留；如果最低分数改为 0.30，就被过滤。这说明<strong>Soft-NMS 的输出由重叠阈值、衰减函数与最低得分阈值共同决定</strong>。</p></section>
+<section id="soft"><h2>4. Soft-NMS、DIoU-NMS 与融合框：到底改变哪一步</h2>
+<p><strong>Soft-NMS</strong>（Bodla et al., ICCV 2017）保留“选择最高分框”的主循环，但将重叠候选的分数降低而不是直接删除。常见有线性衰减与高斯衰减；高斯形式中的 σ 与保留分数阈值都需要具体指定。与“修改 IoU 定义”不同，Soft-NMS 主要改动的是<strong>更新分数的方式</strong>。</p>
+<div class="equation" tabindex="0" role="region" aria-label="Soft-NMS linear 和 Gaussian 得分衰减公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="线性 Soft-NMS 在交并比超过阈值时将分数乘以一减交并比；高斯 Soft-NMS 将分数乘以负 IoU 平方除以 sigma 的指数"><mtable columnalign="left"><mtr><mtd><msup><mi>s</mi><mo>′</mo></msup><mo>=</mo><mi>s</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>IoU</mi><mo>)</mo><mo>,</mo><mspace width="0.6em"/><mi>IoU</mi><mo>&gt;</mo><mi>t</mi></mtd></mtr><mtr><mtd><msup><mi>s</mi><mo>′</mo></msup><mo>=</mo><mi>s</mi><msup><mi>e</mi><mrow><mo>−</mo><mfrac><msup><mi>IoU</mi><mn>2</mn></msup><mi>σ</mi></mfrac></mrow></msup><mspace width="0.6em"/><mtext>（Gaussian）</mtext></mtd></mtr></mtable></math></div>
+<p><strong>DIoU-NMS</strong> 根据边界框的重叠和中心距离调整相似度/抑制依据，关注密集目标中“框有重叠但中心较远”的情形。但它的定义和适用场景必须参考 Zheng 等人的 <a href="https://arxiv.org/abs/1911.08287">DIoU 工作</a>，不能说成只是“把 NMS 的 IoU 数值提高”。</p>
+<p><strong>Weighted Boxes Fusion（WBF）</strong> 则对多个检测结果的高相似框按分数合并坐标，常用于模型集成或测试时增强；这与 Soft-NMS 的分数衰减机制不是一回事。它也要求输入预测经过正确的图像逆变换、类别对齐和置信度处理，否则平均坐标没有物理意义。</p>
+<div class="table-wrap"><table><thead><tr><th>方法</th><th>主要修改</th><th>何时考虑</th><th>代价与风险</th></tr></thead><tbody><tr><td>Hard NMS</td><td>高重叠同类框直接丢弃</td><td>通用实时检测基线</td><td>遮挡/密集目标可能误抑制</td></tr><tr><td>Soft-NMS</td><td>分数按重叠程度衰减</td><td>重叠真实目标较多</td><td>结果受 score floor 与 σ 影响</td></tr><tr><td>DIoU-NMS</td><td>引入中心距离判据</td><td>高重叠但中心分离的候选</td><td>实现与超参数需单独核验</td></tr><tr><td>WBF</td><td>按分数融合多个框坐标</td><td>集成/多尺度测试输出融合</td><td>依赖对齐与置信度校准</td></tr></tbody></table></div></section>
+<section id="nmsfree"><h2>5. YOLOv10 的 NMS-Free 不等于“关闭 NMS”</h2>
+<p>直接关闭一个普通 YOLO 的 NMS，往往只会暴露许多重复的高分预测。<a href="https://arxiv.org/abs/2405.14458">YOLOv10</a> 从训练机制上重新设计检测：通过<strong>consistent dual assignments</strong> 将 one-to-many 分配用于丰富的训练监督、one-to-one 分配用于鼓励模型输出接近最终一目标一预测的结果，部署时选择 one-to-one 分支以减少对传统 NMS 的依赖。</p>
+<p>这不是说 YOLOv10 所有训练分支都没有重复，也不是说“模型内部什么后处理都不存在”。模型具体预处理、解码、score 过滤和最大候选数仍需参考部署实现。对 NMS-Free 的正确验证是：测量最终推理路径是否确实不调用传统 NMS，以及模型输出在相同标注/评价协议下是否兼顾准确率与延迟。</p></section>
+<section id="production"><h2>6. 可复现的后处理配置应写明什么</h2>
+<p>为每次部署记录：原始模型版本、解码方式、score 组成（objectness×class 或模型专用质量分数）、confidence threshold、NMS IoU threshold、class-aware 还是 class-agnostic、top-k/max_det、padding 逆变换、数值精度与是否包含 NMS 时间。分辨率和设备固定时，再看 AP50/AP75、密集场景误抑制和整体延迟。</p>
+<p>如果两个真实目标本来重叠很高，降低 NMS 阈值通常可能<strong>伤害召回率</strong>；但提高阈值也可能增加重复检测误报。必须用与业务一致的数据集找到平衡点，不应将 t=0.45 或 0.7 描述为所有模型与任务都适用的“最佳阈值”。</p></section>
+<section id="references"><h2>参考文献</h2><ol class="references"><li>Bodla et al., <a href="https://openaccess.thecvf.com/content_iccv_2017/html/Bodla_Soft-NMS_--_Improving_ICCV_2017_paper.html">Soft-NMS—Improving Object Detection With One Line of Code</a>，ICCV 2017。</li><li>Zheng et al., <a href="https://arxiv.org/abs/1911.08287">Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression</a>，DIoU-NMS。</li><li>Solovyev et al., <a href="https://arxiv.org/abs/1910.13302">Weighted Boxes Fusion</a>，模型输出融合。</li><li>Wang et al., <a href="https://arxiv.org/abs/2405.14458">YOLOv10: Real-Time End-to-End Object Detection</a>，NeurIPS 2024，consistent dual assignments。</li></ol></section></article>
+<nav class="chapter-nav" aria-label="章节切换"><a href="13.html" class="previous"><small>上一章</small><strong>← Neck 与 Head</strong></a><a href="../index.html" class="chapter-index">全部章节</a><a href="15.html" class="next"><small>下一章</small><strong>YOLOv5 入门 →</strong></a></nav>
+<footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>
+</main>
 </div>
-
-<h2>14.4 加权框聚类</h2>
-
-<p>上述NMS变体的共同问题是：它们只<strong>选择</strong>了一个框，抛弃了其他所有框。但直觉告诉我们，多个高质量的预测框应该能"综合"出一个更好的结果。加权框聚类（Weighted Box Clustering, WBC）正是基于这个思路。</p>
-
-<pre><code>def weighted_box_clustering(boxes, scores, iou_threshold=0.5):
-    """通过加权平均融合多个框"""
-    # 1. 按得分排序
-    order = np.argsort(scores)[::-1]
-    boxes = boxes[order]
-    scores = scores[order]
-
-    keep = []
-    used = set()
-
-    for i in range(len(boxes)):
-        if i in used:
-            continue
-
-        cluster = [i]
-        for j in range(i + 1, len(boxes)):
-            if j in used:
-                continue
-            iou = compute_iou(boxes[i], boxes[j])
-            if iou > iou_threshold:
-                cluster.append(j)
-                used.add(j)
-
-        # 对当前簇进行加权融合
-        cluster_boxes = boxes[cluster]   # (k, 4)
-        cluster_scores = scores[cluster] # (k,)
-
-        # 加权平均：得分作为权重
-        weights = cluster_scores / cluster_scores.sum()
-        fused_box = (cluster_boxes * weights[:, None]).sum(axis=0)
-
-        keep.append(fused_box)
-
-    return np.array(keep)</code></pre>
-
-<p>WBC的优势在于：它生成的边界框比任何单个预测框都更精确，因为它综合了多个高分的预测。缺点是计算量略大，且需要额外处理得分过低的情况。</p>
-
-<h2>14.5 YOLOv10的NMS-Free训练</h2>
-
-<p>YOLOv10迈出了一大步：它完全去掉NMS。这个看似激进的决策背后，是一个精妙的设计——<strong>一致双分配</strong>（Consistent Dual Assignments）。</p>
-
-<p>YOLOv10在训练时使用两套标签分配策略：</p>
-<ul>
-    <li><strong>一对多分配：</strong> 一个ground truth匹配多个预测框（与标准YOLO相同），用于提供丰富的梯度信号</li>
-    <li><strong>一对一分配：</strong> 一个ground truth只匹配一个预测框（匈牙利算法），让每个物体只输出一个预测</li>
-</ul>
-
-<p>这种双分配策略，让模型在训练时既获得了足够的监督信号（一对多），又学会了"一个物体只输出一个最佳框"的行为模式（一对一）。推理时只需要使用一对一的分支，每个物体只产出一个预测，自然无需NMS。</p>
-
-<p>NMS-free设计带来了显著的优势：推理pipeline大幅简化，延迟降低了10-20%（NMS虽然不贵，但在某些场景下仍占推理时间的5-10%）。更重要的是，模型的输出是确定性的一对一映射，不会出现"一个物体多个框"的歧义。</p>
-
-<div class="warning">
-    <strong>踩坑实录：NMS的IoU阈值调优。</strong> 在一个工业缺陷检测项目中，我使用YOLOv5默认的NMS IOU阈值0.5，结果发现某些小缺陷被重复检测了5-6次，而某些真正的缺陷却被抑制了。后来通过逐个图片分析发现：缺陷的宽高比非常极端（1:10的细长裂纹），导致裂纹之间的IoU计算很特殊——位置相近但中心偏移大的裂纹IoU反而小。最终将IoU阈值从0.5调整到0.3，并启用了Soft-NMS（σ=0.3），检测精度从0.68提升到了0.82。NMS参数调优是最容易被忽视的优化手段之一。
-</div>
-
-<h2>14.6 实用NMS配置建议</h2>
-
-<p>以下是针对不同场景的后处理参数推荐：</p>
-
-<table>
-    <tr>
-        <th>场景</th>
-        <th>推荐方法</th>
-        <th>IoU阈值</th>
-        <th>置信度阈值</th>
-        <th>说明</th>
-    </tr>
-    <tr>
-        <td>通用检测</td>
-        <td>标准NMS</td>
-        <td>0.5</td>
-        <td>0.25</td>
-        <td>COCO默认参数，安全选择</td>
-    </tr>
-    <tr>
-        <td>密集人群/车辆</td>
-        <td>DIoU-NMS</td>
-        <td>0.4-0.5</td>
-        <td>0.3</td>
-        <td>避免遮挡导致的漏检</td>
-    </tr>
-    <tr>
-        <td>小目标检测</td>
-        <td>Soft-NMS（高斯）</td>
-        <td>0.3-0.4</td>
-        <td>0.1-0.15</td>
-        <td>小物体得分通常偏低，降低阈值</td>
-    </tr>
-    <tr>
-        <td>工业质检</td>
-        <td>Weighted NMS</td>
-        <td>0.3-0.5</td>
-        <td>0.4</td>
-        <td>高精度需求，宁可漏检不要误检</td>
-    </tr>
-    <tr>
-        <td>实时边缘部署</td>
-        <td>NMS-Free（v10）</td>
-        <td>N/A</td>
-        <td>0.3</td>
-        <td>消除NMS延迟</td>
-    </tr>
-</table>
-
-<h2>14.7 总结</h2>
-
-<p>NMS和后处理是目标检测推理管线的"最后一公里"。从标准的贪心NMS到Soft-NMS、DIoU-NMS、加权聚类，再到YOLOv10的NMS-free，每一次改进都在回答同一个问题：如何在保留正确预测的同时去除冗余。值得记住的是，后处理的参数（IoU阈值、置信度阈值、NMS方法）是模型部署调试中最容易被忽略、却最容易出效果的优化方向。</p>
-
-<p>至此，我们已经完成了YOLO系列核心技术的全面学习——从设计哲学到基础架构，从锚框机制到损失函数，从特征金字塔到数据增强，从骨干网络到后处理。下一章开始，我们将进入具体版本的实践学习，从<strong>YOLOv5</strong>入手，看看这个最广泛使用的版本是如何把这些技术落地的。</p>
-
-        <div class="footer-nav">
-            <a href="13.html">← 上一章</a>
-            <a href="../index.html">📖 返回目录</a>
-            <a href="15.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
+<script src="../assets/site.js" defer></script>
+<script src="../assets/nms-demo.js" defer></script>
 </body>
 </html>

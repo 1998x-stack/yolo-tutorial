@@ -15,7 +15,7 @@
 </header>
 <div class="page-shell">
 
-<aside class="sidebar" aria-label="课程导航"><a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a><p class="sidebar-label">FOUNDATION / METHODS · 01—10</p><nav><ol class="chapter-list"><li><a href="01.html" data-chapter="01" aria-current="page"><span>01</span>目标检测概述</a></li><li><a href="02.html" data-chapter="02"><span>02</span>YOLO 设计哲学</a></li><li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1 统一回归</a></li><li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 / YOLO9000</a></li><li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3 多尺度架构</a></li><li><a href="06.html" data-chapter="06"><span>06</span>YOLOv3 工程实战</a></li><li><a href="07.html" data-chapter="07"><span>07</span>YOLOv4 系统设计</a></li><li><a href="08.html" data-chapter="08"><span>08</span>锚框机制与聚类</a></li><li><a href="09.html" data-chapter="09"><span>09</span>损失函数演进</a></li><li><a href="10.html" data-chapter="10"><span>10</span>特征金字塔 FPN</a></li></ol></nav><a class="all-chapters" href="../index.html">查看全部 28 章 ↗</a></aside>
+<aside class="sidebar" aria-label="课程导航"><a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a><p class="sidebar-label">ARCHITECTURE / TRAINING · 01—15</p><nav><ol class="chapter-list"><li><a href="01.html" data-chapter="01" aria-current="page"><span>01</span>检测概述</a></li><li><a href="02.html" data-chapter="02"><span>02</span>YOLO 哲学</a></li><li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1</a></li><li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 / 9000</a></li><li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3 架构</a></li><li><a href="06.html" data-chapter="06"><span>06</span>YOLOv3 工程</a></li><li><a href="07.html" data-chapter="07"><span>07</span>YOLOv4</a></li><li><a href="08.html" data-chapter="08"><span>08</span>锚框与聚类</a></li><li><a href="09.html" data-chapter="09"><span>09</span>检测损失</a></li><li><a href="10.html" data-chapter="10"><span>10</span>特征金字塔</a></li><li><a href="11.html" data-chapter="11"><span>11</span>数据增强</a></li><li><a href="12.html" data-chapter="12"><span>12</span>骨干网络</a></li><li><a href="13.html" data-chapter="13"><span>13</span>Neck 与 Head</a></li><li><a href="14.html" data-chapter="14"><span>14</span>NMS 与后处理</a></li><li><a href="15.html" data-chapter="15"><span>15</span>YOLOv5</a></li></ol></nav><a class="all-chapters" href="../index.html">查看全部 28 章 ↗</a></aside>
 <main id="main" class="main-content">
 <article class="article">
 <header class="article-header">
@@ -27,7 +27,7 @@
 <section id="task">
 <h2>1. 一张图像，需要回答三个问题</h2>
 <p>给定一张街景图像，计算机视觉系统至少可能承担三种不同任务：判断整张图像属于什么类别、找出每个目标的位置，或者为每个像素分配语义标签。它们共享图像特征，却要求模型输出不同粒度的信息。</p>
-<figure class="diagram">
+<figure class="diagram" tabindex="0" aria-label="结构图，可在窄屏左右滚动查看">
 <svg viewBox="0 0 900 300" role="img" aria-labelledby="det-title det-desc" xmlns="http://www.w3.org/2000/svg">
 <title id="det-title">分类、目标检测与分割的输出差异</title><desc id="det-desc">同一张街景图像分别产生整图标签、带类别的边界框，以及像素级分割区域。</desc>
 <rect x="8" y="8" width="884" height="284" rx="18" fill="#f6fafb"/>

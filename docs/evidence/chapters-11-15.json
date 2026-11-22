@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "batch_id": "2026-11-22-yolo-11-15",
+  "method": "Olah-style progressive independent articles; primary-source evidence; deterministic offline labs; Chromium verification in CI.",
+  "scope": [
+    "chapters/11.html",
+    "chapters/12.html",
+    "chapters/13.html",
+    "chapters/14.html",
+    "chapters/15.html"
+  ],
+  "evidence_files": [
+    "docs/evidence/11.json",
+    "docs/evidence/12.json",
+    "docs/evidence/13.json",
+    "docs/evidence/14.json",
+    "docs/evidence/15.json"
+  ],
+  "original_svg_exports": [
+    "assets/figures/chapter-11-01.svg",
+    "assets/figures/chapter-11-02.svg",
+    "assets/figures/chapter-12-01.svg",
+    "assets/figures/chapter-12-02.svg",
+    "assets/figures/chapter-13-01.svg",
+    "assets/figures/chapter-13-02.svg",
+    "assets/figures/chapter-14-01.svg",
+    "assets/figures/chapter-15-01.svg"
+  ],
+  "reproducible_labs": [
+    "labs/augmentation_geometry.py",
+    "labs/backbone_cost.py",
+    "labs/neck_head_contract.py",
+    "labs/nms_reference.py",
+    "labs/yolov5_contract.py"
+  ],
+  "assertions": [
+    {
+      "id": "augmentation",
+      "expected": "flip x=(W-x2,W-x1); crop translate + visible fraction; no degenerate boxes"
+    },
+    {
+      "id": "rep",
+      "expected": "3x3+1x1+identity without BN/nonlinearity is algebraically foldable; exact same-padding numeric comparison"
+    },
+    {
+      "id": "sppf",
+      "expected": "three sequential 5x5 stride-one max pools equal parallel direct 5/9/13 max pools under matched padding"
+    },
+    {
+      "id": "nms",
+      "expected": "IoU(A,B)=8100/11900; class-aware hard keeps A,D,C at 0.5; soft retains decayed B at score floor 0.25"
+    },
+    {
+      "id": "yolov5-v7",
+      "expected": "640px three-scale raw candidates=25200; zero logits at grid(4,6), stride32, anchor(116,90) decode xywh=(144,208,116,90)"
+    }
+  ],
+  "caveats": [
+    "No training/model-accuracy reproduction or paid hardware benchmark performed.",
+    "No third-party model weights or masks copied.",
+    "YOLOv5 code pinned to the upstream v7.0 tag; current package YOLOv5u is not equivalent.",
+    "Code labs are intentionally small deterministic correctness checks, not production numerical kernels."
+  ],
+  "release": {
+    "github_pr": null,
+    "main_commit": null,
+    "quality_status": "pending",
+    "pages_status": "pending"
+  }
+}

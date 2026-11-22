@@ -1,270 +1,107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第15章 YOLOv5入门 — YOLO教程</title>
-    <link rel="stylesheet" href="../assets/theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="以 Ultralytics YOLOv5 v7.0 的经典 anchor-based 检测版为固定对象，解释 C3/SPPF/PAN-style、Detect 解码、AutoAnchor、数据 YAML、训练与独立验证，并提供数据标签审计器。">
+<title>第 15 章｜YOLOv5：从模型配置到可复现的训练、评估与导出 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
 </head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🤖 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 目标检测概述</a></li>
-            <li><a href="02.html">第2章 YOLO设计哲学</a></li>
-            <li><a href="03.html">第3章 YOLOv1详解</a></li>
-            <li><a href="04.html">第4章 YOLOv2/YOLO9000</a></li>
-            <li><a href="05.html">第5章 YOLOv3核心架构</a></li>
-            <li><a href="06.html">第6章 YOLOv3工程实战</a></li>
-            <li><a href="07.html">第7章 YOLOv4集大成</a></li>
-            <li><a href="08.html">第8章 锚框机制与聚类</a></li>
-            <li><a href="09.html">第9章 损失函数演进</a></li>
-            <li><a href="10.html">第10章 特征金字塔FPN</a></li>
-            <li><a href="11.html">第11章 数据增强策略</a></li>
-            <li><a href="12.html">第12章 骨干网络对比</a></li>
-            <li><a href="13.html">第13章 Neck与Head设计</a></li>
-            <li><a href="14.html">第14章 NMS与后处理</a></li>
-            <li><a href="15.html" class="active">第15章 YOLOv5入门</a></li>
-            <li><a href="16.html">第16章 YOLOv8新特性</a></li>
-            <li><a href="17.html">第17章 YOLOv9/v10前沿</a></li>
-            <li><a href="18.html">第18章 YOLO11/v12演进</a></li>
-            <li><a href="19.html">第19章 模型轻量化</a></li>
-            <li><a href="20.html">第20章 小目标检测优化</a></li>
-            <li><a href="21.html">第21章 部署与推理加速</a></li>
-            <li><a href="22.html">第22章 边缘设备部署</a></li>
-            <li><a href="23.html">第23章 数据标注与格式</a></li>
-            <li><a href="24.html">第24章 训练流水线搭建</a></li>
-            <li><a href="25.html">第25章 模型评估与调优</a></li>
-            <li><a href="26.html">第26章 YOLO+多模态</a></li>
-            <li><a href="27.html">第27章 行业实战案例</a></li>
-            <li><a href="28.html">第28章 综合实训项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第15章 YOLOv5入门</h2>
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
 
-        <p>大家好，我是你们的讲师。YOLOv5可能是整个YOLO家族里争议最大的版本——没有正式的学术论文、名字从2020年6月出现就充满营销意味，以至于学术界一度拒绝承认它是"真正的YOLO"。但恰恰是这样一个"名不正言不顺"的版本，用实践证明了工程化的力量：一个好用、文档齐全、生态完善的代码库，比一篇顶会论文更能改变行业生态。到今天，YOLOv5的GitHub star数超过50K，工业部署的覆盖率远超任何一篇检测论文。这一章我们就来深入解剖这个"非典型"YOLO版本。</p>
+<aside class="sidebar" aria-label="课程导航"><a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a><p class="sidebar-label">ARCHITECTURE / TRAINING · 01—15</p><nav><ol class="chapter-list"><li><a href="01.html" data-chapter="01"><span>01</span>检测概述</a></li><li><a href="02.html" data-chapter="02"><span>02</span>YOLO 哲学</a></li><li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1</a></li><li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 / 9000</a></li><li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3 架构</a></li><li><a href="06.html" data-chapter="06"><span>06</span>YOLOv3 工程</a></li><li><a href="07.html" data-chapter="07"><span>07</span>YOLOv4</a></li><li><a href="08.html" data-chapter="08"><span>08</span>锚框与聚类</a></li><li><a href="09.html" data-chapter="09"><span>09</span>检测损失</a></li><li><a href="10.html" data-chapter="10"><span>10</span>特征金字塔</a></li><li><a href="11.html" data-chapter="11"><span>11</span>数据增强</a></li><li><a href="12.html" data-chapter="12"><span>12</span>骨干网络</a></li><li><a href="13.html" data-chapter="13"><span>13</span>Neck 与 Head</a></li><li><a href="14.html" data-chapter="14"><span>14</span>NMS 与后处理</a></li><li><a href="15.html" data-chapter="15" aria-current="page"><span>15</span>YOLOv5</a></li></ol></nav><a class="all-chapters" href="../index.html">查看全部 28 章 ↗</a></aside>
+<main id="main" class="main-content">
+<article class="article"><header class="article-header"><p class="eyebrow">IMPLEMENTATION / TRAINING <span>／</span> CHAPTER 15</p><h1>YOLOv5：从模型配置到可复现的训练、评估与导出</h1><p class="article-dek">以 Ultralytics YOLOv5 v7.0 的经典 anchor-based 检测版为固定对象，解释 C3/SPPF/PAN-style、Detect 解码、AutoAnchor、数据 YAML、训练与独立验证，并提供数据标签审计器。</p></header>
+<section id="version"><h2>1. 首先指定版本：YOLOv5 不是一个永远固定的网络</h2>
+<p><strong>YOLOv5</strong> 由 Ultralytics 团队在 2020 年起以开源实现的形式持续迭代，不是 YOLOv1–v3 原作者 Redmon 论文系列的又一篇同作者论文。在科研复核中，描述 YOLOv5 的核心证据应优先指向<strong>具体 Git tag、YAML 配置与训练/推理源码</strong>，而不是假定存在一个唯一的“YOLOv5 2020 原始论文”。</p>
+<p>本文固定观察对象为 <a href="https://github.com/ultralytics/yolov5/tree/v7.0">Ultralytics/yolov5 v7.0</a> 的<strong>目标检测</strong>路径（该版本于 2022 年 11 月发布，仓库还支持其他任务）。此版的常见 YOLOv5s 基于 C3/部分 CSP 结构、SPPF 和 PAN-style Neck，使用经典 anchor-based Detect Head。后来 Ultralytics 软件生态中还出现了 YOLOv5u 这种 anchor-free 解耦 Head 变体，不能把新变体的训练损失和输出形状套到 v7.0。</p>
+<figure class="diagram" tabindex="0" aria-label="YOLOv5 v7.0 经典检测结构图">
+<svg viewBox="0 0 900 320" role="img" aria-labelledby="c15a-title c15a-desc" xmlns="http://www.w3.org/2000/svg"><title id="c15a-title">YOLOv5s v7.0 的 C3、SPPF、PAN式 Neck 和三尺度锚框检测</title><desc id="c15a-desc">输入640乘640依次经过C3特征骨干和SPPF模块，再经过自顶向下与自底向上的PAN式跨层拼接，最终在80、40和20网格输出经典三锚框Detect预测。</desc>
+<rect x="8" y="8" width="884" height="304" rx="18" fill="#f6fafb"/>
+<g text-anchor="middle" fill="#24414a" font-size="16" font-weight="700"><text x="139" y="39">Backbone</text><text x="426" y="39">Neck</text><text x="730" y="39">Detect Head</text></g>
+<g fill="#dcebed" stroke="#83b4b4"><rect x="22" y="68" width="230" height="80" rx="12"/><rect x="22" y="163" width="230" height="80" rx="12"/></g>
+<g text-anchor="middle" fill="#24414a" font-size="15"><text x="137" y="97">Conv + C3</text><text x="137" y="119">分层 C3/C4/C5</text><text x="137" y="194">SPPF</text><text x="137" y="217">5×5 max pool ×3</text></g>
+<g fill="#e3f3ef" stroke="#83b4b0"><rect x="313" y="68" width="221" height="80" rx="12"/><rect x="313" y="163" width="221" height="80" rx="12"/></g>
+<g text-anchor="middle" fill="#24535a" font-size="15"><text x="424" y="97">Top-down</text><text x="424" y="119">Upsample + Concat</text><text x="424" y="193">Bottom-up</text><text x="424" y="216">Downsample + Concat</text></g>
+<g fill="#fff0df" stroke="#d8ae79"><rect x="602" y="61" width="242" height="58" rx="10"/><rect x="602" y="134" width="242" height="58" rx="10"/><rect x="602" y="207" width="242" height="58" rx="10"/></g>
+<g text-anchor="middle" fill="#754719" font-size="14"><text x="723" y="85">P3: 80×80，stride 8</text><text x="723" y="103">每格 3 个 anchors</text><text x="723" y="157">P4: 40×40，stride 16</text><text x="723" y="175">每格 3 个 anchors</text><text x="723" y="230">P5: 20×20，stride 32</text><text x="723" y="248">每格 3 个 anchors</text></g>
+<g fill="none" stroke="#087f8c" stroke-width="3"><path d="M255 108 H310 M138 150 V160 M256 204 H310 M537 109 H576 V90 H598 M537 109 H576 V163 H598 M537 204 H576 V236 H598"/></g>
+<text x="450" y="298" text-anchor="middle" font-size="13" fill="#5b7379">640×640 为例子，具体 C3 重复次数、通道与锚框值由 v7.0 模型 YAML 控制</text>
+</svg><figcaption>这是一张模型层级概念图，不是逐层复刻所有 YAML 节点。经典 v7.0 检测 Head 包含三个不同步长和每格多个 anchor 的预测。</figcaption></figure></section>
+<section id="detect"><h2>2. 读懂 Detect Head：输出张量与坐标解码</h2>
+<p>经典 YOLOv5 的 anchor-based Head 对每个检测尺度输出一组按网格、anchor 和通道排列的预测。若一张图有 <code>C=2</code> 类，每个网格有 <code>A=3</code> 个锚框，那么预测通道数 <code>A×(5+C)=21</code>。在 640×640 输入下，各尺度候选数分别为 <code>80²×3=19200</code>、<code>40²×3=4800</code>、<code>20²×3=1200</code>，合计 <strong>25,200</strong> 个原始候选。它们不是最终的 25,200 次检测，仍需要分数筛选与 NMS。</p>
+<div class="equation" tabindex="0" role="region" aria-label="三尺度 YOLOv5 原始候选数公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="经典YOLOv5三尺度候选数等于三乘八十平方、四十平方和二十平方之和，结果为二万五千二百"><mrow><mi>N</mi><mo>=</mo><mn>3</mn><mo>(</mo><msup><mn>80</mn><mn>2</mn></msup><mo>+</mo><msup><mn>40</mn><mn>2</mn></msup><mo>+</mo><msup><mn>20</mn><mn>2</mn></msup><mo>)</mo><mo>=</mo><mn>25200</mn></mrow></math></div>
+<p>与原始 YOLOv3 <code>sigmoid(tx)+grid</code>、<code>exp(tw)×anchor</code> 的写法相比，v7.0 YOLOv5 的经典推理解码使用扩展中心偏移及平方化宽高：</p>
+<div class="equation" tabindex="0" role="region" aria-label="YOLOv5 v7经典锚框中心和宽高的解码公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="中心点等于二倍sigmoid减去零点五加网格索引再乘以步长，宽高等于二倍sigmoid平方乘以锚框像素宽高"><mtable columnalign="left">
+<mtr><mtd><msub><mi>b</mi><mi>xy</mi></msub><mo>=</mo><mo>(</mo><mn>2</mn><mi>σ</mi><mo>(</mo><msub><mi>t</mi><mi>xy</mi></msub><mo>)</mo><mo>−</mo><mn>0.5</mn><mo>+</mo><mi>g</mi><mo>)</mo><mo>×</mo><mi>stride</mi></mtd></mtr>
+<mtr><mtd><msub><mi>b</mi><mi>wh</mi></msub><mo>=</mo><msup><mrow><mo>(</mo><mn>2</mn><mi>σ</mi><mo>(</mo><msub><mi>t</mi><mi>wh</mi></msub><mo>)</mo><mo>)</mo></mrow><mn>2</mn></msup><mo>×</mo><mi>anchor</mi></mtd></mtr>
+</mtable></math></div>
+<p>式中 <code>g</code> 是二维网格索引，stride 是输入像素相对于特征图单元的步长，<code>anchor</code> 在此必须使用与最终输出一致的像素单位。训练中的内部参数化、自动锚框校正和推理时的网格偏置应以对应 <a href="https://github.com/ultralytics/yolov5/blob/v7.0/models/yolo.py">v7.0 models/yolo.py</a> 为准。对来自较新 anchor-free YOLOv5u 的权重，不能套用这个解码器。</p>
+<pre><code># 本仓库只计算经典 v7.0 的几何解码与候选数
+python -m labs.yolov5_contract
+# 输入 logit=(0,0,0,0)、grid=(4,6)、stride=32、anchor=(116,90)
+# 解码中心=(144,208)，宽高=(116,90) 像素
+# 这不是完整 YOLOv5 前向、训练或 NMS。</code></pre><p><a href="../labs/yolov5_contract.py">形状与解码契约</a>提供了一组确定性边界检查，不会加载 PyTorch 或第三方模型权重。</p></section>
+<section id="data"><h2>3. 数据集：YAML 只是索引，真正的监督在每个 .txt 文件</h2>
+<p>YOLOv5 常用的检测数据结构包含 <code>images/train</code>、<code>images/val</code> 与对应的 <code>labels/train</code>、<code>labels/val</code>。每个文本标签行写成 <code>class_id cx cy w h</code>，坐标按图像宽高归一化，类别编号从 0 开始。如果只有两类，所有 class_id 只能是 0 或 1，且必须让 YAML 中的 <code>names</code> 与标注顺序完全一致。</p>
+<pre><code># data/parts.yaml（请使用真实、已授权的数据路径）
+path: /absolute/path/to/parts-dataset
+train: images/train
+val: images/val
+nc: 2
+names: [bolt, nut]
 
-        <h3>15.1 YOLOv5的诞生与争议</h3>
+# labels/train/example.txt
+0 0.5 0.5 0.25 0.3
+1 0.2 0.7 0.1 0.15</code></pre>
+<p>上面的两个框都满足 <code>0&lt;w,h≤1</code> 且 <code>x±w/2, y±h/2</code> 在 <code>[0,1]</code> 内。然而，“语法合法”仍不代表真实标注正确；必须把框画回原图核对物体，审查无标注负样本是否真的没有目标，并按视频/拍摄批次进行防泄漏划分。</p>
+<pre><code># 无第三方依赖：审计本地标签目录，不需要加载图像
+python -m labs.yolov5_contract --labels /path/to/labels/train --classes 2
+# 报告：检查文件数、有效对象数和非法行详细位置
+# 本脚本不读取 dataset.yaml，不能代替完整数据集/图像交叉检查。</code></pre><p>可复现训练还需要保存数据划分清单、类名映射、采集场景和数据版本，不应只记录一个可变的路径名。</p></section>
+<section id="train"><h2>4. 用固定的 YOLOv5 v7.0 源码运行训练</h2>
+<p>YOLOv5 v7.0 的检测任务通常通过根目录的 <code>train.py</code>、<code>val.py</code>、<code>detect.py</code>、<code>export.py</code> 脚本运行。以下是一个<strong>准备和调用示例</strong>，不是本仓库已执行的训练；机器必须安装与 CUDA/CPU 环境兼容的 PyTorch、其余依赖、合法数据集与可获得的权重。</p>
+<pre><code>git clone --branch v7.0 --depth 1 https://github.com/ultralytics/yolov5.git
+cd yolov5
+python -m pip install -r requirements.txt
 
-        <p>故事的起点是2020年6月，Ultralytics公司的Glenn Jocher在GitHub上发布了一个基于PyTorch的YOLO实现，命名为YOLOv5。当时YOLOv4刚刚发布两个月，作者Alexey Bochkovskiy和原版YOLO作者Joseph Redmon都没有参与。YOLOv5没有arXiv论文，只有一个readme文件和一份技术报告——这在崇尚论文发表的计算机视觉社区里几乎是不可接受的。</p>
+# 从 COCO 预训练的 YOLOv5s 检测权重开始微调；权重会按原仓库逻辑下载
+python train.py --imgsz 640 --batch-size 16 --epochs 100 \
+  --data /absolute/path/to/parts.yaml --weights yolov5s.pt \
+  --project runs/train --name parts-v7-baseline
 
-        <p>争议的核心在于：<strong>YOLOv5到底配不配叫"v5"？</strong>从学术角度说，YOLOv5并没有提出实质性的新算法创新——它的骨干网络CSPDarknet来自YOLOv4的改进，PANet来自2018年的论文，损失函数沿用了CIoU。但这些"旧模块"经过Ultralytics的工程优化后，在速度-精度曲线上确实全面超越了YOLOv4。它更像是YOLOv4的一个高性能PyTorch重实现，而不是学术意义上的新版本。</p>
+# 训练后的独立验证。此处的 val 不是外部测试集！
+python val.py --weights runs/train/parts-v7-baseline/weights/best.pt \
+  --data /absolute/path/to/parts.yaml --imgsz 640
 
-        <p>但是，从今天的视角回看，YOLOv5的真正价值不在学术创新，而在<strong>工程生态</strong>。它提供了第一套真正对开发者友好的YOLO工具箱：简洁的CLI接口、统一的数据集YAML格式、一键训练/验证/导出、丰富的预训练模型库。这些在2020年的目标检测领域几乎是革命性的——在此之前，跑通一个YOLO训练需要手动配置几十个参数、处理各种路径问题、写一堆脚本。YOLOv5的出现，让目标检测的门槛从"计算机视觉研究员"降到了"会Python的工程师"。</p>
+# 在一张真实图像上推理，保存框与分数
+python detect.py --weights runs/train/parts-v7-baseline/weights/best.pt \
+  --source /absolute/path/to/demo.jpg --imgsz 640</code></pre>
+<p>正式项目应进一步锁定 Git commit、Python 和 PyTorch 版本、CUDA、随机种子、精度模式、训练/验证划分、超参文件、模型 YAML、类别表和权重哈希。训练输出目录不应由每次自动自增名称隐式决定，建议明确给出 project/name 并记录日志。若训练目标是可解释的技术审计，先用小样本检查标签、批次构造和 loss 是否合理，随后再花长时间完整训练。</p></section>
+<section id="anchors"><h2>5. AutoAnchor 与部署导出：别跳过中间的版本契约</h2>
+<p>经典 YOLOv5 使用锚框集合，对目标宽高先验的覆盖度有要求。<strong>AutoAnchor</strong> 是训练侧检查/优化先验的流程，可能计算最佳匹配的召回覆盖度并在不合理时建议或更新参考框。但它不是每次 inference 动态重新计算 anchors，也不保证“重新聚类就提升 AP”。检查聚类结果还需结合三检测尺度的正样本分布和统一的验证指标。</p>
+<p>部署到 ONNX 时，v7.0 提供 <code>export.py</code> 的导出接口，仍需检查推理输出究竟是解码前的原始张量、解码后的候选，还是包含 NMS 的端到端结果。不同 <code>--include</code>、算子集、部署后端可能影响格式，不能仅因为文件扩展名是 <code>.onnx</code> 就假设输出可直接画框。</p>
+<pre><code>python export.py --weights runs/train/parts-v7-baseline/weights/best.pt \
+  --include onnx --imgsz 640
 
-        <div class="highlight">
-            <p><strong>历史注记</strong>：YOLOv5的名称争议在2020-2021年非常激烈。有趣的是，我接触的很多工业界工程师并不在意这个命名争议——他们只需要一个能用的工具。而YOLOv5恰好提供了这一点。后来Ultralytics在YOLOv8中完全证明了他们的工程实力，回过头来看，YOLOv5更像是Ultralytics对整个目标检测工程化的宣言书。</p>
-        </div>
-
-        <h3>15.2 核心架构：CSPDarknet + SPPF + PANet</h3>
-
-        <p>YOLOv5的架构可以拆解为三个核心组件：backbone（CSPDarknet）、neck（SPPF + PANet）和head（YOLO detection head）。这个架构组合并非YOLOv5原创，但它在每个组件上都做了精细的工程优化。</p>
-
-        <p><strong>CSPDarknet骨干网络</strong>。YOLOv5使用CSPDarknet作为特征提取器。与YOLOv4中的CSPDarknet53相比，YOLOv5引入了多项改进：使用SiLU（Swish）激活函数替代Leaky ReLU，在训练收敛性和梯度流动上更优；Focus层作为stem结构，将输入图像先做4倍下采样切片拼接再通过卷积，在减少计算量的同时保留了空间信息（这一层在后续版本中被替换为常规卷积）；CSP（Cross Stage Partial）连接在每个阶段都拆分通道、分别处理再融合，有效降低了计算量。</p>
-
-        <p><strong>SPPF（Spatial Pyramid Pooling - Fast）</strong>。SPPF是SPP的简化版本，使用三个串联的5×5最大池化层替代原来的并行多尺度池化。这个改动有什么好处？串联结构的计算复杂度从O(k²)降到O(k)，在保持相同感受野的前提下大幅提升了速度。以640×640输入为例，SPPF比原版SPP快了2倍以上。</p>
-
-        <p><strong>PANet（Path Aggregation Network）</strong>。YOLOv5沿用YOLOv4中的PANet结构进行多尺度特征融合。PANet在传统FPN的基础上增加了一条自底向上的路径，让低层的精确位置信息能够直接传递到高层语义特征中。YOLOv5的PANet实现做了一项关键优化：在特征融合路径上使用卷积替代了上采样/下采样中的插值操作，减少了信息损失。</p>
-
-        <pre><code># YOLOv5模型配置文件（yolov5l.yaml）核心结构
-# 结构清晰，每个模块可配置
-backbone:
-  # [from, number, module, args]
-  [[-1, 1, Conv, [64, 6, 2, 2]],     # 0-P1/2
-   [-1, 1, Conv, [128, 3, 2]],       # 1-P2/4
-   [-1, 3, C3, [128]],               # 2
-   [-1, 1, Conv, [256, 3, 2]],       # 3-P3/8
-   [-1, 6, C3, [256]],               # 4
-   [-1, 1, Conv, [512, 3, 2]],       # 5-P4/16
-   [-1, 9, C3, [512]],               # 6
-   [-1, 1, Conv, [1024, 3, 2]],      # 7-P5/32
-   [-1, 3, C3, [1024]],              # 8
-   [-1, 1, SPPF, [1024, 5]],         # 9
-  ]
-
-head:
-  [[-1, 1, Conv, [512, 1, 1]],       # 10
-   [-1, 1, nn.Upsample, [None, 2, 'nearest']],
-   [[-1, 6], 1, Concat, [1]],        # 12 cat backbone P4
-   [-1, 3, C3, [512, False]],        # 13
-   ...</code></pre>
-
-        <h3>15.3 锚框自动学习</h3>
-
-        <p>YOLOv5有一项很实用的设计：<strong>锚框自动学习</strong>。传统的YOLO版本（v1-v4）需要用户在训练前手动设置锚框尺寸——通常是基于经验或者用独立脚本做k-means聚类。但YOLOv5将这个流程集成到了训练过程中。</p>
-
-        <p>具体做法是：在训练开始时，YOLOv5会读取你的训练数据集，对标注框做k-means聚类（k=9，对应3个检测尺度×3个锚框），自动计算出最适合当前数据集的锚框尺寸。整个计算过程使用scikit-learn的KMeans实现，数据格式为归一化的wh对。这个自动化的好处是：不管你检测的是行人（细长框）还是卫星图像中的油罐（近似正方形），YOLOv5都能自动适配锚框。</p>
-
-        <div class="tip">
-            <p><strong>实战建议</strong>：虽然YOLOv5支持自动锚框学习，但如果你发现训练早期的定位损失（box_loss）下降异常缓慢，可以手动检查一下锚框的匹配率。在训练日志中搜索"anchors/target"，后面的数字表示当前锚框与标注框的匹配率——通常应该在70%以上。如果低于这个值，说明锚框尺寸明显不匹配，可以考虑手动指定锚框或者在训练脚本中增加<code>--noautoanchor</code>参数来禁用自动学习。</p>
-        </div>
-
-        <p>锚框的计算源码非常简洁，这里展示核心逻辑：</p>
-
-        <pre><code># YOLOv5锚框自动学习的简化实现
-from sklearn.cluster import KMeans
-import numpy as np
-
-def autoanchor(labels, n_anchors=9):
-    """对标注框进行k-means聚类，生成锚框尺寸"""
-    # 提取所有标注框的宽度和高度
-    wh = []
-    for label in labels:
-        for box in label:
-            w, h = box[3], box[4]  # 归一化宽高
-            if w * h > 1e-6:       # 过滤无效框
-                wh.append([w, h])
-    wh = np.array(wh)
-
-    # k-means聚类
-    kmeans = KMeans(n_clusters=n_anchors, random_state=0).fit(wh)
-    anchors = kmeans.cluster_centers_
-
-    # 按面积排序
-    anchors = sorted(anchors, key=lambda x: x[0] * x[1])
-    return np.array(anchors)</code></pre>
-
-        <h3>15.4 模型变体家族</h3>
-
-        <p>YOLOv5推出了一个完整的模型变体系列，从nano到xlarge覆盖了从边缘设备到云端服务器的全场景需求。这个"按需选择"的生态设计后来成了Ultralytics家族的标配。</p>
-
-        <table>
-            <tr>
-                <th>模型</th>
-                <th>参数量</th>
-                <th>FLOPs (G)</th>
-                <th>输入尺寸</th>
-                <th>mAP@0.5:0.95</th>
-                <th>T4延迟 (ms)</th>
-                <th>适用场景</th>
-            </tr>
-            <tr>
-                <td>YOLOv5n</td>
-                <td>1.9M</td>
-                <td>4.5</td>
-                <td>640</td>
-                <td>28.0%</td>
-                <td>6.3</td>
-                <td>手机/边缘设备</td>
-            </tr>
-            <tr>
-                <td>YOLOv5s</td>
-                <td>7.2M</td>
-                <td>16.5</td>
-                <td>640</td>
-                <td>37.4%</td>
-                <td>6.4</td>
-                <td>嵌入式/轻量部署</td>
-            </tr>
-            <tr>
-                <td>YOLOv5m</td>
-                <td>21.2M</td>
-                <td>49.0</td>
-                <td>640</td>
-                <td>45.4%</td>
-                <td>8.2</td>
-                <td>通用场景</td>
-            </tr>
-            <tr>
-                <td>YOLOv5l</td>
-                <td>46.5M</td>
-                <td>109.1</td>
-                <td>640</td>
-                <td>49.0%</td>
-                <td>10.1</td>
-                <td>高精度场景</td>
-            </tr>
-            <tr>
-                <td>YOLOv5x</td>
-                <td>86.7M</td>
-                <td>205.7</td>
-                <td>640</td>
-                <td>50.7%</td>
-                <td>12.1</td>
-                <td>最佳精度</td>
-            </tr>
-        </table>
-
-        <p>为什么要设计这么多变体？核心原因是<strong>算力与精度的权衡曲线不是线性的</strong>。从nano到xlarge，参数量增加了45倍，但mAP只提升了不到23个百分点。对于大多数工业场景，YOLOv5s或YOLOv5m提供了最佳性价比——在有限的算力预算下获得接近最优的检测精度。</p>
-
-        <div class="warning">
-            <p><strong>踩坑案例</strong>：我见过一个团队在产品化阶段直接选用了YOLOv5x做推理，理由是"精度最高"。结果部署到客户的边缘服务器上，单帧推理需要45ms，加上预处理和后处理，整体延迟超过60ms，完全达不到30FPS的实时要求。后来换了YOLOv5s配合TensorRT加速，精度只降了3个点，延迟降到了12ms。教训是：模型选择应该从部署目标反推，而不是从训练精度正推。先定好延迟和吞吐量目标，再选那个达标的最优模型。</p>
-        </div>
-
-        <h3>15.5 Ultralytics生态系统</h3>
-
-        <p>YOLOv5之所以能如此成功，除了架构本身的性能，Ultralytics构建的开发者生态系统居功至伟。</p>
-
-        <p><strong>统一的CLI接口</strong>。这是YOLOv5最让人上头的设计之一。整个训练-验证-导出的工作流只需要一条命令：</p>
-
-        <pre><code># YOLOv5 CLI：
-# 训练
-python train.py --data coco.yaml --cfg yolov5s.yaml --weights '' --batch-size 16
-
-# 验证
-python val.py --data coco.yaml --weights yolov5s.pt
-
-# 推理
-python detect.py --source data/images/ --weights yolov5s.pt --conf 0.25
-
-# 导出
-python export.py --weights yolov5s.pt --include onnx tensorrt coreml
-
-# 自动锚框计算
-python train.py --data custom.yaml --exist-ok --autoanchor</code></pre>
-
-        <p>这套CLI的优雅之处在于：默认参数经过精心调试，对大多数场景来说"开箱即用"；每个重要参数都有合理的默认值，只有需要精细控制时才需要手动传参。这种设计哲学极大地降低了新用户的上手成本。</p>
-
-        <p><strong>Python API支持</strong>。除了CLI，YOLOv5还提供了完整的Python API，方便集成到现有工程中。最简单的方式就是直接用torch.hub加载：</p>
-
-        <pre><code>import torch
-
-# 一行代码加载YOLOv5模型
-model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-
-# 推理
-results = model('data/images/zidane.jpg')
-results.print()      # 打印结果
-results.show()       # 显示检测结果
-results.save()       # 保存结果</code></pre>
-
-        <p><strong>丰富的导出目标</strong>。YOLOv5内置了对多种推理后端的支持：ONNX（跨平台标准格式，兼容TensorRT和OpenVINO）、TensorRT（NVIDIA GPU极致优化）、CoreML（Apple设备原生推理）和OpenVINO（Intel CPU/GPU优化）。导出脚本自动处理了模型图中的算子兼容性问题——这在2020年是一个巨大的工程突破，因为在此之前，从PyTorch导出到ONNX再到TensorRT的流程充满了各种踩坑点。</p>
-
-        <h3>15.6 训练流程</h3>
-
-        <p>YOLOv5的训练流程已经高度标准化，三步走即可完成从数据到模型的完整流水线。</p>
-
-        <p><strong>第一步：数据集YAML</strong>。定义一个YAML文件描述你的数据集，包括训练/验证路径和类别信息。这是YOLOv5统一数据接口的核心。</p>
-
-        <pre><code># coco.yaml —— 数据集配置文件
-path: ../datasets/coco  # 数据集根目录
-train: train2017.txt    # 训练图片列表
-val: val2017.txt        # 验证图片列表
-
-# 类别
-nc: 80                  # 类别数量
-names: ['person', 'bicycle', 'car', ...]  # 类别名称</code></pre>
-
-        <p><strong>第二步：选择模型配置</strong>。从yolov5n到yolov5x中选择一个适合你场景的模型配置YAML。模型配置文件定义了网络结构的每一层，包括通道数、模块类型和重复次数。</p>
-
-        <p><strong>第三步：启动训练</strong>。使用命令行或Python API启动训练。YOLOv5在训练过程中自动处理了以下关键细节：Warmup学习率预热（前3个epoch学习率从0线性增加到设定值）、余弦退火学习率调度（训练后期学习率按余弦曲线下降）、EMA（Exponential Moving Average）权重滑动平均（用于最终的推理权重，比训练权重更稳定）、自动混合精度（AMP）训练。</p>
-
-        <div class="tip">
-            <p><strong>最佳实践</strong>：YOLOv5训练时，建议将<code>--cache</code>参数设为<code>ram</code>，将图片预加载到内存中。如果你的GPU显存有限（8GB以下），可以分批加载——虽然会降低IO速度但能让训练跑起来。另外，<code>--workers</code>参数建议设置为CPU核心数的一半，过高的workers数会导致数据加载成为瓶颈。</p>
-        </div>
-
-        <p>好了，第15章的内容就到这里。我们从YOLOv5的争议出发，讲到了它的核心架构、锚框自动学习、变体家族和生态工具链。YOLOv5的价值在于它用工程化的方式重塑了目标检测的用户体验——不需要读论文、不需要看懂各种数学公式，一条命令就能训练一个可用的检测器。但YOLOv5只是Ultralytics的起点。<strong>第16章「YOLOv8新特性」</strong>，我们来探索Ultralytics的全能进化——当YOLO不再只是一个检测器，而是一个统一的视觉框架时，它带来了怎样的改变。下章见。</p>
-
-        <div class="footer-nav">
-            <a href="14.html">← 上一章</a>
-            <a href="../index.html">📖 返回目录</a>
-            <a href="16.html">下一章 →</a>
-        </div>
-    </div>
+# 推理验收至少比较几张确定性图片的框坐标/分数：
+# PyTorch reference vs ONNX Runtime with identical letterbox and NMS
+# 测量端到端延迟时明确是否包含前后处理。</code></pre></section>
+<section id="compare"><h2>6. 该怎样比较 YOLOv5n/s/m/l/x</h2>
+<p>这些模型配置通常由深度、宽度乘子控制网络规模，形成不同的参数与计算成本档位。但论文或 README 的某一张表里的 AP、速度或精度可能来自不同输入尺寸、测试时增强和不同 GPU。任何“s 比 n 快多少、m 比 s 高几个 AP”的结论都应该附数据集、模型 tag、设备、输入尺寸、batch、精度、是否包含后处理和统计方法。</p>
+<div class="table-wrap"><table><thead><tr><th>检查维度</th><th>必须固定或报告的条件</th></tr></thead><tbody><tr><td>架构</td><td>YOLOv5 v7.0 的具体 YAML、n/s/m/l/x 档、检测而非分割 Head</td></tr><tr><td>数据</td><td>数据集版本、train/val/test、类别数量、图像分辨率</td></tr><tr><td>指标</td><td>COCO AP50:95 与 AP50 区分，区分单图 latency 与 FPS</td></tr><tr><td>部署</td><td>PyTorch/ONNX/TensorRT 后端、FP32/FP16、设备、NMS 时延</td></tr></tbody></table></div>
+<p>不要把 YOLOv5 v7.0 的经典 anchor-based Head 与较新的 Ultralytics YOLOv5u 无锚框版本混用：同名模型系列可以共享部分 Backbone，但训练监督和坐标解码并不相同。工程上最稳妥的方式是把“模型版本”当成完整的软件构建标识，而不是仅记录一个网络名字。</p></section>
+<section id="references"><h2>官方实现与参考资料</h2><ol class="references"><li><a href="https://github.com/ultralytics/yolov5/tree/v7.0">Ultralytics/yolov5 v7.0 源码</a>、<a href="https://github.com/ultralytics/yolov5/blob/v7.0/models/yolov5s.yaml">YOLOv5s YAML</a>、<a href="https://github.com/ultralytics/yolov5/blob/v7.0/models/yolo.py">Detect Head 实现</a>。</li><li><a href="https://github.com/ultralytics/yolov5/blob/v7.0/train.py">train.py</a>、<a href="https://github.com/ultralytics/yolov5/blob/v7.0/val.py">val.py</a>、<a href="https://github.com/ultralytics/yolov5/blob/v7.0/detect.py">detect.py</a>、<a href="https://github.com/ultralytics/yolov5/blob/v7.0/export.py">export.py</a>。</li><li><a href="https://github.com/ultralytics/yolov5/blob/v7.0/utils/autoanchor.py">AutoAnchor 实现</a>；<a href="https://docs.ultralytics.com/yolov5/">Ultralytics YOLOv5 文档</a>，需注意最新文档内容可能描述后续模型变体。</li><li><a href="https://github.com/ultralytics/yolov5/releases/tag/v7.0">YOLOv5 v7.0 release</a>，2022 年 11 月版本说明。</li></ol></section></article>
+<nav class="chapter-nav" aria-label="章节切换"><a href="14.html" class="previous"><small>上一章</small><strong>← NMS 与后处理</strong></a><a href="../index.html" class="chapter-index">全部章节</a><a href="16.html" class="next"><small>下一章</small><strong>现代 YOLOv8 →</strong></a></nav>
+<footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>
+</main>
 </div>
-</div>
+<script src="../assets/site.js" defer></script>
 </body>
 </html>

@@ -1,257 +1,77 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第11章 数据增强策略 — YOLO教程</title>
-    <link rel="stylesheet" href="../assets/theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="检测数据增强不是滤镜集合，而是图像、边界框、类别和样本来源同步变换的坐标系统。用裁剪、Mosaic、MixUp 与 Copy-Paste 的具体例子建立可审计训练流水线。">
+<title>第 11 章｜数据增强：变换图像时，标注也必须改变 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
 </head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🤖 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 目标检测概述</a></li>
-            <li><a href="02.html">第2章 YOLO设计哲学</a></li>
-            <li><a href="03.html">第3章 YOLOv1详解</a></li>
-            <li><a href="04.html">第4章 YOLOv2/YOLO9000</a></li>
-            <li><a href="05.html">第5章 YOLOv3核心架构</a></li>
-            <li><a href="06.html">第6章 YOLOv3工程实战</a></li>
-            <li><a href="07.html">第7章 YOLOv4集大成</a></li>
-            <li><a href="08.html">第8章 锚框机制与聚类</a></li>
-            <li><a href="09.html">第9章 损失函数演进</a></li>
-            <li><a href="10.html">第10章 特征金字塔FPN</a></li>
-            <li><a href="11.html" class="active">第11章 数据增强策略</a></li>
-            <li><a href="12.html">第12章 骨干网络对比</a></li>
-            <li><a href="13.html">第13章 Neck与Head设计</a></li>
-            <li><a href="14.html">第14章 NMS与后处理</a></li>
-            <li><a href="15.html">第15章 YOLOv5入门</a></li>
-            <li><a href="16.html">第16章 YOLOv8新特性</a></li>
-            <li><a href="17.html">第17章 YOLOv9/v10前沿</a></li>
-            <li><a href="18.html">第18章 YOLO11/v12演进</a></li>
-            <li><a href="19.html">第19章 模型轻量化</a></li>
-            <li><a href="20.html">第20章 小目标检测优化</a></li>
-            <li><a href="21.html">第21章 部署与推理加速</a></li>
-            <li><a href="22.html">第22章 边缘设备部署</a></li>
-            <li><a href="23.html">第23章 数据标注与格式</a></li>
-            <li><a href="24.html">第24章 训练流水线搭建</a></li>
-            <li><a href="25.html">第25章 模型评估与调优</a></li>
-            <li><a href="26.html">第26章 YOLO+多模态</a></li>
-            <li><a href="27.html">第27章 行业实战案例</a></li>
-            <li><a href="28.html">第28章 综合实训项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
 
-<h2>第11章 数据增强策略</h2>
-
-<p>大家好，我是你们的讲师。你可能不会想到，YOLOv4最大的创新不是网络结构，而是数据增强。Mosaic让模型学会了在更小的视野内检测物体——这就是为什么同样的backbone加上Mosaic就能涨点2-3%。在数据量有限的情况下，一个精心设计的数据增强策略，往往比改网络结构更有效。</p>
-
-<p>数据增强不仅是为了"增加数据量"，更关键的是<strong>引入有意义的多样性</strong>——让模型见过更多样化的场景，从而提升泛化能力。</p>
-
-<h2>11.1 基础几何增强</h2>
-
-<p>基础增强是所有目标检测训练管线中最基本的组成部分。它们实现简单、计算开销小，但效果显著：</p>
-
-<table>
-    <tr>
-        <th>增强方法</th>
-        <th>实现方式</th>
-        <th>适用场景</th>
-        <th>注意事项</th>
-    </tr>
-    <tr>
-        <td>随机水平翻转</td>
-        <td>以50%概率水平镜像图像</td>
-        <td>几乎所有场景</td>
-        <td>对文本检测可能有负面影响</td>
-    </tr>
-    <tr>
-        <td>随机裁剪</td>
-        <td>随机裁剪图像的一部分</td>
-        <td>部分遮挡、局部细节</td>
-        <td>裁剪后的框需要重新计算坐标</td>
-    </tr>
-    <tr>
-        <td>随机缩放</td>
-        <td>在[0.5, 1.5]范围内随机缩放</td>
-        <td>多尺度训练</td>
-        <td>锚框需要覆盖更广的尺度范围</td>
-    </tr>
-    <tr>
-        <td>随机旋转</td>
-        <td>±10°以内的小角度旋转</td>
-        <td>非水平场景</td>
-        <td>大角度旋转会引入黑色填充区域</td>
-    </tr>
-    <tr>
-        <td>HSV调整</td>
-        <td>随机改变色调(H)、饱和度(S)、明度(V)</td>
-        <td>光照变化大的场景</td>
-        <td>变化幅度不宜过大，否则颜色失真</td>
-    </tr>
-    <tr>
-        <td>灰度化</td>
-        <td>将图像转为灰度</td>
-        <td>模拟低质量监控画面</td>
-        <td>可能丢失颜色关键特征</td>
-    </tr>
-</table>
-
-<pre><code># YOLOv5中HSV增强的典型参数
-hsv_h = 0.015   # 色调扰动范围
-hsv_s = 0.7     # 饱和度扰动范围
-hsv_v = 0.4     # 明度扰动范围
-
-# YOLOv5中几何增强的典型参数
-degrees = 0.0   # 旋转角度（通常设为0）
-translate = 0.1 # 平移比例
-scale = 0.5     # 缩放比例
-shear = 0.0     # 剪切变换角度</code></pre>
-
-<h2>11.2 Mosaic增强</h2>
-
-<p>Mosaic增强是YOLOv4提出的最具影响力的数据增强策略。它将4张训练图像拼接成一张大图像，送入网络进行训练：</p>
-
-<pre><code>def mosaic(image1, image2, image3, image4, img_size=640):
-    """将4张图拼成一张mosaic图像"""
-    # 随机选择拼接中心点
-    cx = np.random.randint(img_size // 2, img_size)
-    cy = np.random.randint(img_size // 2, img_size)
-
-    # 将4张图分别放在左上、右上、左下、右下
-    positions = [
-        (cx, cy, img_size, img_size),           # 左上
-        (cx - img_size, cy, img_size, img_size), # 右上
-        (cx, cy - img_size, img_size, img_size), # 左下
-        (cx - img_size, cy - img_size, img_size, img_size), # 右下
-    ]
-
-    # 初始化画布
-    mosaic_img = np.zeros((img_size, img_size, 3), dtype=np.uint8)
-    mosaic_labels = []
-
-    for i, (img, labels) in enumerate(zip(images, all_labels)):
-        # 随机裁剪并放置到对应位置
-        # 标签坐标需要根据放置位置偏移
-        ...
-    return mosaic_img, mosaic_labels</code></pre>
-
-<p><strong>Mosaic为什么有效？</strong></p>
-<ul>
-    <li><strong>上下文多样性：</strong> 一张图中出现4种不同的背景，模型被迫学习在各种上下文中识别物体</li>
-    <li><strong>小目标增强：</strong> 拼接后，每张子图的物体相对尺寸变成了原来的1/2-1/4，相当于强制模型"看见"更小的物体</li>
-    <li><strong>BN层稳定性：</strong> 4张完全不同来源的图像在一个batch中拼接，极大地丰富了batch统计量的分布，使Batch Normalization更稳定</li>
-</ul>
-
-<div class="tip">
-    <strong>实际经验：</strong> YOLOv4/v5的官方配置中，Mosaic在训练的前3/4阶段开启，后1/4阶段关闭。原因是Mosaic生成的图像与真实场景差异较大（毕竟正常人不会把4张图拼在一起拍照），持续使用Mosaic训练可能会导致模型在真实分布上过拟合不足。后1/4阶段关闭Mosaic、只使用基础增强，能让模型更好地适应自然图像的分布。
+<aside class="sidebar" aria-label="课程导航"><a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a><p class="sidebar-label">ARCHITECTURE / TRAINING · 01—15</p><nav><ol class="chapter-list"><li><a href="01.html" data-chapter="01"><span>01</span>检测概述</a></li><li><a href="02.html" data-chapter="02"><span>02</span>YOLO 哲学</a></li><li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1</a></li><li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 / 9000</a></li><li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3 架构</a></li><li><a href="06.html" data-chapter="06"><span>06</span>YOLOv3 工程</a></li><li><a href="07.html" data-chapter="07"><span>07</span>YOLOv4</a></li><li><a href="08.html" data-chapter="08"><span>08</span>锚框与聚类</a></li><li><a href="09.html" data-chapter="09"><span>09</span>检测损失</a></li><li><a href="10.html" data-chapter="10"><span>10</span>特征金字塔</a></li><li><a href="11.html" data-chapter="11" aria-current="page"><span>11</span>数据增强</a></li><li><a href="12.html" data-chapter="12"><span>12</span>骨干网络</a></li><li><a href="13.html" data-chapter="13"><span>13</span>Neck 与 Head</a></li><li><a href="14.html" data-chapter="14"><span>14</span>NMS 与后处理</a></li><li><a href="15.html" data-chapter="15"><span>15</span>YOLOv5</a></li></ol></nav><a class="all-chapters" href="../index.html">查看全部 28 章 ↗</a></aside>
+<main id="main" class="main-content">
+<article class="article"><header class="article-header"><p class="eyebrow">TRAINING DATA <span>／</span> CHAPTER 11</p><h1>数据增强：变换图像时，标注也必须改变</h1><p class="article-dek">检测数据增强不是滤镜集合，而是图像、边界框、类别和样本来源同步变换的坐标系统。用裁剪、Mosaic、MixUp 与 Copy-Paste 的具体例子建立可审计训练流水线。</p></header>
+<section id="problem"><h2>1. 训练样本由图像和标注共同组成</h2>
+<p>分类任务把一张图像对应一个标签；目标检测却要求每张图像对应一组 <code>(class_id, x_1, y_1, x_2, y_2)</code> 框。因此对图像做随机缩放、翻转、裁剪、拼接，必须对每个框做一致的几何变换。否则模型看到的是经过改变的物体，收到的却是旧图像的坐标，损失函数就会把错误位置当成监督。</p>
+<p>我们从一张 <code>640×480</code> 的图片和像素框 <code>A=(120,80,280,240)</code> 出发。若水平翻转后宽仍为 640，A 的新框是 <code>(360,80,520,240)</code>；如果只翻转图而不改框，标签偏移达数百像素。对于裁剪，框既要平移，又要裁掉落在新画布之外的区域。</p>
+<figure class="diagram" tabindex="0" aria-label="翻转与裁剪的标签同步示意">
+<svg viewBox="0 0 900 320" role="img" aria-labelledby="c11a-title c11a-desc" xmlns="http://www.w3.org/2000/svg"><title id="c11a-title">图像水平翻转和窗口裁剪时，标签与像素必须同步</title><desc id="c11a-desc">原始框向右翻转后，坐标从 x 为120到280移动到360到520；裁剪时的框需与保留窗口相交并转换到局部坐标。</desc>
+<rect x="8" y="8" width="884" height="304" rx="18" fill="#f6fafb"/>
+<g font-size="15" fill="#24414a" text-anchor="middle" font-weight="700"><text x="147" y="39">原始图像</text><text x="453" y="39">水平翻转</text><text x="756" y="39">窗口裁剪</text></g>
+<rect x="30" y="57" width="235" height="174" rx="10" fill="#dcebed" stroke="#9bbdbd"/>
+<rect x="335" y="57" width="235" height="174" rx="10" fill="#dcebed" stroke="#9bbdbd"/>
+<rect x="639" y="57" width="235" height="174" rx="10" fill="#e5f3ef" stroke="#9bbdbd"/>
+<g stroke="#087f8c" stroke-width="4" fill="#087f8c" fill-opacity=".12"><rect x="75" y="92" width="89" height="79" rx="3"/><rect x="452" y="92" width="89" height="79" rx="3"/><rect x="685" y="78" width="135" height="122" rx="3"/></g>
+<g stroke="#b58d52" stroke-width="2" fill="none" stroke-dasharray="6 5"><rect x="663" y="88" width="165" height="120"/><path d="M683 88 V208 M663 151 H828"/></g>
+<g fill="#56727a" font-size="13" text-anchor="middle"><text x="147" y="257">框：(120,80,280,240)</text><text x="452" y="257">框：(360,80,520,240)</text><text x="756" y="257">先求交集，再移动到局部原点</text></g>
+<g stroke="#087f8c" fill="none" stroke-width="3"><path d="M270 150 H330 M322 143 L330 150 L322 157"/><path d="M575 150 H631 M623 143 L631 150 L623 157"/></g>
+<text x="452" y="293" font-size="13" text-anchor="middle" fill="#5b7379">几何校正后的标签才与新图像语义一致；框宽高不得变为零</text>
+</svg><figcaption>增强算子应接收<strong>图像与全部标签</strong>，输出同一坐标系内的新图像与合法框；图示比例只说明变换方向，不表示真实像素缩放。</figcaption></figure>
+</section>
+<section id="geometry"><h2>2. 翻转与裁剪：先推导映射，再写代码</h2>
+<p>框坐标采用连续像素边界约定 <code>x_1&lt;x_2, y_1&lt;y_2</code>；水平翻转宽度为 W 的图像时，新坐标为 <code>(W−x₂, y₁, W−x₁, y₂)</code>。若保留窗口 <code>(l,t,r,b)</code>，新框的局部坐标通过 <em>与裁剪区域取交集 → 减去左上角偏移</em> 得到。特别要在裁剪后决定保留标准：某个物体只剩一条窄边时可以按可见面积比例过滤，但应明确所用阈值。</p>
+<div class="equation" tabindex="0" role="region" aria-label="水平翻转与裁剪区间公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="水平翻转后的横坐标范围为宽度减去原框右边界到宽度减去原框左边界"><mrow><mo>[</mo><msubsup><mi>x</mi><mn>1</mn><mo>′</mo></msubsup><mo>,</mo><msubsup><mi>x</mi><mn>2</mn><mo>′</mo></msubsup><mo>]</mo><mo>=</mo><mo>[</mo><mi>W</mi><mo>−</mo><msub><mi>x</mi><mn>2</mn></msub><mo>,</mo><mi>W</mi><mo>−</mo><msub><mi>x</mi><mn>1</mn></msub><mo>]</mo></mrow></math></div>
+<p>裁剪区间 <code>[l,r]×[t,b]</code> 与框 A 的可见面积定义为 <code>max(0,min(x₂,r)−max(x₁,l)) × max(0,min(y₂,b)−max(y₁,t))</code>。选择阈值 <code>visible_area / original_area ≥ τ</code> 时，τ 的含义是保留下来的像素面积比例，不是 IoU。若图像还经历 resize 或 letterbox，应在像素/归一化坐标之间显式转换。</p>
+<pre><code># 只审计框坐标，不需要安装 OpenCV 或 PyTorch
+python -m labs.augmentation_geometry
+# flip_horizontal((120,80,280,240), width=640) -> (360,80,520,240)
+# crop_xyxy((100,50,340,290), crop=(150,70,320,280), min_visible=0.2)
+# -> (0,0,170,210)（教学示例，像素坐标）</code></pre>
+<p><a href="../labs/augmentation_geometry.py">可运行的几何校验脚本</a> 会检查边界、非正尺寸与可见比例，但不会真的加载像素。它是增强管线的一道“标签单元测试”，不是可替代训练框架的完整增强器。</p></section>
+<section id="mosaic"><h2>3. Mosaic：四块图像共享一张训练画布</h2>
+<p>YOLOv4 所用 Mosaic 技术从四张图片中取区域组成一张训练图像。假设目标画布为 640×640，拼接交点在 <code>(c_x,c_y)</code>，四个区域分别是左上、右上、左下、右下。每个来源图的坐标先按该区域的缩放和平移关系映射，再裁剪到有效区域；不允许仅将四个标注文件直接拼接。</p>
+<figure class="diagram" tabindex="0" aria-label="Mosaic 四块拼接的几何与标注流">
+<svg viewBox="0 0 900 324" role="img" aria-labelledby="c11b-title c11b-desc" xmlns="http://www.w3.org/2000/svg"><title id="c11b-title">四张原图与一张 Mosaic 画布之间的标注映射</title><desc id="c11b-desc">四个小输入图像分别通过缩放、平移、裁剪映射到同一画布的四个象限；框也经过相同几何运算，并去掉不可见区域。</desc>
+<rect x="8" y="8" width="884" height="308" rx="18" fill="#f6fafb"/>
+<g transform="translate(30 47)"><rect x="0" y="0" width="180" height="106" rx="8" fill="#dcebed" stroke="#8eb6b7"/><rect x="0" y="120" width="180" height="106" rx="8" fill="#eeeaf7" stroke="#ad9dc9"/><text x="90" y="61" font-size="16" text-anchor="middle" fill="#24414a">输入 1、2</text><text x="90" y="181" font-size="16" text-anchor="middle" fill="#57477b">输入 3、4</text></g>
+<path d="M225 166 H335 M326 158 L336 166 L326 174" stroke="#087f8c" stroke-width="3" fill="none"/>
+<g transform="translate(355 25)"><rect width="270" height="270" rx="12" fill="#e3eeee" stroke="#88adb3" stroke-width="2"/><rect x="0" y="0" width="122" height="142" fill="#cbe8e5"/><rect x="122" y="0" width="148" height="142" fill="#fff0df"/><rect x="0" y="142" width="122" height="128" fill="#e9e1f6"/><rect x="122" y="142" width="148" height="128" fill="#dcebdc"/><path d="M122 0 V270 M0 142 H270" stroke="#fff" stroke-width="5"/><rect x="42" y="44" width="64" height="70" fill="none" stroke="#087f8c" stroke-width="3"/><rect x="165" y="25" width="63" height="78" fill="none" stroke="#c47b31" stroke-width="3"/><rect x="28" y="181" width="79" height="62" fill="none" stroke="#6c5b91" stroke-width="3"/><rect x="175" y="183" width="66" height="66" fill="none" stroke="#327f59" stroke-width="3"/><text x="135" y="292" text-anchor="middle" fill="#24414a" font-size="14" font-weight="700">Mosaic 画布</text></g>
+<g font-size="14" fill="#24414a"><text x="666" y="85">每块图像都执行：</text><text x="666" y="122">① 缩放与偏移</text><text x="666" y="151">② 边界框同步映射</text><text x="666" y="180">③ 裁剪到可见区域</text><text x="666" y="209">④ 过滤非法退化框</text></g>
+</svg><figcaption>四块图像来自不同样本，但输出仍是一张图和一组统一坐标系的标注。图中框仅为说明用途，不是原始 YOLOv4 论文插图。</figcaption></figure>
+<p>这样合成使一个 batch 中遇到的目标尺度、背景和空间组合更加丰富。代价是边缘目标更容易被截断，且强拼接可能生成与真实数据分布差异很大的场景。用于视频或医学影像时，还需要审查不同来源混合的合理性和数据泄漏风险。</p></section>
+<section id="mix"><h2>4. MixUp、CutMix、Copy-Paste：三种看似相近的混合</h2>
+<p><strong>MixUp</strong> 将两张图像做全图线性叠加，系数 <code>λ∈[0,1]</code>；论文首先面向分类提出。检测框集合可以在混合后保留来自两幅图的目标，并根据实现定义对象权重，但并不存在所有检测器通用的“把两个框坐标按 λ 求平均”规则。<strong>CutMix</strong> 将第二图的一块矩形区域贴到第一图的相应位置；原始 CutMix 论文同样首先提出分类训练，目标检测实现必须补充遮挡与裁剪标签逻辑。</p>
+<div class="equation" tabindex="0" role="region" aria-label="MixUp 像素叠加公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="混合像素张量是系数 lambda 乘原图 A 加上一减 lambda 乘原图 B"><mrow><msub><mi>I</mi><mi>mix</mi></msub><mo>=</mo><mi>λ</mi><msub><mi>I</mi><mi>A</mi></msub><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>λ</mi><mo>)</mo><msub><mi>I</mi><mi>B</mi></msub></mrow></math></div>
+<p><strong>Copy-Paste</strong> 常见于拥有实例掩码的分割数据：从另一幅图抠出一个实例及其 mask，放到新背景中并重新计算框与遮挡。仅有外接矩形时，直接复制整个矩形会把源背景也一并复制；它不是论文所说的实例掩码级 Copy-Paste。原始 <a href="https://arxiv.org/abs/2012.07177">Simple Copy-Paste</a> 论文研究的是实例分割场景，不应把其 mask AP 改进无条件外推到通用 YOLO 检测。</p>
+<div class="table-wrap"><table><thead><tr><th>增强方法</th><th>图像变换</th><th>检测标签注意事项</th></tr></thead><tbody><tr><td>MixUp</td><td>像素线性混合</td><td>保留两组目标；权重定义与损失实现匹配</td></tr><tr><td>CutMix</td><td>矩形块替换</td><td>判断目标被遮挡/切断的可见比例</td></tr><tr><td>Copy-Paste</td><td>以 mask 贴入目标实例</td><td>处理遮挡、实例 ID、框重新计算</td></tr><tr><td>Mosaic</td><td>四区域拼接</td><td>四套几何映射，统一坐标与过滤规则</td></tr></tbody></table></div></section>
+<section id="sat"><h2>5. SAT 与“训练时变换”有何不同</h2>
+<p>YOLOv4 提到 Self-Adversarial Training（SAT）：在训练流程中利用模型信息构造对当前模型更具挑战性的输入，再用相应监督训练；与随机翻转的区别在于增强依赖模型响应，而不只是从固定分布抽样一个变换。在通用介绍中容易把 SAT 混为 FGSM 式独立对抗攻击，或者声称所有 YOLO 版本默认开启，这两种说法都不准确。具体步骤、损失及是否启用应与 YOLOv4 所固定的 Darknet 源码对应。</p>
+<p>对于一般检测项目，先处理可测量的几何与颜色增强，再评估更复杂的模型相关增强。强化训练不等于提升部署时的物理对抗鲁棒性，后者需要专门威胁模型、攻击范围与测评集。</p></section>
+<section id="protocol"><h2>6. 用消融实验决定增强管线，而不是复制配方</h2>
+<p>建议建立四个版本：① 无几何变换的基线；② 翻转/缩放/裁剪；③ 加入 Mosaic；④ 额外加入 MixUp 或 Copy-Paste。固定数据划分、模型架构、初始化、训练步数与输入尺寸，比较同口径的 COCO AP、AP50、AP75、各目标面积 AP、不同拍摄域上的误检率。避免在验证集反复试验后用同一份数据宣称“最终测试精度”。</p>
+<p>正式训练前，随机抽取每种增强后的图像并把标签覆盖绘制，至少检查：框与目标是否重合、裁剪后是否有负尺寸、无目标图是否被误标、相机/视频片段是否跨训练与测试混用。不同实现对退化框过滤、混合标签、概率与关闭强增强的训练阶段有不同约定，需要随配置一起归档。</p></section>
+<section id="references"><h2>参考文献与代码</h2><ol class="references"><li>Bochkovskiy et al., <a href="https://arxiv.org/abs/2004.10934">YOLOv4</a>，§3 Bag of Freebies、Mosaic、SAT。</li><li>Zhang et al., <a href="https://arxiv.org/abs/1710.09412">mixup: Beyond Empirical Risk Minimization</a>，ICLR 2018。</li><li>Yun et al., <a href="https://arxiv.org/abs/1905.04899">CutMix</a>，ICCV 2019。</li><li>Ghiasi et al., <a href="https://arxiv.org/abs/2012.07177">Simple Copy-Paste</a>，CVPR 2021。</li><li><a href="https://github.com/ultralytics/yolov5/tree/v7.0">Ultralytics YOLOv5 v7.0 源码</a>，检测增强属于具体实现细节。</li></ol></section></article>
+<nav class="chapter-nav" aria-label="章节切换"><a href="10.html" class="previous"><small>上一章</small><strong>← 特征金字塔 FPN</strong></a><a href="../index.html" class="chapter-index">全部章节</a><a href="12.html" class="next"><small>下一章</small><strong>骨干网络 →</strong></a></nav>
+<footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>
+</main>
 </div>
-
-<h2>11.3 MixUp与CutMix</h2>
-
-<p>MixUp和CutMix是图像分类领域提出的增强策略，后来被YOLOv4和YOLOv5引入到目标检测中。</p>
-
-<h3>MixUp</h3>
-<p>MixUp将两张图像按照一定比例叠加（像素级混合），标签也按照相同比例混合：</p>
-
-<pre><code>mixed_image = λ * image1 + (1 - λ) * image2
-mixed_labels = λ * labels1 ∪ (1 - λ) * labels2
-
-# 其中λ ~ Beta(α, α)，通常α=0.2-0.8</code></pre>
-
-<p>在目标检测中，MixUp的标签混合策略是将两张图的所有标注框都保留，但置信度权重分别乘以λ和(1-λ)。这种"软标签"策略提供了更丰富的训练信号。</p>
-
-<h3>CutMix</h3>
-<p>CutMix在MixUp的基础上做了改进——不是像素级混合，而是<strong>区域级替换</strong>：从一张图中裁剪一块区域，粘贴到另一张图的对应位置：</p>
-
-<pre><code># CutMix操作
-# 1. 从image1中随机裁剪一个矩形区域
-# 2. 用image2中对应区域的内容替换
-# 3. 标签：使用image1的标签，但如果框位于裁剪区域内，则替换为image2的标签</code></pre>
-
-<h2>11.4 自对抗训练（SAT）</h2>
-
-<p>YOLOv4引入了自对抗训练（Self-Adversarial Training，SAT）——这是一个让模型自己"找茬"的训练范式。SAT分为两个阶段：</p>
-
-<p><strong>第一阶段（对抗阶段）：</strong> 网络冻结检测头，仅更新backbone的权重。但这里的"更新"不是最小化损失，而是<strong>最大化损失</strong>——让网络生成一个对检测"最具欺骗性"的对抗样本。这个对抗样本对原始图像施加了细微的、有针对性的扰动，使得检测器最容易出错。</p>
-
-<p><strong>第二阶段（训练阶段）：</strong> 使用对抗样本作为输入，正常训练整个网络（检测头也参与训练）。模型必须在更难识别的图像上完成检测任务。</p>
-
-<div class="highlight">
-    <strong>SAT的效果：</strong> 在YOLOv4的消融实验中，加入SAT后AP提升了约1.5%。更重要的是，SAT训练的模型对噪声、模糊等常见图像退化具有更强的鲁棒性。虽然SAT增加了约30%的训练时间，但推理时没有任何额外开销——它是一种纯训练时的正则化策略。
-</div>
-
-<h2>11.5 Copy-Paste增强</h2>
-
-<p>Copy-Paste是近年来比较流行的一种实例级增强方法。它的核心思想非常简单：从一张图中"复制"出物体实例，然后"粘贴"到另一张图像中。</p>
-
-<pre><code>def copy_paste(source_img, source_labels, target_img, target_labels):
-    """将一个图像中的实例复制粘贴到另一个图像中"""
-    # 1. 从source中随机选择一个实例的mask
-    # 2. 使用mask提取该实例的像素区域
-    # 3. 随机缩放、旋转该实例（可选）
-    # 4. 在target图像中找一个合适的位置放置
-    # 5. 粘贴时考虑遮挡关系（大物体在前）
-    # 6. 更新target_labels，添加新的实例标签
-    return augmented_img, augmented_labels</code></pre>
-
-<p>Copy-Paste对于以下场景特别有效：</p>
-<ul>
-    <li><strong>长尾分布：</strong> 罕见类别的样本可以通过Copy-Paste生成更多实例</li>
-    <li><strong>密集场景：</strong> 通过粘贴更多物体模拟拥挤场景，提升模型在密集场景下的表现</li>
-    <li><strong>遮挡鲁棒性：</strong> 粘贴的物体会部分遮挡原有物体，迫使模型学会基于局部特征推理</li>
-</ul>
-
-<h2>11.6 实用增强管线推荐</h2>
-
-<p>基于YOLOv5/v8的实践经验，以下是一个推荐的数据增强配置：</p>
-
-<table>
-    <tr>
-        <th>阶段</th>
-        <th>增强策略</th>
-        <th>应用概率</th>
-        <th>说明</th>
-    </tr>
-    <tr>
-        <td>训练前75%</td>
-        <td>Mosaic + MixUp</td>
-        <td>Mosaic: 100%, MixUp: 50%</td>
-        <td>强增强阶段，快速学习特征</td>
-    </tr>
-    <tr>
-        <td>训练后25%</td>
-        <td>HSV + 翻转 + 缩放</td>
-        <td>HSV: 100%, 翻转: 50%, 缩放: 100%</td>
-        <td>关闭Mosaic，逼近真实分布</td>
-    </tr>
-    <tr>
-        <td>全程可选</td>
-        <td>Copy-Paste</td>
-        <td>10-20%</td>
-        <td>长尾分布场景强烈推荐</td>
-    </tr>
-</table>
-
-<div class="warning">
-    <strong>踩坑实录：Mosaic调大了导致训练不稳定。</strong> 一次项目中，我为了追求数据多样性，将Mosaic从4张拼接改成了6张拼接，同时加大了随机裁剪的比例。结果训练loss在前20个epoch中剧烈震荡，迟迟不收敛。排查发现：6张图拼接导致每个子图的信息量太少（只有原图的1/6），目标被严重截断，大部分标注框都变成了无效的小碎片。最终回到标准的4张Mosaic，loss才恢复正常。数据增强不是越多越好，关键是要保持语义完整性。
-</div>
-
-<h2>11.7 总结</h2>
-
-<p>数据增强是YOLO训练管线中性价比最高的优化手段之一。从基础的HSV抖动、翻转，到YOLOv4标志性的Mosaic增强，再到Copy-Paste实例级增强，每一步都在提升模型对多样性的适应能力。一个合理的增强管线，可以在不改变任何网络结构的情况下带来3-5%的AP提升。</p>
-
-<p>下一章，我们将从数据的视角切换到结构的视角，系统对比YOLO系列中的各种<strong>骨干网络</strong>——看看从Darknet到C2f，每一次骨干升级给检测器带来了什么。</p>
-
-        <div class="footer-nav">
-            <a href="10.html">← 上一章</a>
-            <a href="../index.html">📖 返回目录</a>
-            <a href="12.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
+<script src="../assets/site.js" defer></script>
 </body>
 </html>

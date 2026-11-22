@@ -138,10 +138,10 @@
       "num": "11",
       "title": "数据增强策略",
       "topics": [
-        "Mosaic增强",
-        "MixUp与CutMix",
-        "SAT自对抗训练",
-        "增强流水线推荐"
+        "翻转裁剪与标签同步",
+        "Mosaic 几何拼接",
+        "MixUp / CutMix / Copy-Paste",
+        "SAT 与消融协议"
       ],
       "file": "chapters/11.html",
       "stage": "architecture",
@@ -149,12 +149,12 @@
     },
     {
       "num": "12",
-      "title": "骨干网络对比",
+      "title": "骨干网络与计算效率",
       "topics": [
-        "Darknet→CSPDarknet",
-        "EfficientRep架构",
-        "C2f模块设计",
-        "GELAN骨干"
+        "Darknet-19 / Darknet-53",
+        "CSP 分流与梯度路径",
+        "EfficientRep 重参数化",
+        "C2f / GELAN"
       ],
       "file": "chapters/12.html",
       "stage": "architecture",
@@ -162,11 +162,11 @@
     },
     {
       "num": "13",
-      "title": "Neck与Head设计",
+      "title": "Neck 与 Head 设计",
       "topics": [
-        "SPP/SPPF模块",
-        "PANet路径聚合",
-        "解耦头设计",
+        "SPP / SPPF 池化等价",
+        "FPN / PAN 融合",
+        "解耦检测头",
         "TaskAlignedAssigner"
       ],
       "file": "chapters/13.html",
@@ -175,12 +175,12 @@
     },
     {
       "num": "14",
-      "title": "NMS与后处理",
+      "title": "NMS 与后处理",
       "topics": [
-        "NMS原理与实现",
-        "Soft-NMS",
-        "DIoU-NMS",
-        "NMS-free训练"
+        "Hard NMS 交互实验",
+        "Soft-NMS / DIoU-NMS",
+        "Weighted Boxes Fusion",
+        "YOLOv10 NMS-Free"
       ],
       "file": "chapters/14.html",
       "stage": "architecture",
@@ -188,12 +188,12 @@
     },
     {
       "num": "15",
-      "title": "YOLOv5入门",
+      "title": "YOLOv5 v7.0 实战",
       "topics": [
-        "Ultralytics生态",
-        "CSPDarknet+SPPF",
-        "Anchor自动学习",
-        "ONNX/TensorRT导出"
+        "C3 / SPPF / PAN-style",
+        "经典 Anchor Decode",
+        "AutoAnchor 与数据审计",
+        "训练 / 验证 / ONNX 导出"
       ],
       "file": "chapters/15.html",
       "stage": "ultralytics",

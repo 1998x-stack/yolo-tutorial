@@ -1,0 +1,13 @@
+<svg viewBox="0 0 900 338" role="img" aria-labelledby="c12b-title c12b-desc" xmlns="http://www.w3.org/2000/svg"><title id="c12b-title">CSP 的分支回合与 RepVGG 的推理等效结构</title><desc id="c12b-desc">左侧 CSP 将特征流拆为短分支和残差变换分支后拼接融合；右侧训练时多个线性卷积分支可折叠为一个推理卷积核，前提是批归一化已按固定统计量融合且非线性不在分支间。</desc>
+<rect x="8" y="8" width="884" height="322" rx="18" fill="#f6fafb"/>
+<text x="233" y="43" text-anchor="middle" fill="#24414a" font-size="18" font-weight="700">CSP：拆分再汇合</text>
+<text x="673" y="43" text-anchor="middle" fill="#24414a" font-size="18" font-weight="700">Rep：训练多分支，推理单分支</text>
+<g fill="#e2f0ef" stroke="#87bbb6"><rect x="51" y="110" width="100" height="60" rx="10"/><rect x="196" y="66" width="132" height="60" rx="10"/><rect x="196" y="162" width="132" height="60" rx="10"/><rect x="359" y="110" width="101" height="60" rx="10"/></g>
+<g text-anchor="middle" fill="#24535a" font-size="15"><text x="101" y="145">输入 x</text><text x="262" y="102">短路径</text><text x="262" y="197">Conv / 残差</text><text x="410" y="145">Concat</text></g>
+<g fill="none" stroke="#087f8c" stroke-width="3"><path d="M153 139 H169 V96 H193 M169 139 V190 H193 M331 96 H346 V139 H356 M331 190 H346 V139"/></g>
+<g fill="#e5eef7" stroke="#93b6cf"><rect x="512" y="77" width="125" height="43" rx="8"/><rect x="512" y="132" width="125" height="43" rx="8"/><rect x="512" y="187" width="125" height="43" rx="8"/></g>
+<g font-size="14" text-anchor="middle" fill="#24414a"><text x="574" y="104">3×3 Conv+BN</text><text x="574" y="159">1×1 Conv+BN</text><text x="574" y="214">Identity+BN</text></g>
+<path d="M642 99 H681 V153 H713 M642 153 H713 M642 208 H681 V153" fill="none" stroke="#087f8c" stroke-width="3"/>
+<rect x="716" y="117" width="153" height="71" rx="10" fill="#fff0df" stroke="#d9ae76"/><text x="792" y="148" text-anchor="middle" fill="#754719" font-size="16" font-weight="700">等效 3×3</text><text x="792" y="170" text-anchor="middle" fill="#754719" font-size="14">Conv + bias</text>
+<text x="692" y="261" text-anchor="middle" fill="#5b7379" font-size="13">融合只在分支均为线性算子时严格成立</text><text x="450" y="305" text-anchor="middle" fill="#5b7379" font-size="14">两个方向都追求效率，但一个重组梯度路径，一个重组训练与推理计算图</text>
+</svg>

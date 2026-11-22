@@ -1,0 +1,12 @@
+<svg viewBox="0 0 900 305" role="img" aria-labelledby="c12a-title c12a-desc" xmlns="http://www.w3.org/2000/svg"><title id="c12a-title">骨干分层输出而不是直接输出目标框</title><desc id="c12a-desc">640平方输入依次经三段下采样形成80平方、40平方、20平方的多尺度特征，各分支再进入特征融合网络和检测头。</desc>
+<rect x="8" y="8" width="884" height="289" rx="18" fill="#f6fafb"/>
+<g font-size="15" text-anchor="middle" fill="#24414a">
+<rect x="22" y="77" width="130" height="125" rx="10" fill="#dcebed" stroke="#91b4b8"/><text x="87" y="119" font-weight="700">输入</text><text x="87" y="145">640 × 640</text><text x="87" y="171" font-size="13">RGB</text>
+<rect x="191" y="91" width="128" height="98" rx="10" fill="#d7ebef" stroke="#8bb3c3"/><text x="255" y="125" font-weight="700">卷积 / 残差</text><text x="255" y="153">下采样</text>
+<rect x="368" y="45" width="147" height="64" rx="10" fill="#e0f0ee" stroke="#8fbbaf"/><text x="441" y="73" font-weight="700">C3 · 80²</text><text x="441" y="95" font-size="13">stride 8</text>
+<rect x="368" y="129" width="147" height="64" rx="10" fill="#e0f0ee" stroke="#8fbbaf"/><text x="441" y="158" font-weight="700">C4 · 40²</text><text x="441" y="180" font-size="13">stride 16</text>
+<rect x="368" y="213" width="147" height="64" rx="10" fill="#e0f0ee" stroke="#8fbbaf"/><text x="441" y="241" font-weight="700">C5 · 20²</text><text x="441" y="263" font-size="13">stride 32</text>
+<rect x="610" y="106" width="241" height="92" rx="12" fill="#fff0df" stroke="#d9af75"/><text x="730" y="144" font-weight="700">Neck + Head</text><text x="730" y="169">融合 → 分类 / 定位</text>
+</g><g fill="none" stroke="#087f8c" stroke-width="3"><path d="M155 139 H188 M320 139 H343 V77 H364 M343 139 V161 H364 M343 161 V245 H364 M518 77 H565 V150 H605 M518 161 H605 M518 245 H565 V150"/></g>
+<text x="451" y="290" text-anchor="middle" font-size="13" fill="#5b7379">C3/C4/C5 是教学层级记号，真实通道数与 stem/stride 设置依具体模型而不同</text>
+</svg>

@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "article": "chapters/14.html",
+  "batch": "chapters-11-15",
+  "claims": [
+    {
+      "id": "14-01",
+      "claim": "Greedy hard NMS suppresses same-category lower scored boxes whose IoU exceeds chosen threshold",
+      "kind": "algorithm",
+      "source_url": "https://arxiv.org/abs/1704.04503",
+      "locator": "Soft-NMS paper §2 standard NMS baseline",
+      "status": "verified",
+      "notes": "Strict > convention and tie order are explicit local implementation choices."
+    },
+    {
+      "id": "14-02",
+      "claim": "Soft-NMS decays overlapping candidate scores instead of always deleting them",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/1704.04503",
+      "locator": "§3 Soft-NMS linear and Gaussian formulas",
+      "status": "verified",
+      "notes": "Minimum score and NMS mode determine returned boxes."
+    },
+    {
+      "id": "14-03",
+      "claim": "DIoU-NMS uses center-distance-aware criterion",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/1911.08287",
+      "locator": "DIoU-NMS discussion",
+      "status": "verified",
+      "notes": "Not identical to IoU loss and may vary by implementations."
+    },
+    {
+      "id": "14-04",
+      "claim": "Weighted Boxes Fusion combines overlapping detection coordinates by scores",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/1910.13302",
+      "locator": "§2 Weighted Boxes Fusion",
+      "status": "verified",
+      "notes": "Typically applied to ensembles and TTA; alignment required."
+    },
+    {
+      "id": "14-05",
+      "claim": "YOLOv10 proposes consistent dual assignments for NMS-free end-to-end inference",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/2405.14458",
+      "locator": "§3 consistent dual assignments",
+      "status": "verified",
+      "notes": "One-to-many training supervision and one-to-one inference have different responsibilities."
+    },
+    {
+      "id": "14-06",
+      "claim": "IoU of box A 40/40/140/140 and B 50/50/150/150 equals 8100/11900",
+      "kind": "derived",
+      "source_url": "https://arxiv.org/abs/1704.04503",
+      "locator": "Intersection-over-union definition, validated by reference lab",
+      "status": "derived",
+      "notes": "Continuous, non-inclusive area convention."
+    },
+    {
+      "id": "14-07",
+      "claim": "Default 0.5 threshold retains A,D,C under class-wise hard NMS",
+      "kind": "illustrative",
+      "source_url": "https://arxiv.org/abs/1704.04503",
+      "locator": "Greedy NMS toy case",
+      "status": "derived",
+      "notes": "Cross-class D survives even though it overlaps A."
+    },
+    {
+      "id": "14-08",
+      "claim": "For IoU=8100/11900, linear Soft-NMS lowers B score 0.88 to about 0.2810",
+      "kind": "derived",
+      "source_url": "https://arxiv.org/abs/1704.04503",
+      "locator": "§3 linear update",
+      "status": "derived",
+      "notes": "Floor=0.25; sigma not used for linear case."
+    }
+  ]
+}

@@ -34,7 +34,7 @@ Every chapter is an independent article. A reader arriving from search, a bookma
 
 ## Repository conventions
 
-- Canonical chapter pages live in `chapters/NN.html`. Chapters 01–10 are the reviewed foundation/methods batch as of 2026-11-22; 11–28 need an independent content audit.
+- Canonical chapter pages live in `chapters/NN.html`. Chapters 01–15 have been rewritten and reviewed as of 2026-11-22; 16–28 still need deep editorial/technical review.
 - Root `NN.html` files are compatibility redirects; do not author chapter content there.
 - `courses.json` is the structured course catalogue; keep all 28 entries and their `file` paths in sync.
 - `index.html` is a static, file://-compatible course home. Do not make initial rendering depend on fetch().
@@ -60,3 +60,13 @@ Every chapter is an independent article. A reader arriving from search, a bookma
 - Separate a geometry-only Python IoU demonstration from a differentiable training loss.
 - Validate chapter-level interactions (the Chapter 08 anchor-shape selector) in Playwright, including value changes and browser errors.
 - Each rewritten chapter needs its own `docs/evidence/NN.json` with claims, source locator, status and limitations.
+
+## Expanded chapter contracts (11–15)
+
+- Data augmentation needs forward coordinate transforms and inverse preprocessing conventions; for Mosaic/CutMix, document visibility clipping and label remapping. Never average bounding box coordinates in MixUp by default.
+- For backbones, differentiate parameter count, MACs, FLOPs, memory traffic and measured latency. Structural reparameterization requires algebraically equivalent linear paths and frozen BN before folding.
+- SPPF pool5×3 equals direct max pools 5/9/13 only for matching stride/padding/max operation; do not claim a whole-model speed benchmark from that identity.
+- Assignment algorithms such as TaskAlignedAssigner use ground truth during training. Do not mislabel them as inference layers or Neck modules.
+- For NMS, specify class-aware versus agnostic suppression, score threshold, IoU comparator, tie order, max detections; NMS-free models require appropriate training, not only removal of the postprocessor.
+- When describing YOLOv5, anchor-based `ultralytics/yolov5` v7.0 must not be conflated with later anchor-free YOLOv5u variants; pin the code tag for every command or architectural statement.
+- Every batch needs accessible standalone SVG exports matching inline drawings, reproducible stdlib lab tests and full four-viewport Chromium checks.
