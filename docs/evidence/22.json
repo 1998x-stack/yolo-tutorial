@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "article": "chapters/22.html",
+  "batch": "21-28",
+  "claims": [
+    {
+      "id": "22-01",
+      "claim": "边缘部署同时受功耗与散热、内存带宽、算子支持与实时性要求四类硬约束限制。",
+      "kind": "engineering",
+      "source_url": "https://docs.nvidia.com/deeplearning/tensorrt/latest/",
+      "locator": "TensorRT Developer Guide: performance considerations",
+      "status": "derived",
+      "notes": "由后端文档对算子支持与性能约束的描述归纳，页面作为教学框架呈现。"
+    },
+    {
+      "id": "22-02",
+      "claim": "规格书 TOPS 是带数据类型与稀疏度条件的峰值，不等同于真实推理吞吐；卷积常受内存带宽限制。",
+      "kind": "engineering",
+      "source_url": "https://arxiv.org/abs/2103.13630",
+      "locator": "Survey of Quantization Methods: compute- vs memory-bound discussion",
+      "status": "derived",
+      "notes": "结合量化综述的带宽/计算瓶颈讨论推导，未引用任何设备峰值数字。"
+    },
+    {
+      "id": "22-03",
+      "claim": "NVIDIA Jetson 平台的 CUDA、cuDNN、TensorRT 等组件由 JetPack 以固定版本组合提供。",
+      "kind": "documentation",
+      "source_url": "https://developer.nvidia.com/embedded/jetpack",
+      "locator": "JetPack SDK components list",
+      "status": "verified",
+      "notes": "页面只声明组件打包关系，不声称具体版本号。"
+    },
+    {
+      "id": "22-04",
+      "claim": "后端不支持的算子会被拆分并回退到 CPU，可能显著拉低端到端延迟。",
+      "kind": "engineering",
+      "source_url": "https://docs.openvino.ai/",
+      "locator": "OpenVINO documentation: supported operations / fallback",
+      "status": "derived",
+      "notes": "由推理后端算子覆盖与回退机制推导。"
+    },
+    {
+      "id": "22-05",
+      "claim": "量化能否加速取决于后端是否为该算子实现了整数内核；未量化算子会插入反量化/量化节点。",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/2103.13630",
+      "locator": "A Survey of Quantization Methods, storage vs runtime cost",
+      "status": "verified",
+      "notes": "与第 21 章、第 19 章口径一致。"
+    },
+    {
+      "id": "22-06",
+      "claim": "持续吞吐应在热平衡后测量并记录环境温度、散热方案与功耗模式。",
+      "kind": "engineering",
+      "source_url": "https://developer.nvidia.com/embedded/jetpack",
+      "locator": "JetPack / Jetson power and thermal management documentation",
+      "status": "derived",
+      "notes": "由热降频机制推导，页面给出测量口径而非具体数字。"
+    },
+    {
+      "id": "22-07",
+      "claim": "每帧能耗可写成 E_frame = P / f，即平均功耗除以持续帧率。",
+      "kind": "derived",
+      "source_url": "chapters/22.html",
+      "locator": "section#thermal equation",
+      "status": "derived",
+      "notes": "量纲推导：焦耳 = 瓦 ÷（帧/秒）。"
+    },
+    {
+      "id": "22-08",
+      "claim": "交互实验中的每帧能耗 120 mJ 是假定的教学参数，不是任何设备的实测值。",
+      "kind": "illustrative",
+      "source_url": "chapters/22.html",
+      "locator": "section#thermal lab-input-22",
+      "status": "illustrative",
+      "notes": "页面正文已就近标注为教学示意值。"
+    }
+  ]
+}

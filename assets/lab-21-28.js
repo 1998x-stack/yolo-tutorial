@@ -8,6 +8,13 @@
       return "batch=" + b + "：单次延迟≈" + lat.toFixed(1) + " ms；吞吐≈" + fps.toFixed(1) +
         " FPS；单帧延迟为 batch=1 的 " + (lat / (a + c)).toFixed(2) +
         "×，吞吐相对 batch=1 为 " + (fps / baseFps).toFixed(1) + "×。";
+    },
+    "22": (v) => {
+      const q = Number(v), e = 120;
+      const f = q * 1000 / e, f2 = q * 1000 / (e / 2);
+      return "散热上限 " + q + " W；若每帧能耗 " + (e / 1000).toFixed(3) + " J，可持续帧率≈" +
+        f.toFixed(1) + " FPS；每帧能耗减半到 " + (e / 2000).toFixed(3) +
+        " J 时，同功耗下可持续≈" + f2.toFixed(1) + " FPS。";
     }
   };
   for (const [id, render] of Object.entries(configs)) {
