@@ -19,7 +19,7 @@ python -m http.server 8000
 # 浏览器访问 http://localhost:8000
 ```
 
-首页提供章节搜索与阶段筛选。第一批 01–05 章已按独立文章标准重写，包含必要背景、概念定义、结构解释、公式或代码、适用边界与参考来源。06–28 章在本轮仅迁移目录并修正资源路径，尚未完成逐篇内容重构。
+首页提供章节搜索与阶段筛选。01–10 章已按独立文章标准重写，包含背景、符号约定、原理图解、可运行的教学脚本、适用边界与原始参考文献。11–28 章已迁移到规范化目录，但尚未完成逐篇技术审计。
 
 ## 课程路线
 
@@ -43,14 +43,14 @@ yolo-tutorial/
 ├── assets/
 │   ├── theme.css              # 首页与章节共用设计系统
 │   └── site.js                # 首页搜索与阶段筛选增强
-├── pdfs/                      # 论文原始 PDF 资料
+├── labs/                      # 可运行的配置、锚框、IoU 与特征形状教学工具\n├── pdfs/                      # 已收录论文资料
 ├── docs/
 │   ├── architecture.md        # 页面、导航和发布结构说明
 │   ├── improvements.md        # 追加式工程改进记录
 │   └── evidence/
-│       └── chapters-01-05.json # 第一批章节的主张—来源映射
+│       ├── 01.json ... 05.json # 基础篇逐篇证据\n│       └── 06.json ... 10.json # 第二批逐篇证据
 ├── tests/
-│   ├── test_site.py           # 静态结构、链接、公式和 SVG 检查
+│   ├── test_site.py           # 静态结构、链接、公式和 SVG 检查\n│   ├── test_labs.py           # 独立教学工具数值与配置测试
 │   └── browser_check.py       # Playwright 桌面/移动端浏览器验收
 ├── .github/workflows/
 │   └── quality.yml            # 静态测试与 Chromium 浏览器检查
@@ -66,11 +66,11 @@ yolo-tutorial/
 - **先问题、后机制：** 从具体技术难点开始，依次解释结构、数据流、数学表达、代码和结果。
 - **区分事实类型：** 论文原始主张、教学简化、代码实现和后续变体分别标注，不把后来的实现倒灌进早期论文。
 - **指标可追溯：** 记录数据集版本、split、IoU 协议、输入分辨率、硬件和计时口径；AP@0.5 不与 COCO AP 混为一谈。
-- **图示有语义：** SVG 必须有标题和描述，箭头、分支、特征尺度与文字说明一致。
+- **图示有语义：** SVG 必须有标题和描述，箭头、分支、特征尺度与文字说明一致。06–10 章的 8 张示意图既内联于文章，也导出为 `assets/figures/` 下的独立 SVG，支持离线复用和 XML 比对。
 - **离线优先：** 页面不依赖外部字体、CDN、遥测或运行时网络请求；关键数学表达使用浏览器原生 MathML。
 - **如实呈现实验：** 教学示例不是论文复现；未执行的浏览器测试不能标为通过。
 
-第一批 01–05 章依据 YOLOv1、YOLO9000/YOLOv2、YOLOv3 原始论文和 COCO 官方评估协议重写。来源映射见 每篇文章对应的证据台账位于 `docs/evidence/01.json` 至 `05.json`。。
+01–05 章依据 YOLOv1、YOLO9000/YOLOv2、YOLOv3 原始论文和 COCO 官方协议重写；06–10 章依据 YOLOv4、FPN/PANet/BiFPN、GIoU/DIoU/CIoU 与 Darknet/OpenCV 实现进行交叉验证。每篇文章的证据台账存放在 `docs/evidence/01.json` 至 `10.json`，区分已核对的论文主张、推导数字和教学示例。
 
 ## 本地质量检查
 
@@ -88,7 +88,7 @@ python -m playwright install chromium
 python tests/browser_check.py
 ```
 
-浏览器检查覆盖首页搜索、28 章入口、01–05 章桌面与移动端布局、横向溢出、页面异常以及核心 SVG 渲染。GitHub Actions 会在 Pull Request 和主分支更新时运行相同的检查。
+浏览器检查覆盖首页搜索、28 章入口、01–10 章的桌面与移动端布局、SVG/MathML、横向溢出、打印模式和锚框交互实验。GitHub Actions 会在 Pull Request 和主分支更新时运行相同的检查。
 
 ## GitHub Pages
 
@@ -97,3 +97,23 @@ python tests/browser_check.py
 ## 许可与第三方资料
 
 仓库未提供经核验的统一开源许可证，因此不要据此推断第三方论文、PDF、模型权重或其他素材可被重新分发。文章中的图示与解释应独立编写；引用原始论文时保留来源链接，并遵守对应资源的许可条件。
+
+## 可运行的工程实验
+
+无需第三方依赖的几何、形状与配置检查：
+
+```bash
+python -m labs.anchor_clusters labs/sample-boxes.csv --k 3 --seed 42
+python -m labs.box_geometry
+python -m labs.fpn_shapes --size 416
+python -m labs.darknet_cfg_audit path/to/yolov3-custom.cfg --classes 2
+```
+
+完整 YOLOv3 CPU 推理示例需要外部的原始 Darknet cfg/weights、类别名文件、输入图片和 OpenCV：
+
+```bash
+python -m pip install -r labs/requirements-inference.txt
+python -m labs.yolov3_opencv --help
+```
+
+这些实验是配置或算法契约的教学验证，不是论文原始 AP 的重新复现；真正训练与推理时，请固定对应 Darknet/OpenCV 版本及数据来源。

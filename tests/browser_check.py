@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -46,6 +47,16 @@ def main() -> None:
                 assert page.locator(".chapter-card:visible").count() == 5
                 page.locator("#stage-filter").select_option("all")
 
+                # A real chapter-level interaction: shape changes the chosen anchor.
+                page.goto(base + "/chapters/08.html", wait_until="networkidle")
+                assert "方形先验" in page.locator("#anchor-demo-output").inner_text()
+                page.locator("#anchor-demo-select").select_option("tall")
+                assert "竖长先验" in page.locator("#anchor-demo-output").inner_text()
+                assert page.locator("#anchor-target-box").get_attribute("height") == "140"
+                page.locator("#anchor-demo-select").select_option("wide")
+                assert "横长先验" in page.locator("#anchor-demo-output").inner_text()
+
+
                 for width in results["viewports"]:
                     page.set_viewport_size({"width": width, "height": 1000})
                     page.goto(base + "/index.html", wait_until="networkidle")
@@ -54,7 +65,7 @@ def main() -> None:
                     if width in (1440, 390):
                         page.screenshot(path=str(Path(temp) / f"home-{width}.png"), full_page=True)
 
-                    for chapter in range(1, 6):
+                    for chapter in range(1, 11):
                         num = f"{chapter:02d}"
                         page.goto(base + f"/chapters/{num}.html", wait_until="networkidle")
                         assert page.locator("main article h1").count() == 1, num
@@ -62,6 +73,12 @@ def main() -> None:
                         overflow = page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth + 1")
                         assert not overflow, f"chapter {num} horizontal overflow at {width}px"
                         assert page.locator("article svg").first.is_visible(), num
+                        if width in (360, 390) and chapter >= 6:
+                            figure_scroll = page.locator("article .diagram").first.evaluate(
+                                "(el) => ({inner: el.clientWidth, total: el.scrollWidth, focusable: el.tabIndex === 0})"
+                            )
+                            assert figure_scroll["total"] > figure_scroll["inner"], (num, width, figure_scroll)
+                            assert figure_scroll["focusable"], (num, width)
                         math_data = page.locator("article math").evaluate_all("""els => els.map(el => ({
                           namespace: el.namespaceURI,
                           label: el.getAttribute('aria-label'),
@@ -85,6 +102,13 @@ def main() -> None:
                             results["chapters_checked"].append(num)
 
                 assert not results["browser_errors"], results["browser_errors"]
+                report_dir = ROOT / "reports" / "browser"
+                report_dir.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(temp, report_dir, dirs_exist_ok=True)
+                (report_dir / "report.json").write_text(
+                    json.dumps(results, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8",
+                )
             browser.close()
     finally:
         server.shutdown()

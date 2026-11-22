@@ -34,7 +34,7 @@ Every chapter is an independent article. A reader arriving from search, a bookma
 
 ## Repository conventions
 
-- Canonical chapter pages live in `chapters/NN.html`.
+- Canonical chapter pages live in `chapters/NN.html`. Chapters 01–10 are the reviewed foundation/methods batch as of 2026-11-22; 11–28 need an independent content audit.
 - Root `NN.html` files are compatibility redirects; do not author chapter content there.
 - `courses.json` is the structured course catalogue; keep all 28 entries and their `file` paths in sync.
 - `index.html` is a static, file://-compatible course home. Do not make initial rendering depend on fetch().
@@ -50,3 +50,13 @@ Every chapter is an independent article. A reader arriving from search, a bookma
 4. Check local links, console/page errors, horizontal overflow, SVG labels, keyboard focus and at least one real interaction (home search/filter).
 5. Review the diff for incorrect claims, stale paths, duplicate navigation, accidental external dependencies and unverified metrics.
 6. Report checks that were skipped as “not verified”; never claim a browser test passed unless it ran.
+
+## Reproducible labs (06–10)
+
+- Place standalone deterministic checks in `labs/` and cover their numeric invariants in `tests/test_labs.py`.
+- Declare external dependencies, input files, coordinate assumptions and model/config version before showing inference or training commands.
+- Verify the full Darknet three-head `filters=A*(5+C)` and `classes/mask/anchors` contract. Do not assume tiny YOLOv3 has three heads.
+- The `labs/anchor_clusters.py` result is a teaching approximation, not a pixel-for-pixel Darknet `calc_anchors` reproduction.
+- Separate a geometry-only Python IoU demonstration from a differentiable training loss.
+- Validate chapter-level interactions (the Chapter 08 anchor-shape selector) in Playwright, including value changes and browser errors.
+- Each rewritten chapter needs its own `docs/evidence/NN.json` with claims, source locator, status and limitations.

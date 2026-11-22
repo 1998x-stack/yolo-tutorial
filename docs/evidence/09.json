@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "article": "chapters/09.html",
+  "batch": "2026-11-22-06-10",
+  "method": "Primary paper and implementation references; derived numerical checks are separate from published metrics.",
+  "claims": [
+    {
+      "id": "09-01",
+      "claim": "YOLOv1 使用加权平方误差，定位加权为 5，无目标置信度加权为 0.5",
+      "kind": "formula",
+      "source_url": "https://arxiv.org/abs/1506.02640",
+      "locator": "§2.2 Training",
+      "status": "verified",
+      "notes": "与之后的 IoU 系列损失分开解释。"
+    },
+    {
+      "id": "09-02",
+      "claim": "原始 YOLOv3 使用坐标平方误差与独立 Logistic BCE 类别训练",
+      "kind": "training",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.1–2.2",
+      "status": "verified",
+      "notes": "不是原生 CIoU 损失。"
+    },
+    {
+      "id": "09-03",
+      "claim": "GIoU 通过最小覆盖矩形中的额外空白区域区分不相交框",
+      "kind": "formula",
+      "source_url": "https://arxiv.org/abs/1902.09630",
+      "locator": "§3 Generalized Intersection over Union",
+      "status": "verified",
+      "notes": "可为负值，配套损失通常是 1-GIoU。"
+    },
+    {
+      "id": "09-04",
+      "claim": "DIoU 加入归一化中心距离，CIoU 进一步加入长宽比项 v 与权重 alpha",
+      "kind": "formula",
+      "source_url": "https://arxiv.org/abs/1911.08287",
+      "locator": "DIoU and CIoU Loss definitions",
+      "status": "verified",
+      "notes": "实现中的 alpha 导数处理须根据代码确定。"
+    },
+    {
+      "id": "09-05",
+      "claim": "两个面积各为4的分离框，GIoU 为 -0.2、DIoU 为 -9/29",
+      "kind": "calculation",
+      "source_url": "https://arxiv.org/abs/1911.08287",
+      "locator": "DIoU formulation",
+      "status": "derived",
+      "notes": "由所列示例框的连续坐标直接计算。"
+    },
+    {
+      "id": "09-06",
+      "claim": "DFL 来自 Generalized Focal Loss，处理分布化框定位；不同于 RetinaNet Focal Loss 的分类不平衡任务",
+      "kind": "historical",
+      "source_url": "https://arxiv.org/abs/2006.04388",
+      "locator": "Generalized Focal Loss; distribution focal loss",
+      "status": "verified",
+      "notes": "分类 Focal Loss 另见 https://arxiv.org/abs/1708.02002。"
+    }
+  ]
+}

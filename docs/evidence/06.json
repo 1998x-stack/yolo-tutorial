@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "article": "chapters/06.html",
+  "batch": "2026-11-22-06-10",
+  "method": "Primary paper and implementation references; derived numerical checks are separate from published metrics.",
+  "claims": [
+    {
+      "id": "06-01",
+      "claim": "数据标注采用 class_id cx cy w h 的归一化中心宽高格式",
+      "kind": "implementation",
+      "source_url": "https://github.com/AlexeyAB/darknet",
+      "locator": "README: custom object detection data annotation format",
+      "status": "verified",
+      "notes": "坐标格式是 Darknet 数据接口，不是 COCO JSON 接口。"
+    },
+    {
+      "id": "06-02",
+      "claim": "标准 YOLOv3 有三组预测头，416 输入输出尺度为 13、26、52，COCO 80 类下每头 255 通道",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.3 Predictions Across Scales",
+      "status": "verified",
+      "notes": "3×(4+1+C) 通道，C=2 时得到 21。"
+    },
+    {
+      "id": "06-03",
+      "claim": "三尺度各三个先验对应的候选框总数是 10647",
+      "kind": "calculation",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.3: three scales and three boxes per scale",
+      "status": "derived",
+      "notes": "3×(13²+26²+52²)，适用 416 输入。"
+    },
+    {
+      "id": "06-04",
+      "claim": "训练配置包含 classes、names、train、valid、backup 信息，且 cfg 的 filters/classes/masks 必须对齐",
+      "kind": "implementation",
+      "source_url": "https://github.com/AlexeyAB/darknet",
+      "locator": "README: how to train to detect your custom objects",
+      "status": "verified",
+      "notes": "具体路径与命令须按指定 Darknet 仓库版本配置。"
+    },
+    {
+      "id": "06-05",
+      "claim": "YOLOv3 的 objectness 和类别置信度在训练与推理中扮演不同角色，候选框需要解码和 NMS",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.1–2.3",
+      "status": "verified",
+      "notes": "本页 OpenCV 脚本使用 objectness × class score 和逐类别 NMS。"
+    },
+    {
+      "id": "06-06",
+      "claim": "OpenCV DNN 可读取 Darknet cfg 与 weights，NMSBoxes 用于候选框筛选",
+      "kind": "implementation",
+      "source_url": "https://docs.opencv.org/4.x/d6/d0f/group__dnn.html",
+      "locator": "readNetFromDarknet; NMSBoxes API",
+      "status": "verified",
+      "notes": "本仓库 CPU 演示将图片直接缩放到正方形，不使用 letterbox。"
+    },
+    {
+      "id": "06-07",
+      "claim": "使用 80/10/10 数据划分和两类样本仅为示例，而非论文实验结果",
+      "kind": "illustration",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.2 and dataset context",
+      "status": "illustrative",
+      "notes": "教学不宣称具体训练 AP 或速度。"
+    }
+  ]
+}

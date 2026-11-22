@@ -17,7 +17,7 @@
 <section class="home-hero">
   <p class="hero-kicker">COMPUTER VISION / OBJECT DETECTION</p>
   <h1>从一张图像，<br>到可靠的目标检测系统。</h1>
-  <p>沿着检测任务、YOLO 架构、训练策略、评估协议与部署工程逐步建立完整知识体系。课程围绕具体问题组织内容。第一批 01–05 章已重构为独立文章，其余章节将按同一标准继续审计和升级。</p>
+  <p>沿着检测任务、YOLO 架构、训练策略、评估协议与部署工程逐步建立完整知识体系。课程围绕具体问题组织内容。前 10 章已经按照独立文章标准重构，并配套原始文献、图解与实验工具；其余章节将继续分批审计。</p>
   <div class="hero-actions">
     <a class="hero-primary" href="chapters/01.html">从第 01 章开始 <span aria-hidden="true">→</span></a>
     <a class="hero-secondary" href="#course-map">浏览全部 28 章</a>
@@ -75,20 +75,20 @@
 </section>
 <section class="chapter-group" id="stage-architecture" data-stage="architecture">
 <h3>02 · 检测组件与训练 <span>06–14 · 9 篇</span></h3>
-<div class="chapter-grid"><a class="chapter-card" href="chapters/06.html" data-stage="architecture" data-search="06 YOLOv3工程实战 训练配置与损失计算 · 数据增强 · 多尺度训练策略 · NMS后处理">
-  <span class="card-number">CHAPTER 06</span><strong>YOLOv3工程实战</strong><small>训练配置与损失计算 · 数据增强 · 多尺度训练策略 · NMS后处理</small>
+<div class="chapter-grid"><a class="chapter-card" href="chapters/06.html" data-stage="architecture" data-search="06 YOLOv3 工程实战 Darknet 标签与配置审计 · 训练与验证划分 · OpenCV 推理 · 逐类别 NMS">
+  <span class="card-number">CHAPTER 06</span><strong>YOLOv3 工程实战</strong><small>Darknet 标签与配置审计 · 训练与验证划分 · OpenCV 推理 · 逐类别 NMS</small>
 </a>
-<a class="chapter-card" href="chapters/07.html" data-stage="architecture" data-search="07 YOLOv4集大成 CSPDarknet-53 · Mosaic与CIoU · Mish激活函数 · BoF/BoS方法论">
-  <span class="card-number">CHAPTER 07</span><strong>YOLOv4集大成</strong><small>CSPDarknet-53 · Mosaic与CIoU · Mish激活函数 · BoF/BoS方法论</small>
+<a class="chapter-card" href="chapters/07.html" data-stage="architecture" data-search="07 YOLOv4 系统设计 CSPDarknet53 与 SPP · PAN 式融合 · Mosaic 与 Mish · BoF / BoS">
+  <span class="card-number">CHAPTER 07</span><strong>YOLOv4 系统设计</strong><small>CSPDarknet53 与 SPP · PAN 式融合 · Mosaic 与 Mish · BoF / BoS</small>
 </a>
-<a class="chapter-card" href="chapters/08.html" data-stage="architecture" data-search="08 锚框机制与聚类 K-means锚框设计 · 锚框分配策略 · 多尺度锚框 · Anchor-free演进">
-  <span class="card-number">CHAPTER 08</span><strong>锚框机制与聚类</strong><small>K-means锚框设计 · 锚框分配策略 · 多尺度锚框 · Anchor-free演进</small>
+<a class="chapter-card" href="chapters/08.html" data-stage="architecture" data-search="08 锚框机制与聚类 IoU 距离与 K-means · 锚框解码 · 正样本分配 · 交互式形状实验">
+  <span class="card-number">CHAPTER 08</span><strong>锚框机制与聚类</strong><small>IoU 距离与 K-means · 锚框解码 · 正样本分配 · 交互式形状实验</small>
 </a>
-<a class="chapter-card" href="chapters/09.html" data-stage="architecture" data-search="09 损失函数演进 IoU→GIoU→DIoU→CIoU · DFL分布损失 · BCE分类损失 · 回归损失对比">
-  <span class="card-number">CHAPTER 09</span><strong>损失函数演进</strong><small>IoU→GIoU→DIoU→CIoU · DFL分布损失 · BCE分类损失 · 回归损失对比</small>
+<a class="chapter-card" href="chapters/09.html" data-stage="architecture" data-search="09 检测损失函数演进 IoU / GIoU / DIoU / CIoU · 坐标与分类损失 · DFL · 可运行几何示例">
+  <span class="card-number">CHAPTER 09</span><strong>检测损失函数演进</strong><small>IoU / GIoU / DIoU / CIoU · 坐标与分类损失 · DFL · 可运行几何示例</small>
 </a>
-<a class="chapter-card" href="chapters/10.html" data-stage="architecture" data-search="10 特征金字塔FPN 多尺度特征融合 · 自上而下路径 · PANet双向融合 · 小目标检测提升">
-  <span class="card-number">CHAPTER 10</span><strong>特征金字塔FPN</strong><small>多尺度特征融合 · 自上而下路径 · PANet双向融合 · 小目标检测提升</small>
+<a class="chapter-card" href="chapters/10.html" data-stage="architecture" data-search="10 特征金字塔 FPN 横向连接与上采样 · Add vs Concat · PANet / BiFPN · 张量形状检查">
+  <span class="card-number">CHAPTER 10</span><strong>特征金字塔 FPN</strong><small>横向连接与上采样 · Add vs Concat · PANet / BiFPN · 张量形状检查</small>
 </a>
 <a class="chapter-card" href="chapters/11.html" data-stage="architecture" data-search="11 数据增强策略 Mosaic增强 · MixUp与CutMix · SAT自对抗训练 · 增强流水线推荐">
   <span class="card-number">CHAPTER 11</span><strong>数据增强策略</strong><small>Mosaic增强 · MixUp与CutMix · SAT自对抗训练 · 增强流水线推荐</small>
@@ -159,7 +159,7 @@
 <section class="home-section">
   <div class="home-note">
     <h3>建议的学习方式</h3>
-    <p>先读章节中的问题定义和结构图，再核对公式、张量尺寸与训练/推理流程。阅读实验结果时，务必同时检查数据集版本、评估指标、输入分辨率和硬件配置。第一批 01–05 章可独立阅读；06–28 章保留现有内容，本轮只调整目录与资源路径，尚未完成逐篇内容审计。</p>
+    <p>先读章节中的问题定义和结构图，再核对公式、张量尺寸与训练/推理流程。阅读实验结果时，务必同时检查数据集版本、评估指标、输入分辨率和硬件配置。01–10 章已完成重构和技术证据审计；11–28 章保留现有内容，尚未完成逐篇技术复核。</p>
   </div>
 </section>
 <footer class="home-footer"><span>YOLO 目标检测教程 · 中文技术学习资料</span><span>静态 HTML · 可通过本地 HTTP 服务离线学习</span></footer>

@@ -1,0 +1,22 @@
+<svg viewBox="0 0 900 355" role="img" aria-labelledby="c10a-title c10a-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="c10a-title">FPN 的骨干自底向上、语义自顶向下和横向连接</title><desc id="c10a-desc">左边三层骨干特征C3 C4 C5空间分辨率依次下降；右边先将C5投影成M5，再上采样与横向投影C4相加成M4，再上采样与C3相加成M3，最后对各层做3乘3卷积得到P3 P4 P5。</desc>
+<rect x="8" y="8" width="884" height="339" rx="18" fill="#f6fafb"/>
+<text x="73" y="37" fill="#24414a" font-size="15" font-weight="700">骨干 Bottom-up</text>
+<text x="479" y="37" fill="#087f8c" font-size="15" font-weight="700">FPN Top-down + Lateral</text>
+<g font-size="15" fill="#24414a">
+<rect x="70" y="74" width="176" height="55" rx="9" fill="#dcebed" stroke="#87afb8"/><text x="158" y="98" text-anchor="middle">C5 · 13 × 13</text><text x="158" y="116" text-anchor="middle" font-size="12">语义较强</text>
+<rect x="70" y="165" width="176" height="55" rx="9" fill="#dcebed" stroke="#87afb8"/><text x="158" y="189" text-anchor="middle">C4 · 26 × 26</text><text x="158" y="207" text-anchor="middle" font-size="12">中层特征</text>
+<rect x="70" y="256" width="176" height="55" rx="9" fill="#dcebed" stroke="#87afb8"/><text x="158" y="280" text-anchor="middle">C3 · 52 × 52</text><text x="158" y="298" text-anchor="middle" font-size="12">定位细节</text>
+</g>
+<g fill="none" stroke="#597f89" stroke-width="2.5"><path d="M158 250 V227 M158 159 V136"/><path d="M151 235 l7 -8 7 8 M151 144 l7 -8 7 8"/></g>
+<g fill="none" stroke="#087f8c" stroke-width="2.5"><path d="M248 100 H355"/><path d="M248 191 H355"/><path d="M248 282 H355"/></g>
+<g fill="#e2f0ef" stroke="#80b7b2">
+<rect x="355" y="74" width="148" height="55" rx="9"/><rect x="355" y="165" width="148" height="55" rx="9"/><rect x="355" y="256" width="148" height="55" rx="9"/>
+</g>
+<g fill="#24535a" text-anchor="middle" font-size="14"><text x="429" y="96">M5 = 1×1(C5)</text><text x="429" y="115" font-size="12">13 × 13 × 256</text><text x="429" y="187">M4 = lateral + ↑</text><text x="429" y="206" font-size="12">26 × 26 × 256</text><text x="429" y="278">M3 = lateral + ↑</text><text x="429" y="297" font-size="12">52 × 52 × 256</text></g>
+<g fill="none" stroke="#087f8c" stroke-width="3"><path d="M504 101 H551 V191 H504"/><path d="M504 191 H551 V282 H504"/><path d="M515 185 l-10 6 10 6 M515 276 l-10 6 10 6"/></g>
+<g fill="#fff0df" stroke="#d5aa74"><rect x="617" y="74" width="196" height="55" rx="9"/><rect x="617" y="165" width="196" height="55" rx="9"/><rect x="617" y="256" width="196" height="55" rx="9"/></g>
+<g fill="#754719" text-anchor="middle" font-size="15"><text x="715" y="98">P5 · 13 × 13</text><text x="715" y="117" font-size="12">3×3 平滑卷积</text><text x="715" y="189">P4 · 26 × 26</text><text x="715" y="208" font-size="12">3×3 平滑卷积</text><text x="715" y="280">P3 · 52 × 52</text><text x="715" y="299" font-size="12">3×3 平滑卷积</text></g>
+<g stroke="#c47b31" stroke-width="2.5"><path d="M505 101 H613 M505 191 H613 M505 282 H613"/></g>
+<text x="450" y="333" fill="#5b7379" text-anchor="middle" font-size="13">↑ = 邻近上采样 ×2；横向特征经 1×1 通道投影后逐元素相加</text>
+</svg>

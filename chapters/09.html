@@ -1,216 +1,117 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第9章 损失函数演进 — YOLO教程</title>
-    <link rel="stylesheet" href="../assets/theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="定位、目标存在性和类别判断是三个独立训练问题。IoU、GIoU、DIoU、CIoU 与 DFL 改进的是不同环节；正确比较必须先明确数学定义和版本归属。">
+<title>第 09 章｜检测损失函数：从坐标误差到几何约束 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
 </head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🤖 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 目标检测概述</a></li>
-            <li><a href="02.html">第2章 YOLO设计哲学</a></li>
-            <li><a href="03.html">第3章 YOLOv1详解</a></li>
-            <li><a href="04.html">第4章 YOLOv2/YOLO9000</a></li>
-            <li><a href="05.html">第5章 YOLOv3核心架构</a></li>
-            <li><a href="06.html">第6章 YOLOv3工程实战</a></li>
-            <li><a href="07.html">第7章 YOLOv4集大成</a></li>
-            <li><a href="08.html">第8章 锚框机制与聚类</a></li>
-            <li><a href="09.html" class="active">第9章 损失函数演进</a></li>
-            <li><a href="10.html">第10章 特征金字塔FPN</a></li>
-            <li><a href="11.html">第11章 数据增强策略</a></li>
-            <li><a href="12.html">第12章 骨干网络对比</a></li>
-            <li><a href="13.html">第13章 Neck与Head设计</a></li>
-            <li><a href="14.html">第14章 NMS与后处理</a></li>
-            <li><a href="15.html">第15章 YOLOv5入门</a></li>
-            <li><a href="16.html">第16章 YOLOv8新特性</a></li>
-            <li><a href="17.html">第17章 YOLOv9/v10前沿</a></li>
-            <li><a href="18.html">第18章 YOLO11/v12演进</a></li>
-            <li><a href="19.html">第19章 模型轻量化</a></li>
-            <li><a href="20.html">第20章 小目标检测优化</a></li>
-            <li><a href="21.html">第21章 部署与推理加速</a></li>
-            <li><a href="22.html">第22章 边缘设备部署</a></li>
-            <li><a href="23.html">第23章 数据标注与格式</a></li>
-            <li><a href="24.html">第24章 训练流水线搭建</a></li>
-            <li><a href="25.html">第25章 模型评估与调优</a></li>
-            <li><a href="26.html">第26章 YOLO+多模态</a></li>
-            <li><a href="27.html">第27章 行业实战案例</a></li>
-            <li><a href="28.html">第28章 综合实训项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
 
-<h2>第9章 损失函数演进</h2>
+<aside class="sidebar" aria-label="课程导航"><a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a><p class="sidebar-label">FOUNDATION / METHODS · 01—10</p><nav><ol class="chapter-list"><li><a href="01.html" data-chapter="01"><span>01</span>目标检测概述</a></li><li><a href="02.html" data-chapter="02"><span>02</span>YOLO 设计哲学</a></li><li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1 统一回归</a></li><li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 / YOLO9000</a></li><li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3 多尺度架构</a></li><li><a href="06.html" data-chapter="06"><span>06</span>YOLOv3 工程实战</a></li><li><a href="07.html" data-chapter="07"><span>07</span>YOLOv4 系统设计</a></li><li><a href="08.html" data-chapter="08"><span>08</span>锚框机制与聚类</a></li><li><a href="09.html" data-chapter="09" aria-current="page"><span>09</span>损失函数演进</a></li><li><a href="10.html" data-chapter="10"><span>10</span>特征金字塔 FPN</a></li></ol></nav><a class="all-chapters" href="../index.html">查看全部 28 章 ↗</a></aside>
+<main id="main" class="main-content">
+<article class="article"><header class="article-header"><p class="eyebrow">OPTIMIZATION <span>／</span> CHAPTER 09</p><h1>检测损失函数：从坐标误差到几何约束</h1><p class="article-dek">定位、目标存在性和类别判断是三个独立训练问题。IoU、GIoU、DIoU、CIoU 与 DFL 改进的是不同环节；正确比较必须先明确数学定义和版本归属。</p></header>
+<section id="loss-components"><h2>1. 先区分三个误差来源</h2>
+<p>一个检测预测至少包含三类量：边界框几何位置、该位置是否真的有目标，以及目标类别。因此训练时通常要分别定义<strong>定位损失（box）</strong>、<strong>objectness/质量损失</strong>以及<strong>分类损失</strong>。这些项如何组合取决于具体模型版本和训练实现，不能把 YOLO 家族归纳为一个永远不变的 Loss 公式。</p>
+<div class="table-wrap"><table><thead><tr><th>训练量</th><th>学习目标</th><th>典型误差形式</th><th>容易误解的地方</th></tr></thead><tbody>
+<tr><td>Box regression</td><td>让框中心、尺寸贴合标注目标</td><td>SSE/L1、IoU 类几何损失、分布回归</td><td>定位损失不能单独说明分类是否正确</td></tr>
+<tr><td>Objectness / quality</td><td>评估某候选是否包含目标、质量是否可信</td><td>BCE 或版本专用质量目标</td><td>objectness 不总是纯粹的“有没有目标”概率</td></tr>
+<tr><td>Classification</td><td>预测目标类别</td><td>Softmax CE、独立 BCE、Focal Loss 变体</td><td>类别互斥性和多标签假设必须分清</td></tr>
+</tbody></table></div>
+<p><a href="https://arxiv.org/abs/1506.02640" target="_blank" rel="noreferrer">YOLOv1</a> 采用加权的平方误差，并以 <code>λ_coord=5</code>、<code>λ_noobj=0.5</code> 控制定位与背景置信度项；它对宽高的平方根做回归，以缓和不同尺度框的损失差异。<a href="https://arxiv.org/abs/1804.02767" target="_blank" rel="noreferrer">最初的 YOLOv3</a> 框位置仍采用平方误差，而类别使用独立 Logistic 与二元交叉熵。不可将 YOLOv4 后来的 CIoU 称为 YOLOv3 论文的原始配置。</p>
+</section>
+<section id="why-iou"><h2>2. 只比较坐标，为什么可能与检测质量脱节</h2>
+<p>假设两个预测框与真值框在 x 坐标上分别误差 10 个像素：对于 20 像素宽的小目标，这可能造成严重的重叠损失；对于 400 像素宽的大目标，相同像素偏移的影响通常小得多。直接按坐标差的平方求和，未必反映评价时的实际重叠程度。</p>
+<p>交并比 IoU（Intersection over Union）直接度量两个框的相交程度。当两个框完全不相交时，IoU=0；这时不同距离的分离框得到相同的 IoU，单独使用 <code>1−IoU</code> 作为损失可能缺乏有用的朝向梯度。GIoU、DIoU 和 CIoU 的目的不是仅仅让评价指标更漂亮，而是让训练目标为更多几何情况提供区分信息。</p>
+<figure class="diagram" tabindex="0" aria-label="技术结构图：在窄屏上可左右滚动查看">
+<svg viewBox="0 0 900 300" role="img" aria-labelledby="c09-title c09-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="c09-title">两框不重叠时 IoU 为零，但中心距离和外接矩形仍然提供信息</title><desc id="c09-desc">左边预测框 A 和右边真实框 B 不重叠，IoU 为零；最小包围框 C 和两框中心的距离可以分别用于 GIoU 和 DIoU 的几何惩罚。</desc>
+<rect x="8" y="8" width="884" height="284" rx="18" fill="#f6fafb"/>
+<g transform="translate(56 42)">
+<rect x="0" y="0" width="480" height="216" rx="11" fill="#edf5f5" stroke="#bfd2d3"/>
+<rect x="45" y="50" width="380" height="125" fill="none" stroke="#6c5b91" stroke-width="3" stroke-dasharray="8 6"/>
+<text x="50" y="42" fill="#6c5b91" font-size="16" font-weight="700">C：最小外接框</text>
+<rect x="45" y="50" width="152" height="125" rx="3" fill="#087f8c" fill-opacity=".16" stroke="#087f8c" stroke-width="3"/>
+<rect x="273" y="50" width="152" height="125" rx="3" fill="#c47b31" fill-opacity=".15" stroke="#c47b31" stroke-width="3"/>
+<circle cx="121" cy="112" r="5" fill="#087f8c"/><circle cx="349" cy="112" r="5" fill="#c47b31"/>
+<path d="M127 112 H343" stroke="#192f38" stroke-width="2.5" stroke-dasharray="6 5"/>
+<g fill="#24414a" font-size="17" text-anchor="middle"><text x="121" y="192">预测框 A</text><text x="349" y="192">真实框 B</text></g>
+<text x="235" y="104" text-anchor="middle" font-size="14" fill="#314d56">中心距离 ρ</text>
+</g>
+<g transform="translate(580 70)">
+<text x="0" y="0" fill="#24414a" font-size="18" font-weight="700">A 与 B 完全不相交</text>
+<rect x="0" y="22" width="275" height="38" rx="8" fill="#e7f1f1"/><text x="16" y="47" fill="#24535a" font-size="15">IoU = 0（无法区分距离）</text>
+<rect x="0" y="71" width="275" height="38" rx="8" fill="#eeeaf7"/><text x="16" y="96" fill="#57477b" font-size="15">GIoU：关注空白包围面积</text>
+<rect x="0" y="120" width="275" height="38" rx="8" fill="#fff0df"/><text x="16" y="145" fill="#754719" font-size="15">DIoU：显式关注中心距离</text>
+<text x="4" y="195" fill="#5c737a" font-size="14">CIoU 进一步引入长宽比差异</text>
+</g>
+</svg>
+<figcaption>当 A、B 不相交时，IoU 不能区分它们距离远近；GIoU 在最小外接框中度量额外空白区域，DIoU 直接测量中心点距离。</figcaption>
+</figure>
+</section>
+<section id="iou-giou"><h2>3. IoU 与 GIoU：让不相交的框不再完全同分</h2>
+<p>设预测框为 A、真值框为 B，C 为同时包围二者的最小轴对齐矩形。IoU 是交集面积除以并集面积，范围是 0–1；GIoU 对外接矩形中没有被 A∪B 覆盖的区域施加惩罚，因此 GIoU 可能为负，范围是 −1–1。</p>
+<div class="equation" tabindex="0" role="region" aria-label="交并比与广义交并比的定义，可横向滚动">
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="IoU 等于 A 交 B 的面积除以 A 并 B 的面积；GIoU 等于 IoU 减去 C 中不属于并集的面积占 C 面积的比例">
+<mtable columnalign="left">
+<mtr><mtd><mi>IoU</mi><mo>=</mo><mfrac><mrow><mo>|</mo><mi>A</mi><mo>∩</mo><mi>B</mi><mo>|</mo></mrow><mrow><mo>|</mo><mi>A</mi><mo>∪</mo><mi>B</mi><mo>|</mo></mrow></mfrac></mtd></mtr>
+<mtr><mtd><mi>GIoU</mi><mo>=</mo><mi>IoU</mi><mo>−</mo><mfrac><mrow><mo>|</mo><mi>C</mi><mo>∖</mo><mo>(</mo><mi>A</mi><mo>∪</mo><mi>B</mi><mo>)</mo><mo>|</mo></mrow><mrow><mo>|</mo><mi>C</mi><mo>|</mo></mrow></mfrac></mtd></mtr>
+</mtable>
+</math></div>
+<p>GIoU 出自 <a href="https://arxiv.org/abs/1902.09630" target="_blank" rel="noreferrer">Rezatofighi 等人的 CVPR 2019 论文</a>。当一个框完全包含另一个框时，C 与并集可能恰好一样大，GIoU 的额外惩罚消失，因此 GIoU 也不是所有几何情形的最优优化方向。</p></section>
+<section id="diou-ciou"><h2>4. DIoU 与 CIoU：中心位置与形状一起参与</h2>
+<p>DIoU 使用两个框中心点之间的距离 ρ，并除以包围它们的最小外接框对角线长度 c 的平方，形成无量纲惩罚；CIoU 在此基础上加上长宽比差异项 v 和自适应权重 α。</p>
+<div class="equation" tabindex="0" role="region" aria-label="DIoU 和 CIoU 的损失公式，可横向滚动">
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="DIoU 损失等于一减交并比加中心距离平方除以外接框对角线平方；CIoU 损失另外加 alpha 乘以 v">
+<mtable columnalign="left">
+<mtr><mtd><msub><mi>L</mi><mi>DIoU</mi></msub><mo>=</mo><mn>1</mn><mo>−</mo><mi>IoU</mi><mo>+</mo><mfrac><msup><mi>ρ</mi><mn>2</mn></msup><msup><mi>c</mi><mn>2</mn></msup></mfrac></mtd></mtr>
+<mtr><mtd><msub><mi>L</mi><mi>CIoU</mi></msub><mo>=</mo><msub><mi>L</mi><mi>DIoU</mi></msub><mo>+</mo><mi>αv</mi></mtd></mtr>
+</mtable>
+</math></div>
+<div class="equation" tabindex="0" role="region" aria-label="CIoU 长宽比惩罚和自适应权重，可横向滚动">
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="v 为四除以 pi 的平方乘以两框宽高比反正切之差的平方；alpha 为 v 除以一减 IoU 加 v">
+<mtable columnalign="left">
+<mtr><mtd><mi>v</mi><mo>=</mo><mfrac><mn>4</mn><msup><mi>π</mi><mn>2</mn></msup></mfrac><msup><mrow><mo>(</mo><mi>atan</mi><mo>(</mo><mfrac><msub><mi>w</mi><mi>B</mi></msub><msub><mi>h</mi><mi>B</mi></msub></mfrac><mo>)</mo><mo>−</mo><mi>atan</mi><mo>(</mo><mfrac><msub><mi>w</mi><mi>A</mi></msub><msub><mi>h</mi><mi>A</mi></msub></mfrac><mo>)</mo><mo>)</mo></mrow><mn>2</mn></msup></mtd></mtr>
+<mtr><mtd><mi>α</mi><mo>=</mo><mfrac><mi>v</mi><mrow><mn>1</mn><mo>−</mo><mi>IoU</mi><mo>+</mo><mi>v</mi></mrow></mfrac></mtd></mtr>
+</mtable></math></div>
+<p>这里 A 是预测框、B 是真实框，<code>ρ²</code> 为两中心欧氏距离的平方，c² 为最小包围框对角线长度的平方。实现中应处理两框相同导致的 <code>0/0</code> 极限情况及正宽高约束；部分训练实现会对 α 的求导采用特定处理，应以对应代码版本为准。<a href="https://arxiv.org/abs/1911.08287" target="_blank" rel="noreferrer">Zheng 等人的 DIoU/CIoU 论文</a>对此有推导和实验分析。</p></section>
+<section id="experiment"><h2>5. 用具体框算一遍：没有相交，损失仍然不同</h2>
+<p>取预测框 <code>A=(0,0,2,2)</code>、真实框 <code>B=(3,0,5,2)</code>，坐标为连续平面上的 <code>(x1,y1,x2,y2)</code>，面积采用宽乘高，不使用像素边界的 +1 约定。两框面积都是 4、交集是 0、并集是 8；包围框 C 的面积是 10，中心点相距 3，对角线平方是 29。</p>
+<div class="table-wrap"><table><thead><tr><th>量</th><th>手算结果</th><th>对应损失</th></tr></thead><tbody>
+<tr><td>IoU</td><td>0</td><td>1 − IoU = 1.000000</td></tr>
+<tr><td>GIoU</td><td>0 − (10−8)/10 = −0.2</td><td>1.200000</td></tr>
+<tr><td>DIoU</td><td>0 − 9/29 ≈ −0.310345</td><td>1.310345</td></tr>
+<tr><td>CIoU</td><td>两框宽高比相同，v=0，与 DIoU 相同</td><td>1.310345</td></tr>
+</tbody></table></div>
+<pre><code># 完全无第三方依赖的可运行示例
+python -m labs.box_geometry
 
-<p>大家好，我是你们的讲师。损失函数是整个YOLO训练的指挥棒——一个小小的改动可能带来几个点的mAP提升。从YOLOv1的sum-squared error到YOLOv8的CIoU + DFL组合，损失函数的演进本质上是对"什么样的框才算好"这个问题的不断追问。</p>
-
-<p>本章我们将系统梳理YOLO系列中损失函数的演变历程，理解每种损失函数的设计动机、数学原理和实际效果。</p>
-
-<h2>9.1 YOLOv1的多部分损失</h2>
-
-<p>YOLOv1的损失函数可以看作是一个"大杂烩"，它将三个目标组合在一起：定位准确度、物体置信度和分类正确性。总损失由以下几部分组成：</p>
-
-<pre><code>Loss = λ_coord * L_coord
-     + λ_obj * L_obj
-     + λ_noobj * L_noobj
-     + λ_cls * L_cls</code></pre>
-
-<p>YOLOv1使用<strong>Sum-Squared Error</strong>（SSE）作为所有项的度量方式，这在今天看来非常粗糙：</p>
-
-<ul>
-    <li><strong>定位损失</strong>：预测框与ground truth的坐标差平方和，但大框和小框的误差被同等对待</li>
-    <li><strong>置信度损失</strong>：负责检测物体的框（正样本）和不负责的框（负样本）各自计算</li>
-    <li><strong>分类损失</strong>：预测类别与真实类别的交叉熵</li>
-</ul>
-
-<div class="warning">
-    <strong>踩坑实录：权重平衡的陷阱。</strong> YOLOv1使用λ_coord=5和λ_noobj=0.5来平衡各部分损失。但这个权重是在VOC数据集上调出来的，换到行人检测数据集时模型完全不收敛。原因是行人场景负样本比例远高于VOC，λ_noobj=0.5仍然过大，导致模型倾向于把所有框预测为背景。将λ_noobj调整到0.1后训练才恢复正常。这个教训告诉我们：损失函数的权重不是通用的，需要根据数据集的正负样本比例重新调优。
+# 结果包括 iou / giou / diou / ciou 与各自 loss
+# 代码显式拒绝面积为零或非有限坐标</code></pre>
+<p><a href="../labs/box_geometry.py">查看实现</a>。该脚本用于核对数值与边界条件，返回的是 Python 浮点计算结果，<strong>不是</strong>可微分的 PyTorch 损失模块，也没有实现训练时的梯度、匹配和 reduction。</p></section>
+<section id="distribution"><h2>6. DFL 与 Focal Loss 不解决同一个问题</h2>
+<p>普通框回归直接预测一个距离或坐标值。Distribution Focal Loss（DFL）把每个边界距离离散为多个区间，并训练预测分布对相邻两个桶的权重，使模型能在离散分布中恢复连续位置。它来自 <a href="https://arxiv.org/abs/2006.04388" target="_blank" rel="noreferrer">Generalized Focal Loss（2020）</a>，不等同于 <a href="https://arxiv.org/abs/1708.02002" target="_blank" rel="noreferrer">RetinaNet 的 Focal Loss</a>：后者主要缓解前景/背景分类不平衡问题。</p>
+<p>现代部分 Ultralytics YOLO 实现把 IoU 类回归项与 DFL 结合，再单独处理类别损失。这个“组合”属于具体版本与训练代码实现，不能倒推给 YOLOv1–v4。检查框输出格式时必须知道它是一个直接标量、锚框偏移，还是分布积分后的距离。</p></section>
+<section id="practice"><h2>7. 选择损失函数的实验准则</h2>
+<p>先固定类别表、样本分配、输入尺寸、增强策略、训练时长、学习率和随机种子，再替换框损失；同时观察 COCO AP（IoU 0.50:0.95）、AP50、AP75、不同目标面积 AP 和框定位失败样例。只看 train loss 的数值大小不构成可比较的实验：两种损失的量纲与权重可能不同，数值变小并不代表定位更好。</p>
+<p>若目标是提高置信度校准或多标签分类，应该首先检查 objectness/分类目标而不是只调整 IoU 损失。若目标是改善密集小目标，特征分辨率和样本匹配也可能是瓶颈；单一损失改动不能恢复已经丢失的像素细节。</p></section>
+<section id="references"><h2>参考资料</h2><ol class="references">
+<li>Redmon et al., <a href="https://arxiv.org/abs/1506.02640" target="_blank" rel="noreferrer">YOLOv1</a>，§2.2；Redmon &amp; Farhadi, <a href="https://arxiv.org/abs/1804.02767" target="_blank" rel="noreferrer">YOLOv3</a>，§2.1–2.2。</li>
+<li>Rezatofighi et al., <a href="https://arxiv.org/abs/1902.09630" target="_blank" rel="noreferrer">Generalized Intersection over Union</a>，CVPR 2019。</li>
+<li>Zheng et al., <a href="https://arxiv.org/abs/1911.08287" target="_blank" rel="noreferrer">Distance-IoU Loss</a>，AAAI 2020。</li>
+<li>Li et al., <a href="https://arxiv.org/abs/2006.04388" target="_blank" rel="noreferrer">Generalized Focal Loss</a>；Lin et al., <a href="https://arxiv.org/abs/1708.02002" target="_blank" rel="noreferrer">Focal Loss for Dense Object Detection</a>。</li>
+</ol></section></article>
+<nav class="chapter-nav" aria-label="章节切换"><a href="08.html" class="previous"><small>上一章</small><strong>← 锚框机制与聚类</strong></a><a href="../index.html" class="chapter-index">全部章节</a><a href="10.html" class="next"><small>下一章</small><strong>特征金字塔 FPN →</strong></a></nav>
+<footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>
+</main>
 </div>
-
-<h2>9.2 IoU及其变体</h2>
-
-<p>YOLOv1的SSE损失有一个根本问题：它优化的是"坐标的数值接近程度"，而不是"框的重合程度"。即使两个框的SSE相同，它们的IoU可能天差地别。这促使了<strong>IoU损失</strong>的诞生。</p>
-
-<h3>IoU Loss</h3>
-<p>IoU损失直接将预测框与ground truth之间的IoU作为优化目标：</p>
-<pre><code>L_IoU = 1 - IoU(pred, gt)</code></pre>
-<p>它的优点是尺度不变性——无论框的大小，IoU损失都能反映真实的重叠程度。但IoU损失有一个致命缺陷：当预测框与ground truth完全不重叠时，IoU=0，梯度也为0，模型无法学习。</p>
-
-<h3>GIoU Loss（Generalized IoU）</h3>
-<p>GIoU解决了IoU在无重叠区域梯度消失的问题。GIoU引入了一个<strong>最小外接矩形</strong>C（同时包含预测框和ground truth的最小矩形）：</p>
-
-<pre><code>GIoU = IoU - |C - (A ∪ B)| / |C|
-L_GIoU = 1 - GIoU</code></pre>
-
-<p>当两个框不重叠时，GIoU会惩罚它们之间的距离——外接矩形越大，惩罚越大。但当两个框处于包含关系时（一个框完全在另一个内部），GIoU退化为IoU，无法进一步优化。</p>
-
-<h3>DIoU Loss（Distance IoU）</h3>
-<p>DIoU在IoU的基础上增加了<strong>中心点距离</strong>的惩罚项：</p>
-
-<pre><code>DIoU = IoU - ρ²(b, b_gt) / c²
-L_DIoU = 1 - DIoU</code></pre>
-
-<p>其中ρ表示欧氏距离，b和b_gt是两个框的中心点，c是外接矩形C的对角线长度。DIoU直接优化中心点距离，收敛速度比GIoU快得多。</p>
-
-<h3>CIoU Loss（Complete IoU）</h3>
-<p>CIoU在DIoU的基础上增加了<strong>宽高比一致性</strong>的考量，是目前YOLO系列中最广泛使用的回归损失：</p>
-
-<pre><code>CIoU = IoU - ρ²(b, b_gt) / c² - αv
-
-v = (4/π²) * (arctan(w_gt/h_gt) - arctan(w/h))²
-α = v / ((1 - IoU) + v)
-
-L_CIoU = 1 - CIoU</code></pre>
-
-<p>其中v衡量预测框与ground truth宽高比的差异，α是平衡系数。CIoU同时考虑了三个因素：重叠面积、中心点距离和宽高比，是目前综合效果最好的IoU变体。</p>
-
-<table>
-    <tr>
-        <th>损失函数</th>
-        <th>考虑因素</th>
-        <th>处理无重叠</th>
-        <th>收敛速度</th>
-        <th>YOLO版本</th>
-    </tr>
-    <tr>
-        <td>MSE/SSE</td>
-        <td>坐标数值</td>
-        <td>有效</td>
-        <td>慢</td>
-        <td>v1, v2</td>
-    </tr>
-    <tr>
-        <td>IoU Loss</td>
-        <td>重叠面积</td>
-        <td>无效（梯度消失）</td>
-        <td>中等</td>
-        <td>—</td>
-    </tr>
-    <tr>
-        <td>GIoU Loss</td>
-        <td>重叠+外接矩形</td>
-        <td>有效</td>
-        <td>中等</td>
-        <td>v3</td>
-    </tr>
-    <tr>
-        <td>DIoU Loss</td>
-        <td>重叠+中心距离</td>
-        <td>有效</td>
-        <td>快</td>
-        <td>v4</td>
-    </tr>
-    <tr>
-        <td>CIoU Loss</td>
-        <td>重叠+中心+宽高比</td>
-        <td>有效</td>
-        <td>快</td>
-        <td>v4~v8</td>
-    </tr>
-    <tr>
-        <td>DFL + CIoU</td>
-        <td>分布+综合</td>
-        <td>有效</td>
-        <td>快</td>
-        <td>v8+</td>
-    </tr>
-</table>
-
-<h2>9.3 DFL：分布焦点损失</h2>
-
-<p>从YOLOv8开始，边界框回归头不再直接预测四个偏移量，而是将每个边界（左、上、右、下）建模为一个<strong>离散概率分布</strong>。这就是<strong>Distribution Focal Loss</strong>（DFL）的核心思想。</p>
-
-<pre><code>DFL(Si, Si+1) = -((yi+1 - y) * log(Si) + (y - yi) * log(Si+1))</code></pre>
-
-<p>其中y是真实的边界距离值，yi和yi+1是y附近的两个整数位置，Si和Si+1是网络预测这两个位置的概率。DFL促使网络将概率质量集中在真实值附近。</p>
-
-<div class="tip">
-    <strong>DFL的优势：</strong> 相比直接回归一个确定值，分布建模提供了更丰富的梯度信号。对于边界模糊的物体（如遮挡边缘），DFL可以学到"边界可能在这个范围"，从而输出更柔和的预测。这在工程实践中体现为：DFL训练的模型在TTA（测试时增强）下稳定性明显更好。
-</div>
-
-<h2>9.4 分类损失：BCE vs Softmax</h2>
-
-<p>在分类损失方面，YOLO系列也经历了重要变化。早期YOLOv1-v3使用<strong>Softmax损失</strong>，假设每个物体只属于一个类别。但现实场景中，物体可能有多个标签（比如"人"和"骑自行车的人"）。</p>
-
-<p>从YOLOv4开始，YOLO转向了<strong>Binary Cross-Entropy</strong>（BCE）损失：</p>
-
-<pre><code>L_cls = -Σ [y_i * log(p_i) + (1 - y_i) * log(1 - p_i)]</code></pre>
-
-<p>每个类别独立使用sigmoid输出，互不排斥。这种"多标签分类"的方式更灵活，尤其适用于Open Images这类包含层次化标签的数据集。</p>
-
-<div class="highlight">
-    <strong>经验分享：</strong> 如果你的数据集存在"一个物体同时属于多个类别"的情况（如"车辆"和"汽车"），务必使用BCE损失而非Softmax。BCE允许模型对两个类别都输出高置信度，而Softmax强制概率和为1，会抑制其中一个类别的响应。
-</div>
-
-<h2>9.5 YOLOv8的综合损失函数</h2>
-
-<p>以YOLOv8为代表，现代YOLO的损失函数由三部分组成：</p>
-
-<pre><code>L_total = L_cls + L_box + L_dfl
-
-L_cls = BCEWithLogitsLoss     # 分类损失
-L_box = CIoU Loss             # 回归损失
-L_dfl = Distribution Focal    # 分布焦点损失</code></pre>
-
-<p>三者的权重比例通常为 <code>cls:box:dfl = 0.5:7.5:1.5</code>。值得注意的是，回归损失的权重远大于分类损失，这反映了YOLO设计中的一个理念：对于一个检测任务，"框得准"比"分得对"更重要——框的位置偏差会直接影响最终的应用效果，而分类错误可以通过阈值调整部分弥补。</p>
-
-<h2>9.6 总结</h2>
-
-<p>损失函数的演进反映了目标检测领域对"好框"定义的不断深化：从坐标数值接近（SSE），到形状重合（IoU），再到综合指标（CIoU），最终到概率分布建模（DFL）。每一步改进都带来了可量化的mAP提升。可以说，损失函数的设计是YOLO系列持续进步的核心驱动力之一。</p>
-
-<p>下一章，我们将探讨另一个对YOLO性能影响巨大的设计——<strong>特征金字塔FPN</strong>，看看它是如何让YOLO第一次真正地"看清"不同大小的物体。</p>
-
-        <div class="footer-nav">
-            <a href="08.html">← 上一章</a>
-            <a href="../index.html">📖 返回目录</a>
-            <a href="10.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
+<script src="../assets/site.js" defer></script>
 </body>
 </html>

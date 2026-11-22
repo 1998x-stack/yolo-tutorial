@@ -1,0 +1,20 @@
+<svg viewBox="0 0 900 264" role="img" aria-labelledby="c10b-title c10b-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="c10b-title">横向融合的相加与拼接在通道维上的差异</title><desc id="c10b-desc">左侧原始 FPN 把两张均为256通道的特征相加，仍是256通道；右侧 YOLOv3 风格把256通道上采样特征与512通道中层特征拼接，得到768通道，再经卷积融合。</desc>
+<rect x="8" y="8" width="884" height="248" rx="18" fill="#f6fafb"/>
+<g fill="#24414a" text-anchor="middle">
+<text x="226" y="42" font-size="17" font-weight="700">原始 FPN：Add</text>
+<text x="677" y="42" font-size="17" font-weight="700">YOLOv3-style：Concat</text>
+</g>
+<g stroke-width="2">
+<rect x="32" y="70" width="139" height="62" rx="9" fill="#e4f0ef" stroke="#7bb3b0"/>
+<rect x="282" y="70" width="139" height="62" rx="9" fill="#e4f0ef" stroke="#7bb3b0"/>
+<rect x="475" y="70" width="139" height="62" rx="9" fill="#e4f0ef" stroke="#7bb3b0"/>
+<rect x="725" y="70" width="139" height="62" rx="9" fill="#fff0df" stroke="#d3a66d"/>
+</g>
+<g font-size="14" fill="#24535a" text-anchor="middle"><text x="102" y="97">26×26×256</text><text x="102" y="117">横向 C4</text><text x="352" y="97">26×26×256</text><text x="352" y="117">上采样 M5</text><text x="544" y="97">26×26×512</text><text x="544" y="117">中层 C4</text><text x="795" y="97">26×26×256</text><text x="795" y="117">上采样深层</text></g>
+<text x="222" y="109" text-anchor="middle" font-size="25" fill="#087f8c">+</text>
+<text x="670" y="109" text-anchor="middle" font-size="25" fill="#087f8c">∥</text>
+<path d="M227 138 V170 M670 138 V170" stroke="#087f8c" stroke-width="2.5" fill="none"/>
+<g fill="#dceeed" stroke="#80b7b2"><rect x="125" y="177" width="205" height="49" rx="9"/><rect x="565" y="177" width="220" height="49" rx="9"/></g>
+<text x="227" y="207" fill="#24414a" text-anchor="middle" font-size="15">26×26×256</text><text x="675" y="207" fill="#24414a" text-anchor="middle" font-size="15">26×26×768 → 卷积融合</text>
+</svg>

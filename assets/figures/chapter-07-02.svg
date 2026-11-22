@@ -1,0 +1,25 @@
+<svg viewBox="0 0 900 328" role="img" aria-labelledby="c07m-title c07m-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="c07m-title">Mosaic 数据增强示意</title><desc id="c07m-desc">来自四个不同图像的区域被随机切分并拼入同一训练画布，边界框与位置映射需要跟随每块图像的缩放平移裁剪变化。</desc>
+<rect x="8" y="8" width="884" height="312" rx="18" fill="#f6fafb"/>
+<g transform="translate(26 55)">
+<g transform="translate(0 0)"><rect x="0" y="0" width="99" height="96" rx="8" fill="#dcebed" stroke="#9ebabc"/><rect x="18" y="15" width="30" height="52" fill="none" stroke="#087f8c" stroke-width="2.5"/><text x="49" y="87" text-anchor="middle" font-size="13" fill="#24414a">图 1</text></g><g transform="translate(110 0)"><rect x="0" y="0" width="99" height="96" rx="8" fill="#fff0db" stroke="#9ebabc"/><rect x="25" y="18" width="34" height="52" fill="none" stroke="#087f8c" stroke-width="2.5"/><text x="49" y="87" text-anchor="middle" font-size="13" fill="#24414a">图 2</text></g><g transform="translate(0 106)"><rect x="0" y="0" width="99" height="96" rx="8" fill="#e5e0f1" stroke="#9ebabc"/><rect x="32" y="21" width="38" height="52" fill="none" stroke="#087f8c" stroke-width="2.5"/><text x="49" y="87" text-anchor="middle" font-size="13" fill="#24414a">图 3</text></g><g transform="translate(110 106)"><rect x="0" y="0" width="99" height="96" rx="8" fill="#e0efe5" stroke="#9ebabc"/><rect x="39" y="24" width="42" height="52" fill="none" stroke="#087f8c" stroke-width="2.5"/><text x="49" y="87" text-anchor="middle" font-size="13" fill="#24414a">图 4</text></g>
+<text x="106" y="244" text-anchor="middle" font-size="15" fill="#24414a" font-weight="700">独立样本</text>
+</g>
+<path d="M274 159 H369" stroke="#087f8c" stroke-width="3"/><path d="M359 151 l12 8 -12 8" stroke="#087f8c" stroke-width="3" fill="none"/>
+<g transform="translate(399 38)">
+<rect width="248" height="248" rx="13" fill="#eef4f4" stroke="#80acae" stroke-width="2"/>
+<rect x="0" y="0" width="110" height="138" fill="#dcebed"/>
+<rect x="110" y="0" width="138" height="138" fill="#fff0db"/>
+<rect x="0" y="138" width="110" height="110" fill="#e5e0f1"/>
+<rect x="110" y="138" width="138" height="110" fill="#e0efe5"/>
+<path d="M110 0 V248 M0 138 H248" stroke="#fff" stroke-width="5"/>
+<rect x="30" y="30" width="53" height="79" rx="4" fill="none" stroke="#087f8c" stroke-width="3"/>
+<rect x="150" y="33" width="64" height="68" rx="4" fill="none" stroke="#c47b31" stroke-width="3"/>
+<rect x="25" y="165" width="64" height="49" rx="4" fill="none" stroke="#6c5b91" stroke-width="3"/>
+<rect x="145" y="164" width="70" height="60" rx="4" fill="none" stroke="#327f59" stroke-width="3"/>
+<text x="124" y="274" text-anchor="middle" font-size="15" fill="#24414a" font-weight="700">合成训练画布</text>
+</g>
+<g transform="translate(676 103)" fill="#5c737a" font-size="15">
+<text x="0" y="0">随机切分位置</text><text x="0" y="28">逐块缩放与平移</text><text x="0" y="56">边界框重新映射</text><text x="0" y="84">超出画布的框裁剪</text>
+</g>
+</svg>
