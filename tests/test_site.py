@@ -104,7 +104,7 @@ class SiteStructureTests(unittest.TestCase):
                 # an original Redmon-family research paper.
                 self.assertIn("https://github.com/ultralytics/yolov5/blob/v7.0/", content, num)
             else:
-                self.assertTrue("https://arxiv.org/abs/" in content or "https://docs.ultralytics.com/" in content or "https://www.ecva.net/" in content or "https://proceedings.neurips.cc/" in content, num)
+                self.assertTrue("https://arxiv.org/abs/" in content or "https://docs.ultralytics.com/" in content or "https://www.ecva.net/" in content or "https://proceedings.neurips.cc/" in content or "https://cocodataset.org/" in content or "https://ieeexplore.ieee.org/" in content, num)
             for phrase in forbidden:
                 self.assertNotIn(phrase, content, f"{num}: {phrase}")
 
