@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "article": "chapters/27.html",
+  "batch": "21-28",
+  "claims": [
+    {
+      "id": "27-01",
+      "claim": "行业需求需先翻译成标签空间、工作点、部署约束、数据划分与验收口径五要素。",
+      "kind": "engineering",
+      "source_url": "chapters/27.html",
+      "locator": "section#contract",
+      "status": "derived",
+      "notes": "综合第 21–25 章的约束归纳的任务契约清单。"
+    },
+    {
+      "id": "27-02",
+      "claim": "COCO 是 80 类的通用检测基准，其类别与场景宽泛，与垂直行业分布不同。",
+      "kind": "specification",
+      "source_url": "https://cocodataset.org/",
+      "locator": "COCO dataset overview: 80 object categories",
+      "status": "verified",
+      "notes": "对照 COCO 官方说明。"
+    },
+    {
+      "id": "27-03",
+      "claim": "BDD100K 为驾驶场景数据集，约 10 万张图像，面向交通对象检测。",
+      "kind": "documentation",
+      "source_url": "https://bdd-data.berkeley.edu/",
+      "locator": "BDD100K dataset description",
+      "status": "verified",
+      "notes": "对照数据集主页；不引用其上的具体模型分数。"
+    },
+    {
+      "id": "27-04",
+      "claim": "MVTec AD 以异常分割/分类为主，不是边界框检测数据集，不能当作框标注使用。",
+      "kind": "documentation",
+      "source_url": "https://www.mvtec.com/company/research/datasets/mvtec-ad",
+      "locator": "MVTec AD dataset: anomaly detection task definition",
+      "status": "verified",
+      "notes": "明确区分异常检测与框检测的标注形式。"
+    },
+    {
+      "id": "27-05",
+      "claim": "医学图像检测常用 FROC（每幅图像假阳性数 vs 敏感度），与自然图像的 PR/AP 口径不同。",
+      "kind": "documentation",
+      "source_url": "https://luna16.grand-challenge.org/",
+      "locator": "LUNA16 evaluation: FROC score",
+      "status": "verified",
+      "notes": "对照 LUNA16 评测协议中 FROC 的定义。"
+    },
+    {
+      "id": "27-06",
+      "claim": "期望代价可写为 E = c_FP·n_FP + c_FN·n_FN，两类错误的单位代价决定偏好工作点。",
+      "kind": "derived",
+      "source_url": "chapters/27.html",
+      "locator": "section#metric equation",
+      "status": "derived",
+      "notes": "由误报/漏检的代价结构直接推导。"
+    },
+    {
+      "id": "27-07",
+      "claim": "训练与部署的采集条件不一致（相机、光照、距离）会让模型学到无关的成像特征而失效。",
+      "kind": "engineering",
+      "source_url": "https://docs.ultralytics.com/datasets/",
+      "locator": "Dataset collection and deployment distribution mismatch",
+      "status": "derived",
+      "notes": "由分布一致性要求推导；页面未引用任何具体项目结果。"
+    },
+    {
+      "id": "27-08",
+      "claim": "交互实验中的误报数 120、漏检数 25 与代价比均为假定的教学参数，不代表任何项目。",
+      "kind": "illustrative",
+      "source_url": "chapters/27.html",
+      "locator": "section#lab lab-input-27",
+      "status": "illustrative",
+      "notes": "页面正文已就近标注为教学示意值。"
+    }
+  ]
+}

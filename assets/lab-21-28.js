@@ -42,6 +42,12 @@
       const deg = Number(v), c = Math.cos(deg * Math.PI / 180);
       return "θ=" + deg + "°：cos θ = " + c.toFixed(3) +
         "（取值范围 [-1, 1]，越大表示两向量越同向；教学示意值）。";
+    },
+    "27": (v) => {
+      const r = Number(v), nFP = 120, nFN = 25;
+      const E = 1 * nFP + r * nFN;
+      return "c_FN/c_FP=" + r + "：E = 1×" + nFP + " + " + r + "×" + nFN + " = " + E +
+        "（教学示意值；代价比越高，越应偏向降低漏检）。";
     }
   };
   for (const [id, render] of Object.entries(configs)) {
