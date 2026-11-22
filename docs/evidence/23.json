@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "article": "chapters/23.html",
+  "batch": "21-28",
+  "claims": [
+    {
+      "id": "23-01",
+      "claim": "检测标注直接定义训练目标；漏标、错类与坐标偏移会分别损害漏检、分类与回归/匹配。",
+      "kind": "engineering",
+      "source_url": "https://arxiv.org/abs/1405.0312",
+      "locator": "Microsoft COCO: annotation protocol and categories",
+      "status": "derived",
+      "notes": "由标注与监督目标的对应关系推导，页面作为教学框架。"
+    },
+    {
+      "id": "23-02",
+      "claim": "YOLO TXT 每行字段为 class_id cx cy w h，其中中心与宽高按图像宽高归一化。",
+      "kind": "documentation",
+      "source_url": "https://docs.ultralytics.com/datasets/",
+      "locator": "Dataset format: YOLO label format",
+      "status": "verified",
+      "notes": "对照 YOLO 数据集格式说明。"
+    },
+    {
+      "id": "23-03",
+      "claim": "COCO bbox 为 [x, y, w, h]，x、y 是左上角绝对像素，并含 area 与 iscrowd。",
+      "kind": "specification",
+      "source_url": "https://cocodataset.org/#format-data",
+      "locator": "COCO object detection annotation fields",
+      "status": "verified",
+      "notes": "对照 COCO 官方格式说明。"
+    },
+    {
+      "id": "23-04",
+      "claim": "Pascal VOC 用 XML 的 bndbox 记录 xmin, ymin, xmax, ymax，并含 difficult 字段。",
+      "kind": "specification",
+      "source_url": "http://host.robots.ox.ac.uk/pascal/VOC/",
+      "locator": "Pascal VOC development kit annotation schema",
+      "status": "verified",
+      "notes": "对照 VOC devkit 标注 schema。"
+    },
+    {
+      "id": "23-05",
+      "claim": "从 COCO 绝对像素到 YOLO 归一化坐标需 cx=(x+w/2)/W、cy=(y+h/2)/H、nw=w/W、nh=h/H。",
+      "kind": "derived",
+      "source_url": "chapters/23.html",
+      "locator": "section#formats equation",
+      "status": "derived",
+      "notes": "由两种格式定义直接推导的坐标变换。"
+    },
+    {
+      "id": "23-06",
+      "claim": "类别 id 映射必须固定并记录；COCO 的 category_id 不保证从 0 开始或连续。",
+      "kind": "specification",
+      "source_url": "https://cocodataset.org/#format-data",
+      "locator": "COCO categories array",
+      "status": "derived",
+      "notes": "由 categories 的 id 语义推导；页面强调写入配置。"
+    },
+    {
+      "id": "23-07",
+      "claim": "数据划分必须先于任何增强或切片，连续帧与同一场景样本不得跨划分，以防泄漏。",
+      "kind": "engineering",
+      "source_url": "https://docs.ultralytics.com/datasets/",
+      "locator": "Dataset structure: train/val/test splits",
+      "status": "derived",
+      "notes": "与第 20 章切片泄漏口径一致。"
+    },
+    {
+      "id": "23-08",
+      "claim": "交互实验中的 640×480 图像与 0.10×0.15 归一化宽高是演示参数，不代表具体数据集分布。",
+      "kind": "illustrative",
+      "source_url": "chapters/23.html",
+      "locator": "section#audit lab-input-23",
+      "status": "illustrative",
+      "notes": "页面正文已就近标注为教学示意。"
+    }
+  ]
+}
