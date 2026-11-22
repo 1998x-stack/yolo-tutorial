@@ -31,7 +31,7 @@
 <text x="452" y="307" text-anchor="middle" fill="#5b7379" font-size="14">A/B 同类 IoU≈0.681，阈值 0.5 时 B 被抑制；跨类 D 按类别单独处理</text>
 </svg><figcaption>使用明确的 class-aware NMS 语义：A、B 同类且重叠严重，B 被删；D 属于另一类别，即使与 A 高重叠也不能因为跨类别竞争被误删。</figcaption></figure></section>
 <section id="hard"><h2>2. Hard NMS 的贪心循环与手算结果</h2>
-<p>流程是：① 按类别分组；② 在一组内按 score 从高到低排序；③ 保留最高分框 M；④ 计算其他同类框与 M 的 IoU，抑制 `IoU &gt; t` 的候选；⑤ 对剩余框重复，直到空集或满足 `max_det` 限制。不同库可能使用 `≥` 而不是 `&gt;`，以及不同的相同分数排序规则；需要记录这些细节才能逐条复现。</p>
+<p>流程是：① 按类别分组；② 在一组内按 score 从高到低排序；③ 保留最高分框 M；④ 计算其他同类框与 M 的 IoU，抑制 <code>IoU &gt; t</code> 的候选；⑤ 对剩余框重复，直到空集或满足 <code>max_det</code> 限制。不同库可能使用 <code>≥</code> 而不是 <code>&gt;</code>，以及不同的相同分数排序规则；需要记录这些细节才能逐条复现。</p>
 <p>用连续坐标框 A=<code>(40,40,140,140)</code>、B=<code>(50,50,150,150)</code>，交面积是 <code>90×90=8100</code>，两框面积各 <code>10000</code>，并集为 <code>11900</code>，所以 IoU 为 <code>8100/11900≈0.680672</code>。当阈值 t=0.5，A 的分数 .95 较高，因此 A 保留而 B 抑制。另一框 C 与 A/B 不相交，仍可保留；若另一个类的框 D 恰好覆盖 A，<strong>逐类别</strong> NMS 仍应保留 D。</p>
 <div class="equation" tabindex="0" role="region" aria-label="IoU 几何计算与硬 NMS 条件，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="重叠交并比是八千一百除以一万一千九百，约零点六八零六七二"><mrow><mi>IoU</mi><mo>(</mo><mi>A</mi><mo>,</mo><mi>B</mi><mo>)</mo><mo>=</mo><mfrac><mn>8100</mn><mn>11900</mn></mfrac><mo>≈</mo><mn>0.680672</mn></mrow></math></div>
 <pre><code>python -m labs.nms_reference
@@ -48,7 +48,7 @@
 <select id="nms-mode" style="margin:8px 0 0 12px;padding:7px 11px;border:1px solid #a5c6c5;border-radius:8px"><option value="hard">Hard NMS</option><option value="soft">Soft-NMS（linear）</option></select>
 <p><output id="nms-demo-output" aria-live="polite">Hard NMS: 保留 A(cat)、D(dog)、C(cat)；B(cat) 被抑制。</output></p>
 </div>
-<p>Soft-NMS 在 IoU 超阈值时不直接丢弃 B，而是降低它的分数：`0.88 × (1−0.680672) ≈ 0.2810`。在本示例指定的最低分数 0.25 下，B 仍能保留；如果最低分数改为 0.30，就被过滤。这说明<strong>Soft-NMS 的输出由重叠阈值、衰减函数与最低得分阈值共同决定</strong>。</p></section>
+<p>Soft-NMS 在 IoU 超阈值时不直接丢弃 B，而是降低它的分数：<code>0.88 × (1−0.680672) ≈ 0.2810</code>。在本示例指定的最低分数 0.25 下，B 仍能保留；如果最低分数改为 0.30，就被过滤。这说明<strong>Soft-NMS 的输出由重叠阈值、衰减函数与最低得分阈值共同决定</strong>。</p></section>
 <section id="soft"><h2>4. Soft-NMS、DIoU-NMS 与融合框：到底改变哪一步</h2>
 <p><strong>Soft-NMS</strong>（Bodla et al., ICCV 2017）保留“选择最高分框”的主循环，但将重叠候选的分数降低而不是直接删除。常见有线性衰减与高斯衰减；高斯形式中的 σ 与保留分数阈值都需要具体指定。与“修改 IoU 定义”不同，Soft-NMS 主要改动的是<strong>更新分数的方式</strong>。</p>
 <div class="equation" tabindex="0" role="region" aria-label="Soft-NMS linear 和 Gaussian 得分衰减公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="线性 Soft-NMS 在交并比超过阈值时将分数乘以一减交并比；高斯 Soft-NMS 将分数乘以负 IoU 平方除以 sigma 的指数"><mtable columnalign="left"><mtr><mtd><msup><mi>s</mi><mo>′</mo></msup><mo>=</mo><mi>s</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>IoU</mi><mo>)</mo><mo>,</mo><mspace width="0.6em"/><mi>IoU</mi><mo>&gt;</mo><mi>t</mi></mtd></mtr><mtr><mtd><msup><mi>s</mi><mo>′</mo></msup><mo>=</mo><mi>s</mi><msup><mi>e</mi><mrow><mo>−</mo><mfrac><msup><mi>IoU</mi><mn>2</mn></msup><mi>σ</mi></mfrac></mrow></msup><mspace width="0.6em"/><mtext>（Gaussian）</mtext></mtd></mtr></mtable></math></div>

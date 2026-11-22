@@ -35,9 +35,9 @@
 <text x="450" y="298" text-anchor="middle" font-size="13" fill="#5b7379">640×640 为例子，具体 C3 重复次数、通道与锚框值由 v7.0 模型 YAML 控制</text>
 </svg><figcaption>这是一张模型层级概念图，不是逐层复刻所有 YAML 节点。经典 v7.0 检测 Head 包含三个不同步长和每格多个 anchor 的预测。</figcaption></figure></section>
 <section id="detect"><h2>2. 读懂 Detect Head：输出张量与坐标解码</h2>
-<p>经典 YOLOv5 的 anchor-based Head 对每个检测尺度输出一组按网格、anchor 和通道排列的预测。若一张图有 <code>C=2</code> 类，每个网格有 <code>A=3</code> 个锚框，那么预测通道数 `A×(5+C)=21`。在 640×640 输入下，各尺度候选数分别为 `80²×3=19200`、`40²×3=4800`、`20²×3=1200`，合计 <strong>25,200</strong> 个原始候选。它们不是最终的 25,200 次检测，仍需要分数筛选与 NMS。</p>
+<p>经典 YOLOv5 的 anchor-based Head 对每个检测尺度输出一组按网格、anchor 和通道排列的预测。若一张图有 <code>C=2</code> 类，每个网格有 <code>A=3</code> 个锚框，那么预测通道数 <code>A×(5+C)=21</code>。在 640×640 输入下，各尺度候选数分别为 <code>80²×3=19200</code>、<code>40²×3=4800</code>、<code>20²×3=1200</code>，合计 <strong>25,200</strong> 个原始候选。它们不是最终的 25,200 次检测，仍需要分数筛选与 NMS。</p>
 <div class="equation" tabindex="0" role="region" aria-label="三尺度 YOLOv5 原始候选数公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="经典YOLOv5三尺度候选数等于三乘八十平方、四十平方和二十平方之和，结果为二万五千二百"><mrow><mi>N</mi><mo>=</mo><mn>3</mn><mo>(</mo><msup><mn>80</mn><mn>2</mn></msup><mo>+</mo><msup><mn>40</mn><mn>2</mn></msup><mo>+</mo><msup><mn>20</mn><mn>2</mn></msup><mo>)</mo><mo>=</mo><mn>25200</mn></mrow></math></div>
-<p>与原始 YOLOv3 `sigmoid(tx)+grid`、`exp(tw)×anchor` 的写法相比，v7.0 YOLOv5 的经典推理解码使用扩展中心偏移及平方化宽高：</p>
+<p>与原始 YOLOv3 <code>sigmoid(tx)+grid</code>、<code>exp(tw)×anchor</code> 的写法相比，v7.0 YOLOv5 的经典推理解码使用扩展中心偏移及平方化宽高：</p>
 <div class="equation" tabindex="0" role="region" aria-label="YOLOv5 v7经典锚框中心和宽高的解码公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="中心点等于二倍sigmoid减去零点五加网格索引再乘以步长，宽高等于二倍sigmoid平方乘以锚框像素宽高"><mtable columnalign="left">
 <mtr><mtd><msub><mi>b</mi><mi>xy</mi></msub><mo>=</mo><mo>(</mo><mn>2</mn><mi>σ</mi><mo>(</mo><msub><mi>t</mi><mi>xy</mi></msub><mo>)</mo><mo>−</mo><mn>0.5</mn><mo>+</mo><mi>g</mi><mo>)</mo><mo>×</mo><mi>stride</mi></mtd></mtr>
 <mtr><mtd><msub><mi>b</mi><mi>wh</mi></msub><mo>=</mo><msup><mrow><mo>(</mo><mn>2</mn><mi>σ</mi><mo>(</mo><msub><mi>t</mi><mi>wh</mi></msub><mo>)</mo><mo>)</mo></mrow><mn>2</mn></msup><mo>×</mo><mi>anchor</mi></mtd></mtr>
@@ -49,7 +49,7 @@ python -m labs.yolov5_contract
 # 解码中心=(144,208)，宽高=(116,90) 像素
 # 这不是完整 YOLOv5 前向、训练或 NMS。</code></pre><p><a href="../labs/yolov5_contract.py">形状与解码契约</a>提供了一组确定性边界检查，不会加载 PyTorch 或第三方模型权重。</p></section>
 <section id="data"><h2>3. 数据集：YAML 只是索引，真正的监督在每个 .txt 文件</h2>
-<p>YOLOv5 常用的检测数据结构包含 `images/train`、`images/val` 与对应的 `labels/train`、`labels/val`。每个文本标签行写成 `class_id cx cy w h`，坐标按图像宽高归一化，类别编号从 0 开始。如果只有两类，所有 class_id 只能是 0 或 1，且必须让 YAML 中的 <code>names</code> 与标注顺序完全一致。</p>
+<p>YOLOv5 常用的检测数据结构包含 <code>images/train</code>、<code>images/val</code> 与对应的 <code>labels/train</code>、<code>labels/val</code>。每个文本标签行写成 <code>class_id cx cy w h</code>，坐标按图像宽高归一化，类别编号从 0 开始。如果只有两类，所有 class_id 只能是 0 或 1，且必须让 YAML 中的 <code>names</code> 与标注顺序完全一致。</p>
 <pre><code># data/parts.yaml（请使用真实、已授权的数据路径）
 path: /absolute/path/to/parts-dataset
 train: images/train
@@ -60,13 +60,13 @@ names: [bolt, nut]
 # labels/train/example.txt
 0 0.5 0.5 0.25 0.3
 1 0.2 0.7 0.1 0.15</code></pre>
-<p>上面的两个框都满足 `0&lt;w,h≤1` 且 `x±w/2, y±h/2` 在 `[0,1]` 内。然而，“语法合法”仍不代表真实标注正确；必须把框画回原图核对物体，审查无标注负样本是否真的没有目标，并按视频/拍摄批次进行防泄漏划分。</p>
+<p>上面的两个框都满足 <code>0&lt;w,h≤1</code> 且 <code>x±w/2, y±h/2</code> 在 <code>[0,1]</code> 内。然而，“语法合法”仍不代表真实标注正确；必须把框画回原图核对物体，审查无标注负样本是否真的没有目标，并按视频/拍摄批次进行防泄漏划分。</p>
 <pre><code># 无第三方依赖：审计本地标签目录，不需要加载图像
 python -m labs.yolov5_contract --labels /path/to/labels/train --classes 2
 # 报告：检查文件数、有效对象数和非法行详细位置
 # 本脚本不读取 dataset.yaml，不能代替完整数据集/图像交叉检查。</code></pre><p>可复现训练还需要保存数据划分清单、类名映射、采集场景和数据版本，不应只记录一个可变的路径名。</p></section>
 <section id="train"><h2>4. 用固定的 YOLOv5 v7.0 源码运行训练</h2>
-<p>YOLOv5 v7.0 的检测任务通常通过根目录的 `train.py`、`val.py`、`detect.py`、`export.py` 脚本运行。以下是一个<strong>准备和调用示例</strong>，不是本仓库已执行的训练；机器必须安装与 CUDA/CPU 环境兼容的 PyTorch、其余依赖、合法数据集与可获得的权重。</p>
+<p>YOLOv5 v7.0 的检测任务通常通过根目录的 <code>train.py</code>、<code>val.py</code>、<code>detect.py</code>、<code>export.py</code> 脚本运行。以下是一个<strong>准备和调用示例</strong>，不是本仓库已执行的训练；机器必须安装与 CUDA/CPU 环境兼容的 PyTorch、其余依赖、合法数据集与可获得的权重。</p>
 <pre><code>git clone --branch v7.0 --depth 1 https://github.com/ultralytics/yolov5.git
 cd yolov5
 python -m pip install -r requirements.txt
@@ -86,7 +86,7 @@ python detect.py --weights runs/train/parts-v7-baseline/weights/best.pt \
 <p>正式项目应进一步锁定 Git commit、Python 和 PyTorch 版本、CUDA、随机种子、精度模式、训练/验证划分、超参文件、模型 YAML、类别表和权重哈希。训练输出目录不应由每次自动自增名称隐式决定，建议明确给出 project/name 并记录日志。若训练目标是可解释的技术审计，先用小样本检查标签、批次构造和 loss 是否合理，随后再花长时间完整训练。</p></section>
 <section id="anchors"><h2>5. AutoAnchor 与部署导出：别跳过中间的版本契约</h2>
 <p>经典 YOLOv5 使用锚框集合，对目标宽高先验的覆盖度有要求。<strong>AutoAnchor</strong> 是训练侧检查/优化先验的流程，可能计算最佳匹配的召回覆盖度并在不合理时建议或更新参考框。但它不是每次 inference 动态重新计算 anchors，也不保证“重新聚类就提升 AP”。检查聚类结果还需结合三检测尺度的正样本分布和统一的验证指标。</p>
-<p>部署到 ONNX 时，v7.0 提供 `export.py` 的导出接口，仍需检查推理输出究竟是解码前的原始张量、解码后的候选，还是包含 NMS 的端到端结果。不同 `--include`、算子集、部署后端可能影响格式，不能仅因为文件扩展名是 `.onnx` 就假设输出可直接画框。</p>
+<p>部署到 ONNX 时，v7.0 提供 <code>export.py</code> 的导出接口，仍需检查推理输出究竟是解码前的原始张量、解码后的候选，还是包含 NMS 的端到端结果。不同 <code>--include</code>、算子集、部署后端可能影响格式，不能仅因为文件扩展名是 <code>.onnx</code> 就假设输出可直接画框。</p>
 <pre><code>python export.py --weights runs/train/parts-v7-baseline/weights/best.pt \
   --include onnx --imgsz 640
 
@@ -103,6 +103,5 @@ python detect.py --weights runs/train/parts-v7-baseline/weights/best.pt \
 </main>
 </div>
 <script src="../assets/site.js" defer></script>
-<script src="../assets/nms-demo.js" defer></script>
 </body>
 </html>

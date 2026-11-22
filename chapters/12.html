@@ -19,7 +19,7 @@
 <main id="main" class="main-content">
 <article class="article"><header class="article-header"><p class="eyebrow">BACKBONES <span>／</span> CHAPTER 12</p><h1>骨干网络：怎样在特征质量与计算预算之间设计</h1><p class="article-dek">Darknet-19、Darknet-53、CSPDarknet53、EfficientRep、C2f 与 GELAN 解决的是不同计算问题。用特征尺度、梯度路径、卷积成本和结构重参数化逐个拆解。</p></header>
 <section id="definition"><h2>1. Backbone 的工作不是输出目标框</h2>
-<p>目标检测网络通常分成 Backbone（视觉特征提取）、Neck（多尺度特征融合）和 Head（框与类别预测）。骨干接收 `B×3×H×W` 图像，输出几个空间分辨率逐渐降低、通道数逐渐增加的张量，例如输入 640×640 时输出 stride 8、16、32 的 C3、C4、C5。Backbone 的目标不是直接给出最终目标框，而是在算力限制内形成可供检测头利用的特征。</p>
+<p>目标检测网络通常分成 Backbone（视觉特征提取）、Neck（多尺度特征融合）和 Head（框与类别预测）。骨干接收 <code>B×3×H×W</code> 图像，输出几个空间分辨率逐渐降低、通道数逐渐增加的张量，例如输入 640×640 时输出 stride 8、16、32 的 C3、C4、C5。Backbone 的目标不是直接给出最终目标框，而是在算力限制内形成可供检测头利用的特征。</p>
 <p>选择骨干不能只问“参数最少的是谁”。参数量衡量模型权重，MACs 估算算术计算，实际延迟还受内存读写、算子融合、并行度、batch、设备和精度模式影响。一个参数更少的网络，在 CPU 或边缘 NPU 上不一定更快；一个 ImageNet top-1 更高的分类骨干，在固定检测 Neck 与训练条件下也不必然获得更高 COCO AP。</p>
 <figure class="diagram" tabindex="0" aria-label="视觉骨干输出三级空间分辨率">
 <svg viewBox="0 0 900 305" role="img" aria-labelledby="c12a-title c12a-desc" xmlns="http://www.w3.org/2000/svg"><title id="c12a-title">骨干分层输出而不是直接输出目标框</title><desc id="c12a-desc">640平方输入依次经三段下采样形成80平方、40平方、20平方的多尺度特征，各分支再进入特征融合网络和检测头。</desc>
@@ -36,7 +36,7 @@
 </svg><figcaption>同一张图进入骨干后产生分辨率不同的特征。小目标通常依赖空间较密的层级，大目标需要更强的上下文。</figcaption></figure></section>
 <section id="darknet"><h2>2. Darknet-19 与 Darknet-53：从计算简洁到残差可训练性</h2>
 <p><a href="https://arxiv.org/abs/1612.08242">YOLO9000/YOLOv2</a> 采用 Darknet-19：在分类主干中使用 19 个卷积层与 5 个最大池化层，强调计算效率，并通过 BatchNorm 与较小卷积核组合控制计算。其检测版本会修改尾部结构，不能把“19 层分类网络”机械等同于所有 YOLOv2 检测层数。</p>
-<p><a href="https://arxiv.org/abs/1804.02767">YOLOv3</a> 的 Darknet-53 引入残差连接和更深的卷积栈：在保持计算可行的条件下加强特征表达，并给三尺度检测提供多层特征。残差块输出通常写作 `y=x+F(x)`，当主分支的梯度不充分时，恒等路径仍提供信息与梯度通路。不过如果通道或空间尺寸改变，加法就需要投影/下采样处理，不能随意相加。</p>
+<p><a href="https://arxiv.org/abs/1804.02767">YOLOv3</a> 的 Darknet-53 引入残差连接和更深的卷积栈：在保持计算可行的条件下加强特征表达，并给三尺度检测提供多层特征。残差块输出通常写作 <code>y=x+F(x)</code>，当主分支的梯度不充分时，恒等路径仍提供信息与梯度通路。不过如果通道或空间尺寸改变，加法就需要投影/下采样处理，不能随意相加。</p>
 <div class="equation" tabindex="0" role="region" aria-label="残差块映射公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="残差块输出等于输入恒等映射加可学习残差映射"><mrow><mi>y</mi><mo>=</mo><mi>x</mi><mo>+</mo><mi>F</mi><mo>(</mo><mi>x</mi><mo>;</mo><mi>θ</mi><mo>)</mo></mrow></math></div>
 <p>从 Darknet-19 到 Darknet-53，增加了残差块和不同深度的特征提取；但更深会带来不同的权重大小与运行时开销。比较它们的实际训练表现需要固定检测头、输入分辨率、训练日程和数据集，而不能仅把原论文中不同实验配置的 FPS 或 ImageNet top-1 并排当作公平对照。</p></section>
 <section id="csp"><h2>3. CSPNet：为什么把特征流拆成两支</h2>
@@ -71,7 +71,7 @@
 <div class="table-wrap"><table><thead><tr><th>骨干设计</th><th>标志性机制</th><th>讨论重点</th><th>最容易混淆</th></tr></thead><tbody><tr><td>Darknet-19</td><td>19 个卷积层的紧凑分类骨干</td><td>分类特征的检测迁移</td><td>分类层数不等于完整检测头层数</td></tr><tr><td>Darknet-53</td><td>更深的残差路径</td><td>表达力和梯度传播</td><td>不是自带完整 FPN 的独立概念</td></tr><tr><td>CSPDarknet53</td><td>跨阶段分支与融合</td><td>冗余计算和梯度路径</td><td>不是简单的 50% 通道剪枝</td></tr><tr><td>EfficientRep</td><td>可重参数化块</td><td>训练图与部署图的等价转换</td><td>不能跨非线性直接合并</td></tr><tr><td>C2f / GELAN</td><td>更丰富的部分连接和层聚合</td><td>复用、信息路径与计算效率</td><td>具体实现随 YOLOv8/v9 版本变化</td></tr></tbody></table></div></section>
 <section id="benchmark"><h2>6. 用哪四个数字对比骨干才有意义</h2>
 <p>给定相同图像输入大小、检测 Neck/Head 和训练方案，至少测量：① 模型权重参数数；② 按同一 MACs 定义计算的理论算量；③ 指定 GPU/CPU/NPU 上的端到端时延和显存；④ 指定 COCO 数据集与 IoU 协议下的 AP。报告还应写明 batch=1 还是更大吞吐模式、FP32/FP16/INT8、是否包含数据拷贝与 NMS。</p>
-<p>例如普通 3×3 卷积若 `C_in=32,C_out=64,H_out=W_out=80`，则理论乘加次数为 `80²×64×32×3²=117,964,800 MACs`。这是算术规模，不是测得的秒数；若把一次乘与一次加各计为一个 FLOP，则常见口径近似 `2×MACs`，BN/激活/访存等尚未计算。<a href="../labs/backbone_cost.py">计算脚本</a> 输出该例，避免单位偷换。</p></section>
+<p>例如普通 3×3 卷积若 <code>C_in=32,C_out=64,H_out=W_out=80</code>，则理论乘加次数为 <code>80²×64×32×3²=117,964,800 MACs</code>。这是算术规模，不是测得的秒数；若把一次乘与一次加各计为一个 FLOP，则常见口径近似 <code>2×MACs</code>，BN/激活/访存等尚未计算。<a href="../labs/backbone_cost.py">计算脚本</a> 输出该例，避免单位偷换。</p></section>
 <section id="references"><h2>参考文献</h2><ol class="references"><li>Redmon &amp; Farhadi, <a href="https://arxiv.org/abs/1612.08242">YOLO9000</a>，Darknet-19；<a href="https://arxiv.org/abs/1804.02767">YOLOv3</a>，Darknet-53。</li><li>Wang et al., <a href="https://arxiv.org/abs/1911.11929">CSPNet</a>；Bochkovskiy et al., <a href="https://arxiv.org/abs/2004.10934">YOLOv4</a>。</li><li>Ding et al., <a href="https://arxiv.org/abs/2101.03697">RepVGG</a>；Li et al., <a href="https://arxiv.org/abs/2209.02976">YOLOv6 technical report</a>。</li><li>Wang et al., <a href="https://arxiv.org/abs/2402.13616">YOLOv9 / GELAN / PGI</a>；<a href="https://github.com/ultralytics/ultralytics/blob/main/ultralytics/nn/modules/block.py">C2f 官方实现</a>。</li></ol></section></article>
 <nav class="chapter-nav" aria-label="章节切换"><a href="11.html" class="previous"><small>上一章</small><strong>← 数据增强</strong></a><a href="../index.html" class="chapter-index">全部章节</a><a href="13.html" class="next"><small>下一章</small><strong>Neck 与 Head →</strong></a></nav>
 <footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>

@@ -99,7 +99,12 @@ class SiteStructureTests(unittest.TestCase):
             self.assertEqual(parser.article_count, 1, num)
             self.assertEqual(parser.main_count, 1, num)
             self.assertGreaterEqual(parser.svg_count, 1, num)
-            self.assertIn("https://arxiv.org/abs/", content, num)
+            if i == 15:
+                # Classic YOLOv5 v7.0 is specified by source tag rather than
+                # an original Redmon-family research paper.
+                self.assertIn("https://github.com/ultralytics/yolov5/blob/v7.0/", content, num)
+            else:
+                self.assertIn("https://arxiv.org/abs/", content, num)
             for phrase in forbidden:
                 self.assertNotIn(phrase, content, f"{num}: {phrase}")
 

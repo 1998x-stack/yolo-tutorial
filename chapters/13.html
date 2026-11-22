@@ -20,7 +20,7 @@
 <article class="article"><header class="article-header"><p class="eyebrow">MULTISCALE / PREDICTION <span>／</span> CHAPTER 13</p><h1>Neck 与 Head：特征怎样变成可训练的目标预测</h1><p class="article-dek">Neck 负责不同尺度的特征交互，Head 把融合特征映射到分类与边界框输出，而正样本分配通常属于训练逻辑。借助 SPPF、PAN、解耦头与 TaskAlignedAssigner 拆开三种责任。</p></header>
 <section id="responsibilities"><h2>1. 三个名字对应不同的数据流边界</h2>
 <p>目标检测网络中，Backbone 产生 C3/C4/C5 等多层视觉特征；<strong>Neck</strong> 用上采样、下采样、卷积、池化或跨层连接增强特征；<strong>Head</strong> 把融合后的张量解码前的输出映射为位置、类别和置信度。最后，由训练侧的 label assignment 为候选位置定义监督，或由推理侧的解码/NMS 把原始输出转换为框。它们可以被实现放在相邻 Python 类中，但语义责任不应混在一起。</p>
-<p>以一个输入尺寸为 640×640、三层特征 strides=(8,16,32) 的探测器为例，Neck 可能输出形状 `(B,256,80,80)`, `(B,512,40,40)`, `(B,1024,20,20)`；Head 再根据具体版本选择每格几个锚框、类别数 C、anchor-free 还是 anchor-based 参数化。示例中的通道数不是任何标准 YOLO 版本的强制值，必须结合模型配置。</p>
+<p>以一个输入尺寸为 640×640、三层特征 strides=(8,16,32) 的探测器为例，Neck 可能输出形状 <code>(B,256,80,80)</code>, <code>(B,512,40,40)</code>, <code>(B,1024,20,20)</code>；Head 再根据具体版本选择每格几个锚框、类别数 C、anchor-free 还是 anchor-based 参数化。示例中的通道数不是任何标准 YOLO 版本的强制值，必须结合模型配置。</p>
 <figure class="diagram" tabindex="0" aria-label="Neck、Head、训练匹配与后处理流程">
 <svg viewBox="0 0 900 310" role="img" aria-labelledby="c13a-title c13a-desc" xmlns="http://www.w3.org/2000/svg"><title id="c13a-title">Neck 与 Head 的数据职责</title><desc id="c13a-desc">Backbone 三尺度特征进入 Neck 融合，然后 Head 产生定位和分类预测。训练时匹配器连接预测与真实框构造损失；推理时预测经过解码和 NMS。</desc>
 <rect x="8" y="8" width="884" height="294" rx="18" fill="#f6fafb"/>
@@ -59,13 +59,13 @@
 <p>特征图在拼接前必须具有相同 Batch、H、W；不同 padding、奇数输入尺寸、stride 设置可能导致 1 像素偏差。不要让框架自动广播掩盖架构错误，而应为每一个关键融合边界编写 shape 断言。</p></section>
 <section id="decoupled"><h2>4. 解耦检测头：为什么分类与定位分开</h2>
 <p>分类分支需要区分类别相关的外观模式；定位分支要对边缘与框几何保持敏感。耦合头用同一套卷积变换直接产生多种输出，可能形成优化冲突。<a href="https://arxiv.org/abs/2107.08430">YOLOX</a> 等工作采用解耦头，让共享输入特征先经过不同卷积分支再预测类别与回归；是否有 objectness 独立分支取决于版本。</p>
-<p>它不是“每种输出一个独立 Backbone”，而通常只是在 Head 的尾部拆分轻量卷积分支。若 anchor-based 且每格 A 个参考框，可能输出 A×4 定位通道、A×1 objectness 与 A×C 分类通道；anchor-free 的距离分布回归还可能使用 `4×reg_max` 个通道。<strong>一定要从版本的实际 YAML、Head 源码和 loss 定义推导形状</strong>，不能凭一个“Decoupled Head”的名字猜。</p>
+<p>它不是“每种输出一个独立 Backbone”，而通常只是在 Head 的尾部拆分轻量卷积分支。若 anchor-based 且每格 A 个参考框，可能输出 A×4 定位通道、A×1 objectness 与 A×C 分类通道；anchor-free 的距离分布回归还可能使用 <code>4×reg_max</code> 个通道。<strong>一定要从版本的实际 YAML、Head 源码和 loss 定义推导形状</strong>，不能凭一个“Decoupled Head”的名字猜。</p>
 <div class="equation" tabindex="0" role="region" aria-label="按锚框的YOLO检测头预测通道公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="经典anchor-based检测头每个位置的通道数是每格先验数量乘以四加一加类别数"><mrow><mi>D</mi><mo>=</mo><mi>A</mi><mo>(</mo><mn>4</mn><mo>+</mo><mn>1</mn><mo>+</mo><mi>C</mi><mo>)</mo></mrow></math></div>
 <p>这个公式适用于有独立 objectness 输出的经典 anchor-based YOLO 检测头，不适用于所有 anchor-free/DFL 或 NMS-free 变体。拆分分支并不会自动改变预测量的定义。</p></section>
 <section id="assignment"><h2>5. TaskAlignedAssigner 不是 Neck，也不是推理阶段的新层</h2>
 <p>训练检测器需要决定哪个候选位置负责哪一个真值框。只用 IoU 最大的候选可能有好的定位但错误类别；只看分类分数可能选择定位很差的位置。<a href="https://arxiv.org/abs/2108.07755">TOOD</a> 提出的 Task Alignment Learning 让正样本选择同时参考分类质量与定位质量，后续部分 YOLO 实现将其发展为 TaskAlignedAssigner 类的匹配器。</p>
 <div class="equation" tabindex="0" role="region" aria-label="分类与定位共同决定对齐指标的示意公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="候选匹配分数等于分类分数的alpha次方乘以交并比的beta次方"><mrow><mi>m</mi><mo>=</mo><msup><mi>s</mi><mi>α</mi></msup><msup><mi>IoU</mi><mi>β</mi></msup></mrow></math></div>
-<p>其中 `s` 是当前预测与目标类别对应的质量分数，`IoU` 是预测框与目标的重叠，α、β 为可配置指数。实际实现还需要空间内约束、top-k 筛选、冲突处理和目标分配权重；这一简式只解释直觉，不是完整 TOOD/Ultralytics 匹配代码。在推理阶段没有真值框，因此不会运行依赖 GT 的这个分配器。</p>
+<p>其中 <code>s</code> 是当前预测与目标类别对应的质量分数，<code>IoU</code> 是预测框与目标的重叠，α、β 为可配置指数。实际实现还需要空间内约束、top-k 筛选、冲突处理和目标分配权重；这一简式只解释直觉，不是完整 TOOD/Ultralytics 匹配代码。在推理阶段没有真值框，因此不会运行依赖 GT 的这个分配器。</p>
 <p>辅助训练头也应区分：部分模型训练时使用额外分支监督主干梯度，在部署时去除辅助输出。与之相对，NMS-Free 家族在训练分配和推理输出上另有机制，不等于所有“解耦头”都自动可以删去 NMS。</p></section>
 <section id="checks"><h2>6. 工程验收：哪些错误肉眼难以发现</h2>
 <div class="table-wrap"><table><thead><tr><th>风险</th><th>验证方法</th><th>可定位问题</th></tr></thead><tbody><tr><td>SPPF 顺序/核错误</td><td>对小张量与直接 9/13 池化逐元素对照</td><td>池化尺寸、padding、串行次数</td></tr><tr><td>Neck 空间不对齐</td><td>断言 Concat 的高宽相等</td><td>stride、up/downsample、奇数输入</td></tr><tr><td>Head 通道错误</td><td>按 C/A/回归模式推导每尺度通道</td><td>类别数、锚框数或 DFL 输出误配</td></tr><tr><td>训练/推理职责混合</td><td>推理模型检查无 GT 匹配依赖</td><td>不必要输出和错误后处理</td></tr></tbody></table></div>

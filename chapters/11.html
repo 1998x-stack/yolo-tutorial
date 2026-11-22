@@ -19,7 +19,7 @@
 <main id="main" class="main-content">
 <article class="article"><header class="article-header"><p class="eyebrow">TRAINING DATA <span>／</span> CHAPTER 11</p><h1>数据增强：变换图像时，标注也必须改变</h1><p class="article-dek">检测数据增强不是滤镜集合，而是图像、边界框、类别和样本来源同步变换的坐标系统。用裁剪、Mosaic、MixUp 与 Copy-Paste 的具体例子建立可审计训练流水线。</p></header>
 <section id="problem"><h2>1. 训练样本由图像和标注共同组成</h2>
-<p>分类任务把一张图像对应一个标签；目标检测却要求每张图像对应一组 `(class_id, x_1, y_1, x_2, y_2)` 框。因此对图像做随机缩放、翻转、裁剪、拼接，必须对每个框做一致的几何变换。否则模型看到的是经过改变的物体，收到的却是旧图像的坐标，损失函数就会把错误位置当成监督。</p>
+<p>分类任务把一张图像对应一个标签；目标检测却要求每张图像对应一组 <code>(class_id, x_1, y_1, x_2, y_2)</code> 框。因此对图像做随机缩放、翻转、裁剪、拼接，必须对每个框做一致的几何变换。否则模型看到的是经过改变的物体，收到的却是旧图像的坐标，损失函数就会把错误位置当成监督。</p>
 <p>我们从一张 <code>640×480</code> 的图片和像素框 <code>A=(120,80,280,240)</code> 出发。若水平翻转后宽仍为 640，A 的新框是 <code>(360,80,520,240)</code>；如果只翻转图而不改框，标签偏移达数百像素。对于裁剪，框既要平移，又要裁掉落在新画布之外的区域。</p>
 <figure class="diagram" tabindex="0" aria-label="翻转与裁剪的标签同步示意">
 <svg viewBox="0 0 900 320" role="img" aria-labelledby="c11a-title c11a-desc" xmlns="http://www.w3.org/2000/svg"><title id="c11a-title">图像水平翻转和窗口裁剪时，标签与像素必须同步</title><desc id="c11a-desc">原始框向右翻转后，坐标从 x 为120到280移动到360到520；裁剪时的框需与保留窗口相交并转换到局部坐标。</desc>
@@ -36,9 +36,9 @@
 </svg><figcaption>增强算子应接收<strong>图像与全部标签</strong>，输出同一坐标系内的新图像与合法框；图示比例只说明变换方向，不表示真实像素缩放。</figcaption></figure>
 </section>
 <section id="geometry"><h2>2. 翻转与裁剪：先推导映射，再写代码</h2>
-<p>框坐标采用连续像素边界约定 `x_1&lt;x_2, y_1&lt;y_2`；水平翻转宽度为 W 的图像时，新坐标为 <code>(W−x₂, y₁, W−x₁, y₂)</code>。若保留窗口 <code>(l,t,r,b)</code>，新框的局部坐标通过 <em>与裁剪区域取交集 → 减去左上角偏移</em> 得到。特别要在裁剪后决定保留标准：某个物体只剩一条窄边时可以按可见面积比例过滤，但应明确所用阈值。</p>
+<p>框坐标采用连续像素边界约定 <code>x_1&lt;x_2, y_1&lt;y_2</code>；水平翻转宽度为 W 的图像时，新坐标为 <code>(W−x₂, y₁, W−x₁, y₂)</code>。若保留窗口 <code>(l,t,r,b)</code>，新框的局部坐标通过 <em>与裁剪区域取交集 → 减去左上角偏移</em> 得到。特别要在裁剪后决定保留标准：某个物体只剩一条窄边时可以按可见面积比例过滤，但应明确所用阈值。</p>
 <div class="equation" tabindex="0" role="region" aria-label="水平翻转与裁剪区间公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="水平翻转后的横坐标范围为宽度减去原框右边界到宽度减去原框左边界"><mrow><mo>[</mo><msubsup><mi>x</mi><mn>1</mn><mo>′</mo></msubsup><mo>,</mo><msubsup><mi>x</mi><mn>2</mn><mo>′</mo></msubsup><mo>]</mo><mo>=</mo><mo>[</mo><mi>W</mi><mo>−</mo><msub><mi>x</mi><mn>2</mn></msub><mo>,</mo><mi>W</mi><mo>−</mo><msub><mi>x</mi><mn>1</mn></msub><mo>]</mo></mrow></math></div>
-<p>裁剪区间 <code>[l,r]×[t,b]</code> 与框 A 的可见面积定义为 <code>max(0,min(x₂,r)−max(x₁,l)) × max(0,min(y₂,b)−max(y₁,t))</code>。选择阈值 `visible_area / original_area ≥ τ` 时，τ 的含义是保留下来的像素面积比例，不是 IoU。若图像还经历 resize 或 letterbox，应在像素/归一化坐标之间显式转换。</p>
+<p>裁剪区间 <code>[l,r]×[t,b]</code> 与框 A 的可见面积定义为 <code>max(0,min(x₂,r)−max(x₁,l)) × max(0,min(y₂,b)−max(y₁,t))</code>。选择阈值 <code>visible_area / original_area ≥ τ</code> 时，τ 的含义是保留下来的像素面积比例，不是 IoU。若图像还经历 resize 或 letterbox，应在像素/归一化坐标之间显式转换。</p>
 <pre><code># 只审计框坐标，不需要安装 OpenCV 或 PyTorch
 python -m labs.augmentation_geometry
 # flip_horizontal((120,80,280,240), width=640) -> (360,80,520,240)
@@ -46,7 +46,7 @@ python -m labs.augmentation_geometry
 # -> (0,0,170,210)（教学示例，像素坐标）</code></pre>
 <p><a href="../labs/augmentation_geometry.py">可运行的几何校验脚本</a> 会检查边界、非正尺寸与可见比例，但不会真的加载像素。它是增强管线的一道“标签单元测试”，不是可替代训练框架的完整增强器。</p></section>
 <section id="mosaic"><h2>3. Mosaic：四块图像共享一张训练画布</h2>
-<p>YOLOv4 所用 Mosaic 技术从四张图片中取区域组成一张训练图像。假设目标画布为 640×640，拼接交点在 `(c_x,c_y)`，四个区域分别是左上、右上、左下、右下。每个来源图的坐标先按该区域的缩放和平移关系映射，再裁剪到有效区域；不允许仅将四个标注文件直接拼接。</p>
+<p>YOLOv4 所用 Mosaic 技术从四张图片中取区域组成一张训练图像。假设目标画布为 640×640，拼接交点在 <code>(c_x,c_y)</code>，四个区域分别是左上、右上、左下、右下。每个来源图的坐标先按该区域的缩放和平移关系映射，再裁剪到有效区域；不允许仅将四个标注文件直接拼接。</p>
 <figure class="diagram" tabindex="0" aria-label="Mosaic 四块拼接的几何与标注流">
 <svg viewBox="0 0 900 324" role="img" aria-labelledby="c11b-title c11b-desc" xmlns="http://www.w3.org/2000/svg"><title id="c11b-title">四张原图与一张 Mosaic 画布之间的标注映射</title><desc id="c11b-desc">四个小输入图像分别通过缩放、平移、裁剪映射到同一画布的四个象限；框也经过相同几何运算，并去掉不可见区域。</desc>
 <rect x="8" y="8" width="884" height="308" rx="18" fill="#f6fafb"/>
@@ -57,7 +57,7 @@ python -m labs.augmentation_geometry
 </svg><figcaption>四块图像来自不同样本，但输出仍是一张图和一组统一坐标系的标注。图中框仅为说明用途，不是原始 YOLOv4 论文插图。</figcaption></figure>
 <p>这样合成使一个 batch 中遇到的目标尺度、背景和空间组合更加丰富。代价是边缘目标更容易被截断，且强拼接可能生成与真实数据分布差异很大的场景。用于视频或医学影像时，还需要审查不同来源混合的合理性和数据泄漏风险。</p></section>
 <section id="mix"><h2>4. MixUp、CutMix、Copy-Paste：三种看似相近的混合</h2>
-<p><strong>MixUp</strong> 将两张图像做全图线性叠加，系数 `λ∈[0,1]`；论文首先面向分类提出。检测框集合可以在混合后保留来自两幅图的目标，并根据实现定义对象权重，但并不存在所有检测器通用的“把两个框坐标按 λ 求平均”规则。<strong>CutMix</strong> 将第二图的一块矩形区域贴到第一图的相应位置；原始 CutMix 论文同样首先提出分类训练，目标检测实现必须补充遮挡与裁剪标签逻辑。</p>
+<p><strong>MixUp</strong> 将两张图像做全图线性叠加，系数 <code>λ∈[0,1]</code>；论文首先面向分类提出。检测框集合可以在混合后保留来自两幅图的目标，并根据实现定义对象权重，但并不存在所有检测器通用的“把两个框坐标按 λ 求平均”规则。<strong>CutMix</strong> 将第二图的一块矩形区域贴到第一图的相应位置；原始 CutMix 论文同样首先提出分类训练，目标检测实现必须补充遮挡与裁剪标签逻辑。</p>
 <div class="equation" tabindex="0" role="region" aria-label="MixUp 像素叠加公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="混合像素张量是系数 lambda 乘原图 A 加上一减 lambda 乘原图 B"><mrow><msub><mi>I</mi><mi>mix</mi></msub><mo>=</mo><mi>λ</mi><msub><mi>I</mi><mi>A</mi></msub><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>λ</mi><mo>)</mo><msub><mi>I</mi><mi>B</mi></msub></mrow></math></div>
 <p><strong>Copy-Paste</strong> 常见于拥有实例掩码的分割数据：从另一幅图抠出一个实例及其 mask，放到新背景中并重新计算框与遮挡。仅有外接矩形时，直接复制整个矩形会把源背景也一并复制；它不是论文所说的实例掩码级 Copy-Paste。原始 <a href="https://arxiv.org/abs/2012.07177">Simple Copy-Paste</a> 论文研究的是实例分割场景，不应把其 mask AP 改进无条件外推到通用 YOLO 检测。</p>
 <div class="table-wrap"><table><thead><tr><th>增强方法</th><th>图像变换</th><th>检测标签注意事项</th></tr></thead><tbody><tr><td>MixUp</td><td>像素线性混合</td><td>保留两组目标；权重定义与损失实现匹配</td></tr><tr><td>CutMix</td><td>矩形块替换</td><td>判断目标被遮挡/切断的可见比例</td></tr><tr><td>Copy-Paste</td><td>以 mask 贴入目标实例</td><td>处理遮挡、实例 ID、框重新计算</td></tr><tr><td>Mosaic</td><td>四区域拼接</td><td>四套几何映射，统一坐标与过滤规则</td></tr></tbody></table></div></section>
