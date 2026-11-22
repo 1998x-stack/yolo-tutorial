@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "article": "chapters/16.html",
+  "batch": "chapters-16-20",
+  "claims": [
+    {
+      "id": "16-01",
+      "claim": "YOLOv8 detection head is anchor-free and decoupled",
+      "kind": "research",
+      "source_url": "https://docs.ultralytics.com/guides/yolo-architecture/",
+      "locator": "YOLOv8 architecture table",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "16-02",
+      "claim": "YOLOv8 detection distance head uses reg_max=16",
+      "kind": "research",
+      "source_url": "https://docs.ultralytics.com/guides/yolo-architecture/",
+      "locator": "Detection Head / DFL section",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "16-03",
+      "claim": "C2f differs from classic C3 by split and concat routes",
+      "kind": "research",
+      "source_url": "https://docs.ultralytics.com/guides/yolo-architecture/",
+      "locator": "CSP / C2f module comparison",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "16-04",
+      "claim": "YOLOv8 product provides task-specific checkpoints and APIs",
+      "kind": "research",
+      "source_url": "https://docs.ultralytics.com/models/yolov8/",
+      "locator": "Supported tasks and model variants",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "16-05",
+      "claim": "640 input with strides 8/16/32 produces 8400 points",
+      "kind": "derivation",
+      "source_url": "https://docs.ultralytics.com/guides/yolo-architecture/",
+      "locator": "Illustrative three-scale grid arithmetic",
+      "status": "derived",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "16-06",
+      "claim": "Interpolated target t=3.7 yields weights .3 and .7",
+      "kind": "illustration",
+      "source_url": "https://docs.ultralytics.com/guides/yolo-architecture/",
+      "locator": "Teaching example of DFL linear interpolation, not network output",
+      "status": "illustrative",
+      "notes": "Hypothetical teaching computation, not research benchmark."
+    }
+  ]
+}

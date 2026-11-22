@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "article": "chapters/20.html",
+  "batch": "chapters-16-20",
+  "claims": [
+    {
+      "id": "20-01",
+      "claim": "COCO small objects use area below 32 squared pixels",
+      "kind": "research",
+      "source_url": "https://cocodataset.org/dataset/detection-eval.htm",
+      "locator": "Detection evaluation size ranges",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "20-02",
+      "claim": "COCOeval area ranges include small 0 to 32 squared and medium 32 to 96 squared",
+      "kind": "research",
+      "source_url": "https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/cocoeval.py",
+      "locator": "Params.setDetParams areaRng",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "20-03",
+      "claim": "SAHI uses sliced inference and prediction merging",
+      "kind": "research",
+      "source_url": "https://ieeexplore.ieee.org/abstract/document/9897990",
+      "locator": "Abstract and pipeline description",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "20-04",
+      "claim": "SAHI source implements tiled inference on large images",
+      "kind": "research",
+      "source_url": "https://github.com/obss/sahi",
+      "locator": "Project overview and sliced prediction API",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "20-05",
+      "claim": "Window count for 2048 size, 640 tile, 20% overlap is 4 by 4",
+      "kind": "illustration",
+      "source_url": "https://ieeexplore.ieee.org/abstract/document/9897990",
+      "locator": "Illustrative stride arithmetic, not paper benchmark",
+      "status": "illustrative",
+      "notes": "Hypothetical teaching computation, not research benchmark."
+    },
+    {
+      "id": "20-06",
+      "claim": "Local box offset (20,30,84,110) + tile origin (512,256) maps to (532,286,596,366)",
+      "kind": "derivation",
+      "source_url": "https://ieeexplore.ieee.org/abstract/document/9897990",
+      "locator": "Coordinate transformation arithmetic",
+      "status": "derived",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    }
+  ]
+}

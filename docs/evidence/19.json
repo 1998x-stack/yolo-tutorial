@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "article": "chapters/19.html",
+  "batch": "chapters-16-20",
+  "claims": [
+    {
+      "id": "19-01",
+      "claim": "Weights in FP32 occupy four bytes per scalar before overhead",
+      "kind": "derivation",
+      "source_url": "https://docs.ultralytics.com/modes/export/",
+      "locator": "Export FP32/FP16/INT8 datatype options",
+      "status": "derived",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "19-02",
+      "claim": "PTQ INT8 requires representative calibration data on supported backends",
+      "kind": "research",
+      "source_url": "https://docs.ultralytics.com/modes/export/",
+      "locator": "INT8 quantization/export documentation",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "19-03",
+      "claim": "Structured pruning must update tensor dimensions and connections",
+      "kind": "derivation",
+      "source_url": "https://arxiv.org/abs/2101.03697",
+      "locator": "Architecture equivalence discussion as engineering contract",
+      "status": "derived",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "19-04",
+      "claim": "RepVGG uses structural re-parameterization",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/2101.03697",
+      "locator": "Abstract and re-parameterization theorem",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "19-05",
+      "claim": "Knowledge distillation trains a student against teacher outputs",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/1503.02531",
+      "locator": "Distilling the Knowledge in a Neural Network",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "19-06",
+      "claim": "10M parameters at 8 bits require about 10 decimal MB of raw weight storage",
+      "kind": "illustration",
+      "source_url": "https://docs.ultralytics.com/modes/export/",
+      "locator": "Illustrative arithmetic excluding metadata/activations",
+      "status": "illustrative",
+      "notes": "Hypothetical teaching computation, not research benchmark."
+    }
+  ]
+}

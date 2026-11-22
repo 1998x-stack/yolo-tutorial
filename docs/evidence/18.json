@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "article": "chapters/18.html",
+  "batch": "chapters-16-20",
+  "claims": [
+    {
+      "id": "18-01",
+      "claim": "YOLO11 uses C3k2 and C2PSA modules",
+      "kind": "research",
+      "source_url": "https://docs.ultralytics.com/guides/yolo-architecture/",
+      "locator": "YOLO11 architecture row",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "18-02",
+      "claim": "YOLO11 covers multiple tasks",
+      "kind": "research",
+      "source_url": "https://docs.ultralytics.com/models/yolo11/",
+      "locator": "Supported tasks table",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "18-03",
+      "claim": "YOLOv12 introduces attention-centric real-time detectors",
+      "kind": "research",
+      "source_url": "https://proceedings.neurips.cc/paper_files/paper/2025/hash/7103444259031cc58051f8c9a4868533-Abstract-Conference.html",
+      "locator": "Paper abstract and introduction",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "18-04",
+      "claim": "YOLOv12 is a separate research paper, not Ultralytics YOLO11 version",
+      "kind": "research",
+      "source_url": "https://proceedings.neurips.cc/paper_files/paper/2025/hash/7103444259031cc58051f8c9a4868533-Abstract-Conference.html",
+      "locator": "Authors and publication identity",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "18-05",
+      "claim": "Global attention dense score matrix scales as N squared",
+      "kind": "derivation",
+      "source_url": "https://proceedings.neurips.cc/paper_files/paper/2025/hash/7103444259031cc58051f8c9a4868533-Abstract-Conference.html",
+      "locator": "Attention-design motivation, standard algebra",
+      "status": "derived",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "18-06",
+      "claim": "Toy local window relation count N*W is illustrative, not runtime",
+      "kind": "illustration",
+      "source_url": "https://proceedings.neurips.cc/paper_files/paper/2025/hash/7103444259031cc58051f8c9a4868533-Abstract-Conference.html",
+      "locator": "Teaching complexity analogy, excludes full kernel work",
+      "status": "illustrative",
+      "notes": "Hypothetical teaching computation, not research benchmark."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "article": "chapters/17.html",
+  "batch": "chapters-16-20",
+  "claims": [
+    {
+      "id": "17-01",
+      "claim": "YOLOv9 paper introduces Programmable Gradient Information",
+      "kind": "research",
+      "source_url": "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/4462_ECCV_2024_paper.php",
+      "locator": "Abstract and PGI method section",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "17-02",
+      "claim": "YOLOv9 paper introduces GELAN architecture",
+      "kind": "research",
+      "source_url": "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/4462_ECCV_2024_paper.php",
+      "locator": "Generalized Efficient Layer Aggregation Network section",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "17-03",
+      "claim": "PGI uses auxiliary reversible branch for training information",
+      "kind": "research",
+      "source_url": "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/4462_ECCV_2024_paper.php",
+      "locator": "PGI discussion and architecture figure",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "17-04",
+      "claim": "YOLOv10 introduces consistent dual assignments",
+      "kind": "research",
+      "source_url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/c34ddd05eb089991f06f3c5dc36836e0-Abstract.html",
+      "locator": "Abstract and consistent dual assignments section",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "17-05",
+      "claim": "YOLOv10 uses one-to-one inference for NMS-free detection",
+      "kind": "research",
+      "source_url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/c34ddd05eb089991f06f3c5dc36836e0-Abstract.html",
+      "locator": "NMS-free end-to-end inference design",
+      "status": "verified",
+      "notes": "Review scope is fixed to named original paper or documentation."
+    },
+    {
+      "id": "17-06",
+      "claim": "Example 4-to-1 positives per target is synthetic",
+      "kind": "illustration",
+      "source_url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/c34ddd05eb089991f06f3c5dc36836e0-Abstract.html",
+      "locator": "Illustrative teaching count, not a paper benchmark",
+      "status": "illustrative",
+      "notes": "Hypothetical teaching computation, not research benchmark."
+    }
+  ]
+}

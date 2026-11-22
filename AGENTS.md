@@ -34,7 +34,7 @@ Every chapter is an independent article. A reader arriving from search, a bookma
 
 ## Repository conventions
 
-- Canonical chapter pages live in `chapters/NN.html`. Chapters 01–15 have been rewritten and reviewed as of 2026-11-22; 16–28 still need deep editorial/technical review.
+- Canonical chapter pages live in `chapters/NN.html`. Chapters 01–20 have been rewritten and reviewed as of 2026-11-22; 21–28 still need deep editorial/technical review.
 - Root `NN.html` files are compatibility redirects; do not author chapter content there.
 - `courses.json` is the structured course catalogue; keep all 28 entries and their `file` paths in sync.
 - `index.html` is a static, file://-compatible course home. Do not make initial rendering depend on fetch().
@@ -70,3 +70,12 @@ Every chapter is an independent article. A reader arriving from search, a bookma
 - For NMS, specify class-aware versus agnostic suppression, score threshold, IoU comparator, tie order, max detections; NMS-free models require appropriate training, not only removal of the postprocessor.
 - When describing YOLOv5, anchor-based `ultralytics/yolov5` v7.0 must not be conflated with later anchor-free YOLOv5u variants; pin the code tag for every command or architectural statement.
 - Every batch needs accessible standalone SVG exports matching inline drawings, reproducible stdlib lab tests and full four-viewport Chromium checks.
+
+## Chapter contracts (16–20)
+
+- For YOLOv8 distinguish anchor-free points from pretrained box priors, DFL logits from target-interpolation weights, and training-only Task-Aligned Assigner from inference operators.
+- YOLOv9 PGI reversible auxiliary branch is a training information route, not a mandatory inference head; YOLOv10 consistent dual assignments train two pathways but one-to-one predictions serve NMS-free inference.
+- YOLO11 and YOLOv12 are separately sourced model lines; never infer benchmark superiority from version numbers alone.
+- INT8 raw weight size does not predict latency or memory exactly. Representative PTQ calibration, precision/backend support and task quality are independent gates.
+- COCO AP_s uses original annotation area under 32²; SAHI adds patch origin offsets and merges all predictions in the global coordinate system. Split source images before slicing to prevent leakage.
+- New pages have 6+ item evidence ledgers, accessible standalone SVGs, one real local interactive control, native MathML where needed, deterministic stdlib labs, browser QA across four widths. Mark any unexecuted validation as unverified.

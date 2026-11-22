@@ -38,3 +38,9 @@
 - Preserved verifiable primary citations, frozen source references and per-chapter evidence ledgers `11.json`–`15.json`; explicitly separate illustrative calculations from paper metrics.
 - Updated the 28-card offline-first homepage and 01–15 sidebar navigation, README, architecture notes, AGENTS guardrails, browser interactivity tests and responsive coverage.
 - CI and Pages release: pending validation at the time of authoring. Inspect workflow execution before marking the batch as passed.
+
+### 2026-11-22 — Batch 04: modern YOLOs and small-object deployment (16–20)
+- Replaced five legacy lecture-style pages with self-contained technical explainers, consistent 01–20 navigation, five exported original SVG diagrams, native MathML and offline interactive teaching controls.
+- Cross-checked original ECCV 2024 YOLOv9, NeurIPS 2024 YOLOv10, NeurIPS 2025 YOLOv12, Ultralytics YOLOv8/YOLO11 architecture, original RepVGG/knowledge-distillation publications, COCO area definitions and SAHI paper/code; removed ungrounded anecdotal boosts and incomparable speed claims.
+- Added per-page evidence ledgers 16–20 (>=6 claims each), standard-library deterministic computations covering DFL bin interpolation, anchor-free grid count, attention relation counts, raw weight bytes, tile starts and global coordinate offsets.
+- Expanded site/evidence/SVG source checks and Chromium checks from 15 to 20 chapters; new browser interactions test numeric updates on five pages. Pending GitHub Actions run results should be consulted before marking CI/Pages successful.

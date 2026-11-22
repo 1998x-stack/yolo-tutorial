@@ -70,6 +70,18 @@ def main() -> None:
                 assert "Soft-NMS" in page.locator("#nms-demo-output").inner_text()
                 assert "B(cat" in page.locator("#nms-demo-output").inner_text()
 
+                # New teaching interaction, one value change per architecture/deployment chapter.
+                for num, phrase in [("16", "bin"), ("17", "one-to-many"), ("18", "N=256"), ("19", "MB"), ("20", "16 片")]:
+                    page.goto(base + "/chapters/" + num + ".html", wait_until="networkidle")
+                    slider = page.locator("#lab-input-" + num)
+                    output = page.locator("#lab-output-" + num)
+                    before = output.inner_text()
+                    assert before and (phrase in before), (num, before)
+                    slider.focus()
+                    page.keyboard.press("End")
+                    after = output.inner_text()
+                    assert after != before, (num, before, after)
+
                 for width in results["viewports"]:
                     page.set_viewport_size({"width": width, "height": 1000})
                     page.goto(base + "/index.html", wait_until="networkidle")
@@ -78,7 +90,7 @@ def main() -> None:
                     if width in (1440, 390):
                         page.screenshot(path=str(Path(temp) / f"home-{width}.png"), full_page=True)
 
-                    for chapter in range(1, 16):
+                    for chapter in range(1, 21):
                         num = f"{chapter:02d}"
                         page.goto(base + f"/chapters/{num}.html", wait_until="networkidle")
                         assert page.locator("main article h1").count() == 1, num

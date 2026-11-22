@@ -19,7 +19,7 @@ python -m http.server 8000
 # 浏览器访问 http://localhost:8000
 ```
 
-首页提供章节搜索与阶段筛选。01–15 章已按独立文章标准重写，包含背景、符号约定、原理图解、可运行的教学脚本、适用边界与原始参考文献。16–28 章已迁移到规范化目录，但尚未完成逐篇技术审计。
+首页提供章节搜索与阶段筛选。01–20 章已按独立文章标准重写，包含背景、符号约定、原理图解、可运行的教学脚本、适用边界与原始参考文献。21–28 章已迁移到规范化目录，但尚未完成逐篇技术审计。
 
 ## 课程路线
 
@@ -38,8 +38,8 @@ yolo-tutorial/
 ├── index.html                 # 静态课程首页：搜索、阶段筛选、学习路线
 ├── courses.json               # 28 章结构化元数据（首页的机器可读目录）
 ├── chapters/
-│   ├── 01.html ... 15.html    # 三批已重构、独立可读的技术文章
-│   └── 16.html ... 28.html    # 尚待逐篇审计的文章
+│   ├── 01.html ... 20.html    # 四批已重构、独立可读的技术文章
+│   └── 21.html ... 28.html    # 尚待逐篇审计的文章
 ├── assets/
 │   ├── theme.css              # 首页与章节共用设计系统
 │   └── site.js                # 首页搜索与阶段筛选增强
@@ -70,7 +70,7 @@ yolo-tutorial/
 - **离线优先：** 页面不依赖外部字体、CDN、遥测或运行时网络请求；关键数学表达使用浏览器原生 MathML。
 - **如实呈现实验：** 教学示例不是论文复现；未执行的浏览器测试不能标为通过。
 
-01–05 章依据 YOLOv1、YOLO9000/YOLOv2、YOLOv3 原始论文和 COCO 官方协议重写；06–10 章依据 YOLOv4、FPN/PANet/BiFPN、GIoU/DIoU/CIoU 与 Darknet/OpenCV 实现进行交叉验证。每篇文章的证据台账存放在 `docs/evidence/01.json` 至 `15.json`，区分已核对的论文主张、推导数字和教学示例。
+01–05 章依据 YOLOv1、YOLO9000/YOLOv2、YOLOv3 原始论文和 COCO 官方协议重写；06–10 章依据 YOLOv4、FPN/PANet/BiFPN、GIoU/DIoU/CIoU 与 Darknet/OpenCV 实现进行交叉验证。每篇文章的证据台账存放在 `docs/evidence/01.json` 至 `20.json`，区分已核对的论文主张、推导数字和教学示例。
 
 ## 本地质量检查
 
@@ -88,7 +88,7 @@ python -m playwright install chromium
 python tests/browser_check.py
 ```
 
-浏览器检查覆盖首页搜索、28 章入口、01–15 章的桌面与移动端布局、SVG/MathML、横向溢出、打印模式、锚框交互以及 NMS 阈值/算法交互实验。GitHub Actions 会在 Pull Request 和主分支更新时运行相同的检查。
+浏览器检查覆盖首页搜索、28 章入口、01–20 章的桌面与移动端布局、SVG/MathML、横向溢出、打印模式、锚框交互以及 NMS 阈值/算法交互实验。GitHub Actions 会在 Pull Request 和主分支更新时运行相同的检查。
 
 ## GitHub Pages
 
@@ -134,3 +134,21 @@ python -m unittest discover -s tests -v
 这些实验均是<strong>教学用确定性测试</strong>，不加载第三方权重、不训练网络，也不复现论文 benchmark。YOLOv5 的训练/导出命令固定到上游 `ultralytics/yolov5` **v7.0**；请注意其许可与当前 Ultralytics Python 包的模型 API 不完全相同。
 
 已发布站点：[GitHub Pages](https://1998x-stack.github.io/yolo-tutorial/)。发布与质量验证记录在 [Actions](https://github.com/1998x-stack/yolo-tutorial/actions)。
+
+## 第四批：第 16–20 章深度重构（2026-11-22）
+
+- **16 YOLOv8：** Anchor-Free 格点契约、C2f、解耦 Head、DFL 插值与训练分配。
+- **17 YOLOv9/v10：** PGI/GELAN 与一致性双重分配；区分训练辅助机制、one-to-one 推理及真实 NMS-Free 约束。
+- **18 YOLO11/v12：** 区分不同发布主体、C3k2/C2PSA 与注意力架构；交互展示关系矩阵复杂度的边界。
+- **19 轻量化：** 结构化剪枝、PTQ/QAT、蒸馏、重参数化与全链路验收；不把权重体积当作推理延迟。
+- **20 小目标：** COCO AP_s 的面积口径、stride、SAHI 切片、坐标还原与防数据泄漏。
+
+五篇均以独立 HTML 编排，提供一手来源、原创建模 SVG（同步导出 `assets/figures/chapter-16-01.svg` 至 `20-01.svg`）、离线交互与 `docs/evidence/16.json`–`20.json`。计算实验为标准库玩具契约，不代表训练、论文 AP 或 GPU 加速复现。
+
+```bash
+python -m labs.modern_yolo_contract
+python -m unittest discover -s tests -v
+python tests/browser_check.py  # 需要 Playwright + Chromium，覆盖 01–20 章
+```
+
+文章源代码、演示与证据在 Pages 部署成功后可通过 `/chapters/16.html` 至 `/chapters/20.html` 访问；仅存在文件或 workflow 不等于浏览器验收通过。
