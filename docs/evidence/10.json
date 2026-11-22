@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "article": "chapters/10.html",
+  "batch": "2026-11-22-06-10",
+  "method": "Primary paper and implementation references; derived numerical checks are separate from published metrics.",
+  "claims": [
+    {
+      "id": "10-01",
+      "claim": "原始 FPN 采用自顶向下路径与横向连接，1×1 通道投影之后逐元素相加",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1612.03144",
+      "locator": "§3.1 Feature Pyramid Networks",
+      "status": "verified",
+      "notes": "然后用 3×3 卷积构建输出特征。"
+    },
+    {
+      "id": "10-02",
+      "claim": "原始 FPN 的分层特征是 C2–C5 至 P2–P6 的框架，而本文图示采用三层教学子集",
+      "kind": "illustration",
+      "source_url": "https://arxiv.org/abs/1612.03144",
+      "locator": "§3.1 Feature Pyramid Networks",
+      "status": "derived",
+      "notes": "图示保留因果数据流，但不是完整原始 Faster R-CNN FPN 网络。"
+    },
+    {
+      "id": "10-03",
+      "claim": "YOLOv3 使用三尺度预测，并对自顶向下上采样特征与中层特征拼接而非原始 FPN 的逐元素相加",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.3 Predictions Across Scales",
+      "status": "verified",
+      "notes": "前后的卷积通道数决定实际拼接通道宽度。"
+    },
+    {
+      "id": "10-04",
+      "claim": "PANet 提出自底向上的路径增强，以缩短低层定位信号到高层的路径",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1803.01534",
+      "locator": "Abstract; §3.1 Bottom-up Path Augmentation",
+      "status": "verified",
+      "notes": "不等同于原始 YOLOv3 的结构。"
+    },
+    {
+      "id": "10-05",
+      "claim": "EfficientDet 提出带学习权重的 BiFPN 和快速归一化加权融合",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1911.09070",
+      "locator": "§3.3 BiFPN; fast normalized fusion",
+      "status": "verified",
+      "notes": "可学习权重需要保持非负并用 epsilon 避免除零。"
+    },
+    {
+      "id": "10-06",
+      "claim": "416 输入对应 stride8/16/32 特征尺寸 52/26/13",
+      "kind": "calculation",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.3 Predictions Across Scales",
+      "status": "derived",
+      "notes": "仅当输入大小可被 32 整除时，案例中整数尺寸成立。"
+    },
+    {
+      "id": "10-07",
+      "claim": "形状验证脚本中的投影后 256+512→768 通道拼接只是教学形状实例",
+      "kind": "illustration",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.3 Predictions Across Scales",
+      "status": "illustrative",
+      "notes": "不能直接映射任意实现中的某一层真实通道数。"
+    }
+  ]
+}

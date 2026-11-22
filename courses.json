@@ -71,12 +71,12 @@
     },
     {
       "num": "06",
-      "title": "YOLOv3工程实战",
+      "title": "YOLOv3 工程实战",
       "topics": [
-        "训练配置与损失计算",
-        "数据增强",
-        "多尺度训练策略",
-        "NMS后处理"
+        "Darknet 标签与配置审计",
+        "训练与验证划分",
+        "OpenCV 推理",
+        "逐类别 NMS"
       ],
       "file": "chapters/06.html",
       "stage": "architecture",
@@ -84,12 +84,12 @@
     },
     {
       "num": "07",
-      "title": "YOLOv4集大成",
+      "title": "YOLOv4 系统设计",
       "topics": [
-        "CSPDarknet-53",
-        "Mosaic与CIoU",
-        "Mish激活函数",
-        "BoF/BoS方法论"
+        "CSPDarknet53 与 SPP",
+        "PAN 式融合",
+        "Mosaic 与 Mish",
+        "BoF / BoS"
       ],
       "file": "chapters/07.html",
       "stage": "architecture",
@@ -99,10 +99,10 @@
       "num": "08",
       "title": "锚框机制与聚类",
       "topics": [
-        "K-means锚框设计",
-        "锚框分配策略",
-        "多尺度锚框",
-        "Anchor-free演进"
+        "IoU 距离与 K-means",
+        "锚框解码",
+        "正样本分配",
+        "交互式形状实验"
       ],
       "file": "chapters/08.html",
       "stage": "architecture",
@@ -110,12 +110,12 @@
     },
     {
       "num": "09",
-      "title": "损失函数演进",
+      "title": "检测损失函数演进",
       "topics": [
-        "IoU→GIoU→DIoU→CIoU",
-        "DFL分布损失",
-        "BCE分类损失",
-        "回归损失对比"
+        "IoU / GIoU / DIoU / CIoU",
+        "坐标与分类损失",
+        "DFL",
+        "可运行几何示例"
       ],
       "file": "chapters/09.html",
       "stage": "architecture",
@@ -123,12 +123,12 @@
     },
     {
       "num": "10",
-      "title": "特征金字塔FPN",
+      "title": "特征金字塔 FPN",
       "topics": [
-        "多尺度特征融合",
-        "自上而下路径",
-        "PANet双向融合",
-        "小目标检测提升"
+        "横向连接与上采样",
+        "Add vs Concat",
+        "PANet / BiFPN",
+        "张量形状检查"
       ],
       "file": "chapters/10.html",
       "stage": "architecture",

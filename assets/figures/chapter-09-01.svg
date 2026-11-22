@@ -1,0 +1,22 @@
+<svg viewBox="0 0 900 300" role="img" aria-labelledby="c09-title c09-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="c09-title">两框不重叠时 IoU 为零，但中心距离和外接矩形仍然提供信息</title><desc id="c09-desc">左边预测框 A 和右边真实框 B 不重叠，IoU 为零；最小包围框 C 和两框中心的距离可以分别用于 GIoU 和 DIoU 的几何惩罚。</desc>
+<rect x="8" y="8" width="884" height="284" rx="18" fill="#f6fafb"/>
+<g transform="translate(56 42)">
+<rect x="0" y="0" width="480" height="216" rx="11" fill="#edf5f5" stroke="#bfd2d3"/>
+<rect x="45" y="50" width="380" height="125" fill="none" stroke="#6c5b91" stroke-width="3" stroke-dasharray="8 6"/>
+<text x="50" y="42" fill="#6c5b91" font-size="16" font-weight="700">C：最小外接框</text>
+<rect x="45" y="50" width="152" height="125" rx="3" fill="#087f8c" fill-opacity=".16" stroke="#087f8c" stroke-width="3"/>
+<rect x="273" y="50" width="152" height="125" rx="3" fill="#c47b31" fill-opacity=".15" stroke="#c47b31" stroke-width="3"/>
+<circle cx="121" cy="112" r="5" fill="#087f8c"/><circle cx="349" cy="112" r="5" fill="#c47b31"/>
+<path d="M127 112 H343" stroke="#192f38" stroke-width="2.5" stroke-dasharray="6 5"/>
+<g fill="#24414a" font-size="17" text-anchor="middle"><text x="121" y="192">预测框 A</text><text x="349" y="192">真实框 B</text></g>
+<text x="235" y="104" text-anchor="middle" font-size="14" fill="#314d56">中心距离 ρ</text>
+</g>
+<g transform="translate(580 70)">
+<text x="0" y="0" fill="#24414a" font-size="18" font-weight="700">A 与 B 完全不相交</text>
+<rect x="0" y="22" width="275" height="38" rx="8" fill="#e7f1f1"/><text x="16" y="47" fill="#24535a" font-size="15">IoU = 0（无法区分距离）</text>
+<rect x="0" y="71" width="275" height="38" rx="8" fill="#eeeaf7"/><text x="16" y="96" fill="#57477b" font-size="15">GIoU：关注空白包围面积</text>
+<rect x="0" y="120" width="275" height="38" rx="8" fill="#fff0df"/><text x="16" y="145" fill="#754719" font-size="15">DIoU：显式关注中心距离</text>
+<text x="4" y="195" fill="#5c737a" font-size="14">CIoU 进一步引入长宽比差异</text>
+</g>
+</svg>

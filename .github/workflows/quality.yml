@@ -28,3 +28,12 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Run Chromium browser checks
         run: python tests/browser_check.py
+
+      - name: Upload browser verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-qa-screenshots
+          path: reports/browser/
+          if-no-files-found: ignore
+          retention-days: 14

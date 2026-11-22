@@ -21,3 +21,11 @@
 - Engineering: static homepage cards (no runtime JSON fetch), search and stage filtering as progressive enhancement, `AGENTS.md` content rules, local-link/static tests, Chromium desktop/mobile browser checks, and a GitHub Actions quality workflow.
 - Technical audit notes: distinguish YOLOv1's 2015 arXiv submission from CVPR 2016 publication; separate YOLOv2 ablation rows from final resolution benchmarks; describe YOLO9000 WordTree as hierarchical joint classification/detection rather than prompt-based open-vocabulary detection; correct YOLOv3 COCO AP_L to 41.9.
 - Validation: GitHub Actions Quality run #9 (run ID 44912512867) passed. All 9 Python static tests passed; Chromium checked the homepage and chapters 01–05 at 1440, 768, 390, and 360 px, verified search/filter and empty-state behavior, MathML rendering/focus, print visibility, horizontal overflow, and browser errors (none).
+
+### 2026-11-22 — Evidence-backed batch 02 (chapters 06–10)
+- Scope: rewrite the YOLOv3 engineering, YOLOv4, anchor clustering, IoU-family losses and FPN articles as independent entries.
+- Source control: primary paper locators and per-chapter `docs/evidence/06.json`–`10.json`; distinguish original YOLOv3 from later YOLOv4 and Ultralytics conventions.
+- Geometry: add deterministic anchor clusters, IoU/GIoU/DIoU/CIoU, cfg audit, FPN shape checks; add optional OpenCV/Darknet inference with explicit class-wise NMS and coordinate conventions.
+- Visual narrative: 8 original explanatory SVGs (also exported under `assets/figures/`), native MathML, Chapter 08 anchor selector with keyboard-accessible controls, mobile figure scrolling.
+- Navigation: first ten articles share a stage sidebar, Chapter 05 now advances to 06; homepage metadata and README reflect actual reviewed coverage.
+- Validation: GitHub Actions Quality run #1 for PR #3 (run ID 44986969762) passed: all 17 Python static/lab tests, Chromium for the homepage and chapters 01–10 at 1440/768/390/360 px, Chapter 08 shape controls, MathML/SVG rendering, responsive figure scrolling and browser errors (none). Browser screenshots and JSON report were uploaded as an Actions artifact.

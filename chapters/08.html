@@ -1,258 +1,126 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第8章 锚框机制与聚类 — YOLO教程</title>
-    <link rel="stylesheet" href="../assets/theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="锚框不是固定的最终答案，而是描述训练集框形状的一组参考模板。理解锚框尺寸、偏移解码、IoU 距离聚类和正样本分配，才能判断该不该重新聚类。">
+<title>第 08 章｜锚框：用几何先验缩小检测搜索空间 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
 </head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🤖 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 目标检测概述</a></li>
-            <li><a href="02.html">第2章 YOLO设计哲学</a></li>
-            <li><a href="03.html">第3章 YOLOv1详解</a></li>
-            <li><a href="04.html">第4章 YOLOv2/YOLO9000</a></li>
-            <li><a href="05.html">第5章 YOLOv3核心架构</a></li>
-            <li><a href="06.html">第6章 YOLOv3工程实战</a></li>
-            <li><a href="07.html">第7章 YOLOv4集大成</a></li>
-            <li><a href="08.html" class="active">第8章 锚框机制与聚类</a></li>
-            <li><a href="09.html">第9章 损失函数演进</a></li>
-            <li><a href="10.html">第10章 特征金字塔FPN</a></li>
-            <li><a href="11.html">第11章 数据增强策略</a></li>
-            <li><a href="12.html">第12章 骨干网络对比</a></li>
-            <li><a href="13.html">第13章 Neck与Head设计</a></li>
-            <li><a href="14.html">第14章 NMS与后处理</a></li>
-            <li><a href="15.html">第15章 YOLOv5入门</a></li>
-            <li><a href="16.html">第16章 YOLOv8新特性</a></li>
-            <li><a href="17.html">第17章 YOLOv9/v10前沿</a></li>
-            <li><a href="18.html">第18章 YOLO11/v12演进</a></li>
-            <li><a href="19.html">第19章 模型轻量化</a></li>
-            <li><a href="20.html">第20章 小目标检测优化</a></li>
-            <li><a href="21.html">第21章 部署与推理加速</a></li>
-            <li><a href="22.html">第22章 边缘设备部署</a></li>
-            <li><a href="23.html">第23章 数据标注与格式</a></li>
-            <li><a href="24.html">第24章 训练流水线搭建</a></li>
-            <li><a href="25.html">第25章 模型评估与调优</a></li>
-            <li><a href="26.html">第26章 YOLO+多模态</a></li>
-            <li><a href="27.html">第27章 行业实战案例</a></li>
-            <li><a href="28.html">第28章 综合实训项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
 
-<h2>第8章 锚框机制与聚类</h2>
+<aside class="sidebar" aria-label="课程导航"><a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a><p class="sidebar-label">FOUNDATION / METHODS · 01—10</p><nav><ol class="chapter-list"><li><a href="01.html" data-chapter="01"><span>01</span>目标检测概述</a></li><li><a href="02.html" data-chapter="02"><span>02</span>YOLO 设计哲学</a></li><li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1 统一回归</a></li><li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 / YOLO9000</a></li><li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3 多尺度架构</a></li><li><a href="06.html" data-chapter="06"><span>06</span>YOLOv3 工程实战</a></li><li><a href="07.html" data-chapter="07"><span>07</span>YOLOv4 系统设计</a></li><li><a href="08.html" data-chapter="08" aria-current="page"><span>08</span>锚框机制与聚类</a></li><li><a href="09.html" data-chapter="09"><span>09</span>损失函数演进</a></li><li><a href="10.html" data-chapter="10"><span>10</span>特征金字塔 FPN</a></li></ol></nav><a class="all-chapters" href="../index.html">查看全部 28 章 ↗</a></aside>
+<main id="main" class="main-content">
+<article class="article"><header class="article-header"><p class="eyebrow">GEOMETRY <span>／</span> CHAPTER 08</p><h1>锚框：用几何先验缩小检测搜索空间</h1><p class="article-dek">锚框不是固定的最终答案，而是描述训练集框形状的一组参考模板。理解锚框尺寸、偏移解码、IoU 距离聚类和正样本分配，才能判断该不该重新聚类。</p></header>
+<section id="why"><h2>1. 锚框究竟为网络提供了什么？</h2>
+<p>目标检测器要预测每个物体的边界框：中心坐标 <code>(x,y)</code> 和宽高 <code>(w,h)</code>。如果完全从任意坐标开始预测，模型需要同时学习“目标在哪里”和“框可能长什么样”。锚框（anchor box，也称 prior box）把常见宽高作为先验，在每个特征网格位置预先定义若干参考框，再预测它们的偏移与缩放量。</p>
+<p>在 YOLOv2 的锚框设计中，网络不是将 2D 图像裁成静态候选框逐个分类。锚框只提供数值上的宽高模板，实际位置和大小仍由共享网络一次性输出。YOLOv1 已是统一回归检测器；YOLOv2 用锚框改善了边界框参数化，不等于从单阶段改成两阶段。</p>
+<figure class="diagram" tabindex="0" aria-label="技术结构图：在窄屏上可左右滚动查看">
+<svg viewBox="0 0 900 320" role="img" aria-labelledby="c08a-title c08a-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="c08a-title">同一网格中心的三种锚框几何先验</title><desc id="c08a-desc">同一个网格位置放置接近正方形、竖长和横长的锚框，模型为不同形状分别预测偏移。页面下方提供可切换的目标长宽比。</desc>
+<rect x="8" y="8" width="884" height="304" rx="18" fill="#f6fafb"/>
+<g transform="translate(46 38)">
+<rect x="0" y="0" width="282" height="244" rx="12" fill="#e9f1f2" stroke="#b0c8ca"/>
+<path d="M47 0 V244 M94 0 V244 M141 0 V244 M188 0 V244 M235 0 V244 M0 40 H282 M0 80 H282 M0 120 H282 M0 160 H282 M0 200 H282" stroke="#c6d7d9" stroke-width="1.1"/>
+<g transform="translate(-7 -25)">
+<rect id="anchor-candidate-0" x="152" y="120" width="70" height="60" fill="none" stroke="#087f8c" stroke-width="4"/>
+<rect id="anchor-candidate-1" x="157" y="75" width="60" height="150" fill="none" stroke="#c47b31" stroke-width="2" stroke-dasharray="6 5"/>
+<rect id="anchor-candidate-2" x="112" y="120" width="150" height="60" fill="none" stroke="#6c5b91" stroke-width="2" stroke-dasharray="6 5"/>
+<rect id="anchor-target-box" x="149" y="117" width="76" height="66" rx="4" fill="#3b7474" fill-opacity=".12" stroke="#192f38" stroke-width="3"/>
+<circle cx="187" cy="150" r="4.5" fill="#192f38"/>
+</g>
+<text x="141" y="267" text-anchor="middle" fill="#24414a" font-size="14" font-weight="700">共享中心；不同 w × h</text>
+</g>
+<g transform="translate(375 62)">
+<text x="0" y="3" fill="#24414a" font-size="18" font-weight="700">比对目标宽高</text>
+<rect x="0" y="24" width="468" height="47" rx="9" fill="#e1f0ef" stroke="#9fc3c0"/>
+<text x="18" y="54" fill="#24535a" font-size="16">① 方形先验</text><text x="270" y="54" fill="#24535a" font-size="15">70 × 60</text>
+<rect x="0" y="82" width="468" height="47" rx="9" fill="#fff0df" stroke="#d5ad74"/>
+<text x="18" y="112" fill="#754719" font-size="16">② 竖长先验</text><text x="270" y="112" fill="#754719" font-size="15">60 × 150</text>
+<rect x="0" y="140" width="468" height="47" rx="9" fill="#eeeaf7" stroke="#c4b6d9"/>
+<text x="18" y="170" fill="#57477b" font-size="16">③ 横长先验</text><text x="270" y="170" fill="#57477b" font-size="15">150 × 60</text>
+<text x="0" y="218" fill="#5b7379" font-size="14">形状 IoU：将所有框中心对齐，只比较宽高</text>
+</g>
+</svg>
+<figcaption>三种锚框有相同的网格位置，但宽高先验不同。图形是几何匹配示意，不是训练时生成的候选区域裁剪图。</figcaption>
+</figure>
+<div class="callout info"><strong>边界说明。</strong>锚框并非现代 YOLO 的必要条件。无锚框检测器可以直接预测点到边界的距离或中心宽高，但同样需要正负样本分配、尺度匹配与回归约束。</div>
+</section>
+<section id="decode"><h2>2. YOLOv2 的参数如何变成真实边界框</h2>
+<p>设网格左上角坐标为 <code>(c_x,c_y)</code>（以网格为单位），某个锚框宽高为 <code>(p_w,p_h)</code>（与解码所用的网格单位一致），网络输出 <code>t_x,t_y,t_w,t_h</code>。通过 Sigmoid 和指数函数解码：</p>
+<div class="equation" tabindex="0" role="region" aria-label="YOLOv2 锚框解码公式，可横向滚动">
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="x y 中心等于 sigmoid 偏移加网格坐标，宽高等于先验宽高乘上 e 的预测偏移次方">
+<mtable columnalign="left">
+<mtr><mtd><msub><mi>b</mi><mi>x</mi></msub><mo>=</mo><mi>σ</mi><mo>(</mo><msub><mi>t</mi><mi>x</mi></msub><mo>)</mo><mo>+</mo><msub><mi>c</mi><mi>x</mi></msub></mtd></mtr>
+<mtr><mtd><msub><mi>b</mi><mi>y</mi></msub><mo>=</mo><mi>σ</mi><mo>(</mo><msub><mi>t</mi><mi>y</mi></msub><mo>)</mo><mo>+</mo><msub><mi>c</mi><mi>y</mi></msub></mtd></mtr>
+<mtr><mtd><msub><mi>b</mi><mi>w</mi></msub><mo>=</mo><msub><mi>p</mi><mi>w</mi></msub><msup><mi>e</mi><msub><mi>t</mi><mi>w</mi></msub></msup></mtd></mtr>
+<mtr><mtd><msub><mi>b</mi><mi>h</mi></msub><mo>=</mo><msub><mi>p</mi><mi>h</mi></msub><msup><mi>e</mi><msub><mi>t</mi><mi>h</mi></msub></msup></mtd></mtr>
+</mtable></math></div>
+<p><code>σ(t)</code> 把中心偏移约束在一个网格区间内；<code>e^t</code> 允许以比例方式调节先验宽高。要将 <code>b_x,b_y,b_w,b_h</code> 转换成原图坐标，还需考虑特征图大小、输入缩放与 padding。论文公式中各量的单位不能混用：<strong>参考框采用像素宽高时，必须先换算到网格或归一化坐标体系</strong>。</p>
+<pre><code># 纯几何例子：416 像素输入、stride=32，特征层为 13×13
+# 网格左上角 (c_x,c_y)=(4,6)，网络输出全为 0
+# sigma(0)=0.5, exp(0)=1
+# 选择像素锚框 (116,90)，换成网格单位 (116/32,90/32)
+# 解码中心: (4.5,6.5) 个网格 = (144,208) 像素
+# 解码宽高: (116,90) 像素，框角为 (86,163,202,253)</code></pre>
+<p>例子中两组公式来自 YOLOv2/YOLOv3 锚框参数化思想，具体版本的训练目标和数值稳定处理以对应代码为准；不能把教学示意当成某个模型权重的真实输出。</p>
+</section>
+<section id="clustering"><h2>3. K-means 为什么用 1−IoU，而不是欧氏距离</h2>
+<p>若对框宽高直接使用欧氏距离，尺寸大的框容易主导聚类：一个 200 像素宽的大框和一个 180 像素宽的框相差 20，而小目标宽度 20 与 10 相差 10；但后者的尺度比例差异更大。YOLOv2 使用 <code>1 − IoU</code> 描述框形状不匹配的程度，目标是让每个真实框都能找到一个相近的宽高先验。</p>
+<div class="equation" tabindex="0" role="region" aria-label="形状 IoU 距离公式，可横向滚动">
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="宽高模板距离等于一减两框同中心时交集面积除以并集面积">
+<mrow><mi>d</mi><mo>(</mo><mi>b</mi><mo>,</mo><mi>a</mi><mo>)</mo><mo>=</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mi>min</mi><mo>(</mo><msub><mi>w</mi><mi>b</mi></msub><mo>,</mo><msub><mi>w</mi><mi>a</mi></msub><mo>)</mo><mi>min</mi><mo>(</mo><msub><mi>h</mi><mi>b</mi></msub><mo>,</mo><msub><mi>h</mi><mi>a</mi></msub><mo>)</mo></mrow><mrow><msub><mi>w</mi><mi>b</mi></msub><msub><mi>h</mi><mi>b</mi></msub><mo>+</mo><msub><mi>w</mi><mi>a</mi></msub><msub><mi>h</mi><mi>a</mi></msub><mo>−</mo><mi>intersection</mi></mrow></mfrac></mrow>
+</math></div>
+<p>此处把两个框中心对齐，仅比较宽高；因此聚类并不需要标注框在图像中的位置。要复现聚类，先把所有框缩放到统一的<strong>参考输入尺寸</strong>（或统一归一化单位），排除宽高非正、越界和异常标签，再确定 K、随机种子、迭代次数和空簇处理策略。论文将这类过程称为 dimension clustering。</p>
+<pre><code># 仓库自带确定性教学脚本；CSV 列为 width,height
+python -m labs.anchor_clusters labs/sample-boxes.csv --k 3 --seed 42
 
-<p>大家好，我是你们的讲师。锚框是YOLO系列中最微妙的设计之一——选好了模型事半功倍，选错了训练都难以收敛。你可能不知道，YOLOv3的9个锚框尺度过经历了怎样的网格搜索。从YOLOv2引入锚框开始，这个小小的先验设计就深刻影响了整个目标检测领域的发展方向。</p>
-
-<p>本章我们将深入剖析锚框（anchor box）的设计思想、聚类生成方法、赋值策略，以及从有锚到无锚的演进历程。理解锚框，是理解YOLO检测头设计的基石。</p>
-
-<h2>8.1 为什么需要锚框</h2>
-
-<p>在YOLOv1中，每个网格单元直接预测边界框的绝对坐标（x, y, w, h）。这种做法有两个明显的问题：第一，直接预测绝对坐标让梯度的范围非常不稳定，小物体的偏移和大物体的偏移尺度差异巨大；第二，没有任何先验知识来约束输出框的形状，模型需要从头学习所有可能的宽高比。</p>
-
-<p>锚框（也称为先验框，priors）的核心思想是：在训练之前，我们就定义好一组预设的边界框形状（宽度和高度），让模型在预测时只需学习相对于这些预设框的偏移量，而非直接预测绝对坐标。这大大降低了学习的难度。</p>
-
-<div class="highlight">
-    <strong>锚框的优势：</strong> 将边界框预测分解为"在哪附近"（锚框中心）和"是什么形状"（锚框尺寸），使得模型可以专注于微调而非全局搜索。
+# 输出按面积排序的参考宽高与 mean best-anchor IoU
+# 该脚本用 IoU 距离分簇 + 算术中心更新，
+# 不是 Darknet calc_anchors 的逐行源码复刻。</code></pre>
+<p>一个很高的 mean best-anchor IoU 说明形状覆盖较好，但不能直接推出检测 AP 较高。真正的目标分配、感受野、标注噪声与训练动态也会影响最终表现。</p></section>
+<section id="interactive"><h2>4. 试着切换目标形状：哪个先验更匹配？</h2>
+<p>下面的演示保持三个先验框的中心一致，只改变目标框的长宽。距离为 <code>1 − IoU(shape)</code>，最小距离对应最大重叠。它刻意不加入类别、网格位置或网络参数，专门隔离锚框形状匹配这一因素。</p>
+<div class="callout info">
+<label for="anchor-demo-select"><strong>目标框形状</strong></label>
+<select id="anchor-demo-select" style="margin-left:12px;padding:7px 11px;border:1px solid #a5c6c5;border-radius:8px;max-width:100%">
+<option value="square">近方形：76 × 66</option>
+<option value="tall">竖长形：58 × 140</option>
+<option value="wide">横长形：142 × 54</option>
+</select>
+<p><output id="anchor-demo-output" aria-live="polite">最匹配：① 方形先验；形状 IoU ≈ 0.837</output></p>
 </div>
-
-<h2>8.2 锚框的设计原理</h2>
-
-<p>每个锚框由以下参数定义：<strong>中心坐标</strong>（相对于网格单元）、<strong>宽度</strong>和<strong>高度</strong>（相对于整幅图像的比例），以及与之关联的<strong>形状先验</strong>（aspect ratio）。在YOLOv2及之后的版本中，模型预测的是<strong>偏移量</strong> <code>t_x, t_y, t_w, t_h</code>，而非直接坐标。</p>
-
-<table>
-    <tr>
-        <th>参数</th>
-        <th>预测值</th>
-        <th>解码公式</th>
-        <th>含义</th>
-    </tr>
-    <tr>
-        <td>中心x</td>
-        <td>t_x</td>
-        <td>b_x = σ(t_x) + c_x</td>
-        <td>相对网格单元的偏移（sigmoid约束）</td>
-    </tr>
-    <tr>
-        <td>中心y</td>
-        <td>t_y</td>
-        <td>b_y = σ(t_y) + c_y</td>
-        <td>相对网格单元的偏移（sigmoid约束）</td>
-    </tr>
-    <tr>
-        <td>宽度</td>
-        <td>t_w</td>
-        <td>b_w = p_w * e^(t_w)</td>
-        <td>相对锚框宽度的缩放</td>
-    </tr>
-    <tr>
-        <td>高度</td>
-        <td>t_h</td>
-        <td>b_h = p_h * e^(t_h)</td>
-        <td>相对锚框高度的缩放</td>
-    </tr>
-    <tr>
-        <td>置信度</td>
-        <td>t_o</td>
-        <td>obj = σ(t_o)</td>
-        <td>该框包含物体的概率</td>
-    </tr>
-</table>
-
-<p>其中 <code>σ(t)</code> 表示sigmoid函数，<code>c_x, c_y</code> 是网格单元的左上角坐标，<code>p_w, p_h</code> 是锚框的先验宽高。通过sigmoid将中心偏移限制在0-1之间，确保每个锚框只能预测其所在网格单元附近的物体。</p>
-
-<h2>8.3 K-means聚类生成锚框</h2>
-
-<p>锚框既然是"先验"知识，那么如何获得一组好的先验呢？YOLOv2提出了一种优雅的方法：在训练数据集上使用<strong>K-means聚类</strong>，从所有标注框的尺寸中自动学习出最具代表性的宽高组合。</p>
-
-<p>这里有一个关键细节：传统的K-means使用欧氏距离作为度量，但在锚框聚类中，欧氏距离会导致大框产生更大的误差，从而主导聚类结果。YOLOv2的作者创新地使用了<strong>IoU距离</strong>作为度量指标：</p>
-
-<pre><code>距离度量 d(box, centroid) = 1 - IoU(box, centroid)</code></pre>
-
-<p>这种距离度量只关心框之间的重叠程度，与框的绝对大小无关。对于每个聚类的中心 <code>(w_i, h_i)</code>，K-means迭代地调整它们，使得所有框到其最近中心点的IoU距离之和最小化。</p>
-
-<h3>YOLOv2 vs YOLOv3 锚框设计</h3>
-
-<table>
-    <tr>
-        <th>版本</th>
-        <th>锚框数量</th>
-        <th>预测尺度</th>
-        <th>锚框尺寸</th>
-    </tr>
-    <tr>
-        <td>YOLOv2</td>
-        <td>5</td>
-        <td>单尺度（13×13）</td>
-        <td>(0.57,0.68), (1.87,2.06), (3.34,4.47), (5.08,6.55), (7.24,8.64)</td>
-    </tr>
-    <tr>
-        <td>YOLOv3</td>
-        <td>9</td>
-        <td>3尺度（13×13, 26×26, 52×52）</td>
-        <td>大尺度：(116,90), (156,198), (373,326)<br>中尺度：(30,61), (62,45), (59,119)<br>小尺度：(10,13), (16,30), (33,23)</td>
-    </tr>
-    <tr>
-        <td>YOLOv4</td>
-        <td>9</td>
-        <td>3尺度</td>
-        <td>在COCO上重新聚类，与YOLOv3不同</td>
-    </tr>
-</table>
-
-<div class="warning">
-    <strong>踩坑实录：锚框与数据集不匹配。</strong> 一位同学在训练行人检测模型时直接使用了YOLOv3在COCO上的默认锚框（包含大量大尺寸框），但他的数据集主要是站姿行人（高宽比>2:1的瘦长框）。最终模型在前几个epoch中loss居高不下，小目标几乎全部漏检。重新对数据集做K-means聚类生成锚框后，mAP从0.52提升到了0.71。如果你的数据集与COCO/VOC差异较大，务必重新聚类锚框。
+<p>上方图示会同步更新黑色目标框及高亮的匹配先验。没有 JavaScript 时仍会显示初始的近方形示例；读者也可以手算每对框的交集与并集面积来验证输出。</p>
+</section>
+<section id="assignment"><h2>5. 正样本分配与忽略规则：先验如何参与训练</h2>
+<p>“锚框与真实框很像”不等于“所有相似锚框都要作为正样本”。在原始 YOLOv3 中，每个真实目标选择一个最匹配的锚框先验承担正样本学习；其他预测如果与真实框的 IoU 足够高（论文使用 0.5 的 ignore threshold），可能被忽略背景 objectness 处罚。这里的分配与忽略是两种不同规则。</p>
+<div class="table-wrap"><table><thead><tr><th>概念</th><th>所比较的对象</th><th>结果</th></tr></thead><tbody>
+<tr><td>锚框聚类</td><td>训练集真实框宽高与参考模板</td><td>确定有限组先验宽高</td></tr>
+<tr><td>正样本分配</td><td>目标与候选先验的匹配度</td><td>确定哪些预测器学习该目标</td></tr>
+<tr><td>忽略背景</td><td>未负责预测与真实框之间的高重叠</td><td>避免把合理但非负责的候选强行训练为背景</td></tr>
+<tr><td>推理 NMS</td><td>同类别预测框之间的重叠</td><td>去除重复检测；不参与锚框聚类</td></tr>
+</tbody></table></div>
+<p>后续 anchor-free 检测器可以把正样本分配定义在像素点或候选中心上；“是否使用锚框”和“用什么规则分配正样本”是两个维度。不能把 YOLOv8 的 TaskAlignedAssigner 追认为 YOLOv3 的训练细节。</p></section>
+<section id="practice"><h2>6. 什么情况下值得重算锚框</h2>
+<p>当新数据的宽高比、目标面积分布与预训练数据差异明显时，重新聚类是合理的候选实验。例如长条形工业缺陷、极窄文本行或从航拍角度采集的小尺寸车辆。正确实验顺序是：先审计标签、统计宽高分布，再比较原有锚框与聚类结果的覆盖度，最后在相同划分、训练预算和输入大小下训练并测量 AP、召回率与延迟。</p>
+<p>建议记录 <strong>每个尺度分配到的正样本数</strong>，检查是否存在几乎没有正样本的检测头。聚类后必须更新 cfg 的锚框表和 mask，不应只替换一处数值。若采用本身不使用锚框的现代模型，则不需要强行追加 K-means 先验。</p>
+</section>
+<section id="references"><h2>参考资料</h2><ol class="references">
+<li>Redmon &amp; Farhadi, <a href="https://arxiv.org/abs/1612.08242" target="_blank" rel="noreferrer">YOLO9000: Better, Faster, Stronger</a>，§2 Better: Dimension Clusters / Direct Location Prediction。</li>
+<li>Redmon &amp; Farhadi, <a href="https://arxiv.org/abs/1804.02767" target="_blank" rel="noreferrer">YOLOv3: An Incremental Improvement</a>，§2.1 Bounding Box Prediction。</li>
+<li><a href="https://github.com/AlexeyAB/darknet" target="_blank" rel="noreferrer">Darknet implementation</a>，cfg 的 <code>anchors</code> 和 <code>mask</code> 定义及工程工具。</li>
+</ol></section></article>
+<nav class="chapter-nav" aria-label="章节切换"><a href="07.html" class="previous"><small>上一章</small><strong>← YOLOv4 系统设计</strong></a><a href="../index.html" class="chapter-index">全部章节</a><a href="09.html" class="next"><small>下一章</small><strong>损失函数演进 →</strong></a></nav>
+<footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>
+</main>
 </div>
-
-<h2>8.4 锚框赋值策略</h2>
-
-<p>有了锚框之后，下一个问题是：训练时如何将ground truth分配给具体的锚框？这个步骤称为<strong>锚框赋值</strong>（anchor assignment）。</p>
-
-<h3>YOLOv3的赋值策略</h3>
-<p>YOLOv3采用了一个相对简单的策略：对于每个ground truth框，计算它与该特征图上所有锚框的IoU，选择IoU最大的那个锚框作为<strong>正样本</strong>。同时，如果某个锚框与任何ground truth的IoU都低于阈值（通常是0.5），则它被标记为<strong>负样本</strong>（背景）。</p>
-
-<h3>TaskAlignedAssigner（YOLOv8）</h3>
-<p>从YOLOv8开始，赋值策略演进为更精细的<strong>任务对齐分配器</strong>（TaskAlignedAssigner）。它不再单纯依赖IoU，而是综合分类得分和回归质量来选择正样本：</p>
-
-<pre><code>alignment_score = classification_score^α × IoU^β</code></pre>
-
-<p>其中α和β是超参数（通常α=1, β=6）。对于一个ground truth框，选择alignment score最高的top-k个锚框作为正样本。这种策略确保了分类和回归任务之间的对齐——一个框既要"分得准"也要"框得正"才能被选为正样本。</p>
-
-<h2>8.5 从有锚到无锚</h2>
-
-<p>锚框机制虽然有效，但也带来了几个问题：</p>
-<ul>
-    <li><strong>超参数敏感：</strong> 锚框的数量和尺寸需要精心设计，不同数据集差异很大</li>
-    <li><strong>正负样本不均衡：</strong> 大量锚框被标记为负样本，导致训练效率低下</li>
-    <li><strong>推理开销：</strong> 需要解码锚框偏移量，增加了后处理复杂度</li>
-    <li><strong>对小物体不友好：</strong> 固定锚框难以覆盖极端尺寸的物体</li>
-</ul>
-
-<p>因此，YOLOv8和YOLOv10向<strong>锚框自由</strong>（anchor-free）方向演进。YOLOv8中，每个位置只预测一个框（不再有多个锚框），直接将特征图上的每个点视为潜在物体的中心。分类头判断该点属于哪个类别，回归头直接预测从该点到边界框四条边的距离：</p>
-
-<pre><code>左边界距离 l = x - x1
-上边界距离 t = y - y1
-右边界距离 r = x2 - x
-下边界距离 b = y2 - y</code></pre>
-
-<p>这种anchor-free设计的优势在于：消除了锚框超参数调优的痛苦，简化了模型结构，同时也保持了与有锚版本相当的精度。</p>
-
-<div class="tip">
-    <strong>注意：</strong> anchor-free并不意味着完全抛弃了先验知识。实际上，YOLOv8的anchor-free设计仍然依赖于特征金字塔的多尺度结构——不同尺度的特征图天然地对应了不同大小的物体，这本身就是一种隐式的先验。
-</div>
-
-<h2>8.6 实战：K-means聚类锚框</h2>
-
-<p>下面是一个在自定义数据集上通过K-means聚类生成锚框的Python示例：</p>
-
-<pre><code>import numpy as np
-from sklearn.cluster import KMeans
-
-def iou_distance(box, centroids):
-    """计算box与centroids之间的IoU距离"""
-    # box: (w, h), centroids: (k, 2)
-    w1, h1 = box
-    ious = []
-    for cw, ch in centroids:
-        inter_w = min(w1, cw)
-        inter_h = min(h1, ch)
-        inter = inter_w * inter_h
-        union = w1 * h1 + cw * ch - inter
-        iou = inter / (union + 1e-8)
-        ious.append(iou)
-    return np.array(ious)
-
-def kmeans_anchors(bboxes, k=9, iterations=300):
-    """对数据集bboxes进行K-means聚类生成锚框"""
-    # bboxes: (N, 2) 每行为(w, h)，已归一化到[0,1]
-    # 随机初始化k个中心
-    centroids = bboxes[np.random.choice(len(bboxes), k, replace=False)]
-    for _ in range(iterations):
-        # 计算每个框到每个中心的IoU距离
-        distances = np.array([
-            1 - iou_distance(b, centroids) for b in bboxes
-        ])
-        # 分配到最近的中心
-        labels = np.argmin(distances, axis=1)
-        # 更新中心（取该类的中位数）
-        new_centroids = np.array([
-            np.median(bboxes[labels == i], axis=0) for i in range(k)
-        ])
-        if np.allclose(centroids, new_centroids, atol=1e-4):
-            break
-        centroids = new_centroids
-    # 按面积排序
-    areas = centroids[:, 0] * centroids[:, 1]
-    sorted_idx = np.argsort(areas)
-    return centroids[sorted_idx]</code></pre>
-
-<div class="highlight">
-    <strong>关键实践建议：</strong>
-    <ul>
-        <li>聚类前将所有标注框的宽高归一化到[0,1]区间（除以图像宽高）</li>
-        <li>使用中位数而非均值来更新中心，对异常值更鲁棒</li>
-        <li>最终锚框按面积从小到大排序，小锚框分配给大特征图</li>
-        <li>K值的选择：一般9个锚框（3尺度×3个/尺度）在COCO上表现好；简单数据集可以用6个</li>
-    </ul>
-</div>
-
-<h2>8.7 总结与展望</h2>
-
-<p>锚框机制从YOLOv2引入至今，经历了从单尺度5框到三尺度9框、再到YOLOv8/v10的anchor-free的巨大转变。这一演进反映了目标检测领域对"先验知识"理解的变化：早期我们依赖明确的手工先验（固定宽高比），后来学会了从数据中自动学习（K-means聚类），现在则通过多尺度特征图隐式地编码物体的尺寸信息。</p>
-
-<p>理解锚框的来龙去脉，对于掌握YOLO系列的设计哲学至关重要。下一章，我们将深入另一个决定检测精度的核心组件——<strong>损失函数</strong>，看看从YOLOv1到YOLOv10，损失函数经历了怎样的变迁。</p>
-
-        <div class="footer-nav">
-            <a href="07.html">← 上一章</a>
-            <a href="../index.html">📖 返回目录</a>
-            <a href="09.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
+<script src="../assets/site.js" defer></script>
+<script src="../assets/anchor-demo.js" defer></script>
 </body>
 </html>

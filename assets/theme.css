@@ -289,3 +289,11 @@ button, input, select { font: inherit; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 .equation:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+
+/* Large technical figures scroll inside their own region on narrow screens. */
+.article-page .diagram:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+@media (max-width: 580px) {
+  .article-page .diagram { max-width: 100%; overflow-x: auto; }
+  .article-page .diagram svg { width: 650px; min-width: 650px; max-height: none; }
+  .article-page .diagram figcaption { min-width: 0; }
+}

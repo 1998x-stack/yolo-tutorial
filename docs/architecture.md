@@ -5,7 +5,7 @@
 - `index.html` is the static entry point.
 - `chapters/01.html` through `chapters/28.html` are canonical chapter URLs.
 - `courses.json` is the structured course catalogue and stores canonical chapter paths.
-- `assets/theme.css` and `assets/site.js` are the shared style and progressive-enhancement assets.
+- `assets/theme.css`, `assets/site.js` and `assets/anchor-demo.js` are style and progressive-enhancement assets.\n- `assets/figures/` holds 8 independently openable, source-consistent SVG figures extracted from chapters 06–10.
 - Root `01.html`–`28.html` files are noindex compatibility redirects for old bookmarks and inbound links.
 
 ## Why the chapter directory exists
@@ -18,12 +18,12 @@ The homepage renders its course cards in static HTML. Search and phase filtering
 
 ## Chapter migration
 
-Chapters 01–05 were rebuilt as self-contained articles with accessible original inline SVG, native MathML, primary-paper citations, and corrected benchmark context. Chapters 06–28 were moved without content rewriting; their relative stylesheet and homepage paths were adjusted. Future chapter editing should follow `AGENTS.md`.
+Chapters 01–10 were rebuilt as self-contained articles with accessible original inline SVG, native MathML, primary-paper citations, and corrected benchmark context. Chapters 11–28 were moved without content rewriting; their relative stylesheet and homepage paths were adjusted. Future chapter editing should follow `AGENTS.md`.
 
 ## Quality gates
 
 - `tests/test_site.py` checks catalogue integrity, local links, redirects, independent article structure, SVG XML, MathML presence, and external runtime dependencies.
-- `tests/browser_check.py` runs Chromium against the static site at desktop and mobile widths, checks search/filter behavior, and inspects the first five chapters for overflow and browser errors.
+- `tests/test_labs.py` checks deterministic geometry, clustering, cfg masks/filters and feature-shape contracts.\n- `labs/` keeps stdlib-only teaching checks and an optional OpenCV DNN inference script.\n- `tests/browser_check.py` runs Chromium against the static site at desktop and mobile widths, checks search/filter behavior, and inspects the first ten chapters for overflow and browser errors.
 - `.github/workflows/quality.yml` runs both gates on pushes and pull requests.
 
 ## Publishing

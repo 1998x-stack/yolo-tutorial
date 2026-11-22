@@ -1,334 +1,134 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第7章 YOLOv4集大成 — YOLO教程</title>
-    <link rel="stylesheet" href="../assets/theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="实时检测的改进并不等于无限堆叠新模块。YOLOv4 将 CSPDarknet53、SPP、PAN 式融合与训练策略放进同一系统，同时对速度、精度和训练成本做约束。">
+<title>第 07 章｜YOLOv4：从组件集合到协同设计 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
 </head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🤖 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 目标检测概述</a></li>
-            <li><a href="02.html">第2章 YOLO设计哲学</a></li>
-            <li><a href="03.html">第3章 YOLOv1详解</a></li>
-            <li><a href="04.html">第4章 YOLOv2/YOLO9000</a></li>
-            <li><a href="05.html">第5章 YOLOv3核心架构</a></li>
-            <li><a href="06.html">第6章 YOLOv3工程实战</a></li>
-            <li><a href="07.html" class="active">第7章 YOLOv4集大成</a></li>
-            <li><a href="08.html">第8章 锚框机制与聚类</a></li>
-            <li><a href="09.html">第9章 损失函数演进</a></li>
-            <li><a href="10.html">第10章 特征金字塔FPN</a></li>
-            <li><a href="11.html">第11章 数据增强策略</a></li>
-            <li><a href="12.html">第12章 骨干网络对比</a></li>
-            <li><a href="13.html">第13章 Neck与Head设计</a></li>
-            <li><a href="14.html">第14章 NMS与后处理</a></li>
-            <li><a href="15.html">第15章 YOLOv5入门</a></li>
-            <li><a href="16.html">第16章 YOLOv8新特性</a></li>
-            <li><a href="17.html">第17章 YOLOv9/v10前沿</a></li>
-            <li><a href="18.html">第18章 YOLO11/v12演进</a></li>
-            <li><a href="19.html">第19章 模型轻量化</a></li>
-            <li><a href="20.html">第20章 小目标检测优化</a></li>
-            <li><a href="21.html">第21章 部署与推理加速</a></li>
-            <li><a href="22.html">第22章 边缘设备部署</a></li>
-            <li><a href="23.html">第23章 数据标注与格式</a></li>
-            <li><a href="24.html">第24章 训练流水线搭建</a></li>
-            <li><a href="25.html">第25章 模型评估与调优</a></li>
-            <li><a href="26.html">第26章 YOLO+多模态</a></li>
-            <li><a href="27.html">第27章 行业实战案例</a></li>
-            <li><a href="28.html">第28章 综合实训项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第7章 YOLOv4集大成</h2>
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
 
-        <p>大家好，我是你们的讲师。上一章我们用YOLOv3走完了整个工程链路，从数据准备到推理部署。但你可能已经感受到了YOLOv3的一些不足：Darknet-53虽然精度不错但计算量偏大、FPN只用了简单的上采样拼接、数据增强手段比较基础。Redmon退出后，YOLO的接力棒交到了Alexey Bochkovskiy手中。</p>
-
-        <p>2020年，YOLOv4横空出世。它最令人惊叹的地方不在于某个单点突破的创新，而在于<strong>系统性工程整合</strong>——作者把过去几年目标检测领域最有效的trick全部筛选、适配、组合到一起，形成了一个"炼丹配方集"。YOLOv4不是一项单点创新，而是对整个检测领域trick的系统性工程整合。这篇论文甚至专门引入了一套分类方法论——<strong>Bag of Freebies（免费赠品）和Bag of Specials（特制品）</strong>——来指导哪些trick应该被采用。这一章，我们来拆解YOLOv4的每一项关键设计。</p>
-
-        <h3>7.1 CSPDarknet-53：让梯度更高效</h3>
-
-        <p>YOLOv4的骨干网络不是简单的Darknet-53，而是引入了<strong>跨阶段部分连接（Cross Stage Partial, CSP）</strong>结构：CSPDarknet-53。</p>
-
-        <p>CSP的核心思想很简单：将输入特征图沿通道维度分成两部分，一部分经过密集的卷积块，另一部分直接通过跳跃连接与输出拼接。这样做的目的是<strong>解决深层网络中梯度信息重复的问题</strong>——传统的残差网络中，大量梯度信息在反向传播时被重复计算，导致优化效率低下。</p>
-
-        <p>CSP的具体做法：</p>
-        <ul>
-            <li>将基础层的特征图分为两部分，比例为50/50</li>
-            <li>一部分通过一系列残差块（"主路径"）</li>
-            <li>另一部分直接跨阶段连接到输出端（"捷径"）</li>
-            <li>两部分在通道维度拼接后再经过过渡层</li>
-        </ul>
-
-        <p>这种设计带来了三个好处：计算量降低约20%、内存占用减少、精度反而略有提升（因为梯度传播更加高效）。</p>
-
-        <pre><code># CSPDarknet-53 中的 CSP 残差块结构
-# 输入: H×W×C
-#        │
-#        ├──── 分成两半 (channel split) ────┐
-#        │                                   │
-#   H×W×(C/2)                          H×W×(C/2)
-#        │                                   │
-#   ┌───残差块堆叠───┐                       │
-#   │ 1×1 conv       │                       │
-#   │ 3×3 conv       │                       │
-#   │ 残差连接        │                       │
-#   └───×N───────────┘                       │
-#        │                                   │
-#        └──────── 通道拼接 ──────────────────┘
-#                        │
-#                  过渡层 (1×1 conv)
-#                        │
-#                  输出: H×W×C_out</code></pre>
-
-        <div class="tip">
-            <strong>小贴士：</strong>CSP结构后来被证明是一个普适性的架构设计模式，不仅适用于Darknet，也被移植到了ResNet、DenseNet等骨干网络上。它的核心洞察是：传统的残差网络中，大量特征图上的信息是"冗余"的——不同通道提取的特征高度相关。CSP通过通道分割+跨阶段连接，在减少冗余计算的同时保持了丰富的梯度信息流。
-        </div>
-
-        <h3>7.2 SPP模块：感受野的"吃辣"训练</h3>
-
-        <p>YOLOv4在骨干网络之后、特征金字塔之前引入了一个SPP（Spatial Pyramid Pooling）模块。SPP的核心作用是用<strong>多个不同尺寸的最大池化核</strong>（5×5、9×9、13×13）对同一特征图分别池化，然后将结果拼接起来。</p>
-
-        <p>想象一下，用三个不同大小的"窗口"去看同一张特征图：小窗口看到局部细节，大窗口看到更大范围的信息，然后将这些不同感受野的信息整合。这极大地丰富了特征图中每个位置的感受野范围，使得模型能同时感知小物体和大物体的上下文。</p>
-
-        <pre><code># SPP 模块结构 (YOLOv4 中)
-# 输入特征图: H×W×512
-#        │
-#   ┌────┼────┬────┐
-#   │    │    │    │
-# 身份映射 5×5  9×9  13×13
-#   最大池化 最大池化 最大池化
-#   │    │    │    │
-#   └────┼────┼────┘
-#        │
-#   通道拼接 → H×W×2048
-#        │
-#   1×1 卷积降维 → H×W×512</code></pre>
-
-        <div class="highlight">
-            <strong>为什么SPP有效：</strong>在传统的骨干网络中，每个神经元的感受野是固定的（由卷积层数决定）。SPP打破了这种固定感受野的限制——同一个特征图上的位置可以同时获得不同尺度的上下文信息。比如在检测一个行人时，小感受野看到行人的局部特征（头、手），大感受野看到行人的整体轮廓和周围环境。SPP让模型同时拥有"放大镜"和"广角镜头"。
-        </div>
-
-        <h3>7.3 PANet Neck：FPN的升级版</h3>
-
-        <p>YOLOv3使用FPN做多尺度特征融合——自顶向下传递语义信息。YOLOv4将FPN替换为<strong>PANet（Path Aggregation Network）</strong>结构，在FPN的基础上增加了一条<strong>自底向上的路径</strong>。</p>
-
-        <p>FPN的局限在于：它只做了"高层语义→低层细节"的单向传播。但低层的空间位置信息也非常重要，尤其对小物体的定位。PANet在FPN之上增加了一层"低层位置→高层语义"的传播路径，形成了<strong>双向特征融合</strong>。</p>
-
-        <p>具体来说，PANet的结构是：</p>
-        <ol>
-            <li>FPN自顶向下路径：深层特征图上采样，与浅层特征图融合（同YOLOv3）</li>
-            <li>额外的自底向上路径：FPN输出再经过一次自底向上的融合，让每个层级的输出同时包含高层语义和低层细节信息</li>
-        </ol>
-
-        <table>
-            <tr>
-                <th>特性</th>
-                <th>FPN (YOLOv3)</th>
-                <th>PANet (YOLOv4)</th>
-            </tr>
-            <tr>
-                <td>融合方向</td>
-                <td>单向：自顶向下</td>
-                <td>双向：自顶向下 + 自底向上</td>
-            </tr>
-            <tr>
-                <td>语义信息传递</td>
-                <td>高层→低层</td>
-                <td>高层↔低层</td>
-            </tr>
-            <tr>
-                <td>位置信息传递</td>
-                <td>仅保留在低层</td>
-                <td>低层→高层</td>
-            </tr>
-            <tr>
-                <td>小物体检测</td>
-                <td>较好（高分辨率特征）</td>
-                <td>更好（语义+位置双向增强）</td>
-            </tr>
-            <tr>
-                <td>额外计算量</td>
-                <td>低</td>
-                <td>中等（额外卷积+拼接）</td>
-            </tr>
-        </table>
-
-        <h3>7.4 Mish激活函数：平滑的梯度</h3>
-
-        <p>YOLOv4用Mish激活函数替代了YOLOv3中广泛使用的Leaky ReLU。Mish的定义是：</p>
-
-        <pre><code># Mish 激活函数
-# f(x) = x * tanh(ln(1 + e^x))
-#      = x * tanh(softplus(x))
-
-# 与 Leaky ReLU 的对比:
-# Leaky ReLU: f(x) = max(0.01x, x)
-#   - 在 x<0 时梯度非常小 (0.01)
-#   - 在 x=0 处不可导
-
-# Mish:
-#   - 处处光滑可导
-#   - 在 x<0 时允许少量负梯度通过
-#   - 经验上收敛更稳定
-
-# 实际表现 (COCO):
-# Leaky ReLU baseline: 38.0% AP
-# Mish:                 40.5% AP (+2.5%)</code></pre>
-
-        <p>Mish的优势在于它的平滑性——不像ReLU在0点处有一个"尖角"，也不像Leaky ReLU在负半轴有一个固定的微小梯度。Mish的梯度是光滑的，这在理论上有利于优化，实践中也确实带来了更稳定的收敛和更高的精度。YOLOv4在CSPDarknet-53中使用Mish，在检测头中仍然使用Leaky ReLU（因为检测头部分更看重推理速度而非训练稳定性）。</p>
-
-        <h3>7.5 Mosaic增强：一张图里四张图</h3>
-
-        <p>YOLOv4引入了一种非常激进的数据增强方法——<strong>Mosaic</strong>。所谓Mosaic，就是把4张训练图像随机缩放、裁剪、拼接成一张新图像，然后在这张"拼图"上进行训练。</p>
-
-        <p>Mosaic的工作原理：</p>
-        <ul>
-            <li>随机选择4张训练图像</li>
-            <li>每张图像随机缩放（缩放因子0.5~1.5）</li>
-            <li>四张图分别放置在左上、右上、左下、右下四个区域</li>
-            <li>拼接成一张完整的正方形图像</li>
-            <li>所有落在拼接图像内的标注框都保留（包括那些被裁剪掉一部分的框）</li>
-        </ul>
-
-        <p>Mosaic的强大之处在于：</p>
-        <ul>
-            <li><strong>小目标暴增</strong>：4张图拼在一起，每张图中的物体相对变小，模型被迫学会在更小的尺度上检测</li>
-            <li><strong>上下文多样性</strong>：模型看到各种物体在不同场景中随机组合，减少了对背景的过拟合</li>
-            <li><strong>BN层更稳定</strong>：4张不同图像的统计信息混合，减少了batch normalization对单个样本的依赖</li>
-        </ul>
-
-        <div class="warning">
-            <strong>踩坑实录：</strong>我曾在自动驾驶场景（检测行人+车辆）中尝试Mosaic增强，发现了一个严重问题——Mosaic产生了很多不符合物理规律的"组合"（比如一半是高速公路，一半是室内场景），模型训练收敛很快，但在真实道路场景上的泛化能力反而下降了。原因是<strong>Mosaic打破了场景的上下文一致性</strong>——自动驾驶模型需要学会"车在公路上"这种上下文，而Mosaic让车出现在了各种不可能的位置。后来我为自动驾驶场景定制了"上下文感知的Mosaic"：只从同一类场景（都是城市道路、都是高速路）中选取图像拼接，效果才明显改善。这告诉我们：<strong>数据增强必须尊重你的应用场景</strong>。
-        </div>
-
-        <h3>7.6 CIoU Loss：更精确的框回归</h3>
-
-        <p>YOLOv3使用MSE（均方误差）作为边界框回归的损失函数。MSE的问题在于：它把x、y、w、h当作独立的变量来优化，但实际评估边界框质量时我们使用IoU——这是一个非线性的、综合性的指标。MSE损失小不等于IoU高。</p>
-
-        <p>YOLOv4引入了<strong>CIoU（Complete IoU）</strong>损失函数，它在IoU的基础上增加了两个惩罚项：</p>
-        <ul>
-            <li><strong>中心点距离惩罚</strong>：预测框和真实框中心点之间的欧氏距离，鼓励模型准确定位中心</li>
-            <li><strong>宽高比一致性惩罚</strong>：预测框和真实框的宽高比差异，鼓励框的形状匹配</li>
-        </ul>
-
-        <pre><code># CIoU Loss 的计算公式
-# CIoU = IoU - (ρ²(b, b_gt) / c²) - α * v
-
-# 其中:
-# ρ²(b, b_gt): 预测框和真实框中心点的欧氏距离平方
-# c: 两个框的最小外接矩形的对角线长度
-# v = (4/π²) * (arctan(w_gt/h_gt) - arctan(w/h))²
-# α = v / ((1 - IoU) + v)
-
-# CIoU Loss = 1 - CIoU
-
-# 对比 MSE vs CIoU:
-# MSE: 把框的四个参数独立优化, 损失小 ≠ IoU高
-# CIoU: 直接优化框的整体质量, 损失小 = IoU高</code></pre>
-
-        <h3>7.7 Bag of Freebies & Bag of Specials</h3>
-
-        <p>YOLOv4论文的一个重要贡献是提出了一个系统性的分类框架，用来指导哪些"trick"应该被集成到检测器中。这个框架将各种改进技术分为两类：</p>
-
-        <p><strong>Bag of Freebies (BoF)</strong>——在不增加推理成本的情况下提升精度的技术。这些技术只在训练阶段使用，推理时被移除或不受影响。</p>
-        <ul>
-            <li>数据增强：Mosaic、CutMix、随机擦除、HSV抖动</li>
-            <li>正则化：DropBlock、Label Smoothing、CIoU Loss</li>
-            <li>训练策略：Cosine学习率调度、自对抗训练（SAT）、同步BN</li>
-            <li>网络改进：Mish激活函数、DropBlock</li>
-        </ul>
-
-        <p><strong>Bag of Specials (BoS)</strong>——以少量推理成本换取显著精度提升的技术。这些模块在推理时保留。</p>
-        <ul>
-            <li>增强感受野：SPP、ASPP</li>
-            <li>注意力机制：SE模块、SAM（Spatial Attention Module）</li>
-            <li>特征融合：PANet、BiFPN</li>
-            <li>后处理改进：DIoU NMS、Soft-NMS</li>
-            <li>激活函数：Mish（替换部分Leaky ReLU）</li>
-        </ul>
-
-        <table>
-            <tr>
-                <th>类别</th>
-                <th>技术</th>
-                <th>推理代价</th>
-                <th>mAP提升（典型值）</th>
-            </tr>
-            <tr>
-                <td>BoF</td>
-                <td>Mosaic + CutMix 增强</td>
-                <td>0%（训练时才有）</td>
-                <td>+1.5%~2.0%</td>
-            </tr>
-            <tr>
-                <td>BoF</td>
-                <td>CIoU Loss</td>
-                <td>0%（训练时才有）</td>
-                <td>+1.0%~1.5%</td>
-            </tr>
-            <tr>
-                <td>BoF</td>
-                <td>SAT（自对抗训练）</td>
-                <td>0%（训练时才有）</td>
-                <td>+0.5%~1.0%</td>
-            </tr>
-            <tr>
-                <td>BoF</td>
-                <td>Label Smoothing</td>
-                <td>0%（训练时才有）</td>
-                <td>+0.3%~0.5%</td>
-            </tr>
-            <tr>
-                <td>BoS</td>
-                <td>SPP + PANet</td>
-                <td>+3%~5% 推理时间</td>
-                <td>+2.0%~3.0%</td>
-            </tr>
-            <tr>
-                <td>BoS</td>
-                <td>Mish 激活函数</td>
-                <td>~+5% 推理时间</td>
-                <td>+1.0%~2.0%</td>
-            </tr>
-            <tr>
-                <td>BoS</td>
-                <td>DIoU NMS</td>
-                <td>~1ms</td>
-                <td>+0.5%~1.0%</td>
-            </tr>
-        </table>
-
-        <h3>7.8 YOLOv4性能总评</h3>
-
-        <p>YOLOv4在COCO test-dev 2017上交出了一份令人惊叹的成绩单：</p>
-
-        <ul>
-            <li><strong>43.5% AP</strong> @ 65 FPS (Tesla V100) — 完整版YOLOv4</li>
-            <li><strong>47.1% AP</strong> @ 32 FPS — YOLOv4加大版（增加输入分辨率）</li>
-            <li>小物体检测AP_S：23.2%（YOLOv3为18.3%，提升显著）</li>
-            <li>中物体检测AP_M：46.3%</li>
-            <li>大物体检测AP_L：60.3%</li>
-        </ul>
-
-        <p>相比之下，当时最先进的两个检测器EfficientDet（Google）需要更多的计算资源才能达到类似精度，而YOLOv4在同等精度下速度快了2倍。YOLOv4用系统工程的思路证明了：<strong>精心集成的"trick堆叠"可以打败花哨的单点创新</strong>。</p>
-
-        <div class="highlight">
-            <strong>方法论启示：</strong>YOLOv4的BoF/BoS框架对后续的计算机视觉研究产生了深远影响。它把研究从"我发明了一个新模块"导向了"我系统性地分析了哪些trick组合最有效"。这种工程思维在工业界尤其受欢迎——因为工业场景不在乎你的模块是否"新颖"，只关心它能否在目标硬件上以目标速度跑出目标精度。YOLOv4之后，几乎所有新检测器都会附带一个"消融实验"表格，逐一验证每个组件的贡献——这正是YOLOv4开创的研究范式。
-        </div>
-
-        <p>YOLOv4系统地整合了检测领域的最佳实践，将其打造成一个高效、稳定、精度领先的完整系统。但YOLOv4仍然基于锚框机制，而后续的YOLOv5在PyTorch生态中实现了同样优秀的工程化。再往后，YOLOv8引入了anchor-free设计，YOLOv9探索了可编程梯度信息……这些演进都站在YOLOv4奠定的"系统集成"方法论之上。下一章，我们将深度聚焦其中一个基础模块——锚框机制，看看它是如何从YOLOv2的K-means聚类一路演进到YOLOv8的anchor-free的。</p>
-
-        <div class="footer-nav">
-            <a href="06.html">← 上一章</a>
-            <a href="../index.html">📖 返回目录</a>
-            <a href="08.html">下一章 →</a>
-        </div>
-    </div>
+<aside class="sidebar" aria-label="课程导航"><a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a><p class="sidebar-label">FOUNDATION / METHODS · 01—10</p><nav><ol class="chapter-list"><li><a href="01.html" data-chapter="01"><span>01</span>目标检测概述</a></li><li><a href="02.html" data-chapter="02"><span>02</span>YOLO 设计哲学</a></li><li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1 统一回归</a></li><li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2 / YOLO9000</a></li><li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3 多尺度架构</a></li><li><a href="06.html" data-chapter="06"><span>06</span>YOLOv3 工程实战</a></li><li><a href="07.html" data-chapter="07" aria-current="page"><span>07</span>YOLOv4 系统设计</a></li><li><a href="08.html" data-chapter="08"><span>08</span>锚框机制与聚类</a></li><li><a href="09.html" data-chapter="09"><span>09</span>损失函数演进</a></li><li><a href="10.html" data-chapter="10"><span>10</span>特征金字塔 FPN</a></li></ol></nav><a class="all-chapters" href="../index.html">查看全部 28 章 ↗</a></aside>
+<main id="main" class="main-content">
+<article class="article"><header class="article-header"><p class="eyebrow">ARCHITECTURE <span>／</span> CHAPTER 07</p><h1>YOLOv4：从组件集合到协同设计</h1><p class="article-dek">实时检测的改进并不等于无限堆叠新模块。YOLOv4 将 CSPDarknet53、SPP、PAN 式融合与训练策略放进同一系统，同时对速度、精度和训练成本做约束。</p></header>
+<section id="problem"><h2>1. 速度、精度与可训练性是三个不同目标</h2>
+<p>2020 年 Bochkovskiy、Wang 和 Liao 提出的 <a href="https://arxiv.org/abs/2004.10934" target="_blank" rel="noreferrer">YOLOv4</a> 不是 Joseph Redmon 主导的原始 YOLO 项目的一次常规小版本更新。它选择了可在常见单 GPU 环境下训练的高性能检测架构，并系统分析训练和推理阶段可组合的技术。核心问题不是“哪个模块最强”，而是<strong>在限定训练预算和推理延迟下，哪些改动一起使用才有意义</strong>。</p>
+<p>论文把技术分为两类：<em>Bag of Freebies（BoF）</em> 主要在训练期改变样本、目标或优化过程，通常不直接增加部署阶段的推理图计算；<em>Bag of Specials（BoS）</em> 则引入特征变换、注意力或后处理等模块，可能改变推理的精度—延迟曲线。“免费”不代表零训练成本，例如 Mosaic、SAT 仍会占用数据处理与训练计算。</p></section>
+<section id="architecture"><h2>2. 三段系统架构：Backbone、Neck、Head</h2>
+<figure class="diagram" tabindex="0" aria-label="技术结构图：在窄屏上可左右滚动查看">
+<svg viewBox="0 0 900 312" role="img" aria-labelledby="c07arch-title c07arch-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="c07arch-title">YOLOv4 由骨干、特征融合与检测头构成</title><desc id="c07arch-desc">输入首先经 CSPDarknet53 提取多尺度特征，深层经过 SPP，随后 PAN 式双向路径融合三尺度特征，最后三个 YOLO 检测头分别预测目标。</desc>
+<rect x="8" y="8" width="884" height="295" rx="18" fill="#f6fafb"/>
+<g transform="translate(34 45)">
+<rect width="152" height="170" rx="13" fill="#dcebed" stroke="#94b7be" stroke-width="2"/>
+<text x="76" y="31" text-anchor="middle" font-size="16" fill="#24414a" font-weight="700">Backbone</text>
+<text x="76" y="59" text-anchor="middle" font-size="15" fill="#24414a">CSPDarknet53</text>
+<path d="M20 83 H132" stroke="#b9d0d4"/>
+<g font-size="13" fill="#5b7379" text-anchor="middle"><text x="76" y="106">1×1 / 3×3 卷积</text><text x="76" y="128">CSP 跨阶段部分连接</text><text x="76" y="150">分层特征 C3–C5</text></g>
+<path d="M153 84 H199" stroke="#087f8c" stroke-width="3"/><path d="M190 77 l10 7 -10 7" fill="none" stroke="#087f8c" stroke-width="3"/>
+<rect x="202" y="0" width="148" height="170" rx="13" fill="#fff1df" stroke="#d4ad73" stroke-width="2"/>
+<text x="276" y="30" text-anchor="middle" fill="#754719" font-size="16" font-weight="700">SPP</text>
+<text x="276" y="58" text-anchor="middle" fill="#754719" font-size="13">高层特征的</text>
+<text x="276" y="80" text-anchor="middle" fill="#754719" font-size="13">多核池化</text>
+<g fill="#a5773f" font-size="13" text-anchor="middle"><text x="276" y="116">5×5 / 9×9 / 13×13</text><text x="276" y="140">保留相同 H×W</text></g>
+<path d="M351 84 H397" stroke="#087f8c" stroke-width="3"/><path d="M388 77 l10 7 -10 7" fill="none" stroke="#087f8c" stroke-width="3"/>
+<rect x="400" y="0" width="182" height="170" rx="13" fill="#e4f3f1" stroke="#79aaa6" stroke-width="2"/>
+<text x="491" y="29" text-anchor="middle" fill="#24535a" font-size="16" font-weight="700">Neck：PAN-style</text>
+<path d="M442 64 H539 V104 H442 V136 H539" fill="none" stroke="#087f8c" stroke-width="3"/>
+<path d="M530 98 l9 6 -9 6 M451 130 l-9 6 9 6" stroke="#087f8c" fill="none" stroke-width="2.5"/>
+<text x="491" y="158" text-anchor="middle" fill="#56727a" font-size="13">自顶向下 / 自底向上</text>
+<path d="M583 84 H630" stroke="#087f8c" stroke-width="3"/><path d="M621 77 l10 7 -10 7" fill="none" stroke="#087f8c" stroke-width="3"/>
+<rect x="633" y="0" width="180" height="170" rx="13" fill="#e5eef6" stroke="#91b2c9" stroke-width="2"/>
+<text x="723" y="29" text-anchor="middle" fill="#24414a" font-size="16" font-weight="700">Head：YOLO</text>
+<rect x="665" y="48" width="115" height="27" rx="6" fill="#d2e6f2"/><text x="722" y="66" text-anchor="middle" fill="#24414a" font-size="13">13×13 检测</text>
+<rect x="665" y="84" width="115" height="27" rx="6" fill="#d2e6f2"/><text x="722" y="102" text-anchor="middle" fill="#24414a" font-size="13">26×26 检测</text>
+<rect x="665" y="120" width="115" height="27" rx="6" fill="#d2e6f2"/><text x="722" y="138" text-anchor="middle" fill="#24414a" font-size="13">52×52 检测</text>
+</g>
+<text x="450" y="264" text-anchor="middle" font-size="15" fill="#5b7379">416×416 输入下的尺度标注仅用于理解相对步长；具体模型可以采用其他合法输入尺寸</text>
+</svg>
+<figcaption>YOLOv4 用不同模块承担不同职责：骨干负责学习高效特征，SPP 扩展上下文，PAN 式路径整合多尺度定位与语义信息，检测头输出候选框。</figcaption>
+</figure>
+<p><strong>CSPDarknet53：</strong>Cross Stage Partial（CSP）把阶段内的特征流拆分后再汇合，使部分特征绕过密集变换，并减轻重复梯度计算与参数开销。它不是仅仅把 Darknet-53 的层数变少；关键是每个阶段内的分流、残差计算与再融合。</p>
+<p><strong>SPP：</strong>Spatial Pyramid Pooling 在高层特征上并行使用不同大小的最大池化核（YOLOv4 配置中常见 5、9、13，步长 1），输出在空间维度仍对齐，并在通道维融合。它扩大了可用上下文，而不是直接增加一套新的独立检测尺度。</p>
+<p><strong>PAN 式 Neck：</strong>先将深层语义向高分辨率特征传递，再把低层定位线索通过自底向上的路径送回较深层。YOLOv4 借鉴了 <a href="https://arxiv.org/abs/1803.01534" target="_blank" rel="noreferrer">PANet</a> 的路径增强思想，但实际 Darknet 网络中的拼接与卷积细节不能简单等同于原始 PANet 所有模块。</p>
+</section>
+<section id="mish"><h2>3. Mish：连续非线性为什么进入骨干网络</h2>
+<p>YOLOv4 将 Mish 激活用于部分骨干模块。相对 ReLU 的硬截断，Mish 在负输入区域保持平滑的非零响应；其连续性质会影响梯度传播，不过这不意味着它在任何模型、硬件或混合精度下都一定优于 ReLU。选择激活函数也需要比较算子支持与延迟。</p>
+<div class="equation" tabindex="0" role="region" aria-label="Mish 激活函数，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="Mish x 等于 x 乘以双曲正切的 log 一加 e 的 x 次方">
+<mrow><mi>Mish</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>x</mi><mo>·</mo><mi>tanh</mi><mo>(</mo><mi>log</mi><mo>(</mo><mn>1</mn><mo>+</mo><msup><mi>e</mi><mi>x</mi></msup><mo>)</mo><mo>)</mo></mrow>
+</math></div>
+<p>在部署加速器上，Mish 可能需要额外内核或图融合支持，理论上更平滑的函数并不自动带来更低的推理延迟。工程上应以相同模型配置与设备实测为准。</p></section>
+<section id="mosaic"><h2>4. Mosaic：将四张图像组合为一张训练输入</h2>
+<p>普通单图增强是在一个场景内改变颜色、裁剪或尺度；Mosaic 将四张不同图像放入一个新的画布，并同步重新计算每个目标的坐标、可见区域与裁剪边界。它增加了单次输入中目标尺度与背景组合的变化，但不代表“样本数量真的变成四倍”。</p>
+<figure class="diagram" tabindex="0" aria-label="技术结构图：在窄屏上可左右滚动查看">
+<svg viewBox="0 0 900 328" role="img" aria-labelledby="c07m-title c07m-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="c07m-title">Mosaic 数据增强示意</title><desc id="c07m-desc">来自四个不同图像的区域被随机切分并拼入同一训练画布，边界框与位置映射需要跟随每块图像的缩放平移裁剪变化。</desc>
+<rect x="8" y="8" width="884" height="312" rx="18" fill="#f6fafb"/>
+<g transform="translate(26 55)">
+<g transform="translate(0 0)"><rect x="0" y="0" width="99" height="96" rx="8" fill="#dcebed" stroke="#9ebabc"/><rect x="18" y="15" width="30" height="52" fill="none" stroke="#087f8c" stroke-width="2.5"/><text x="49" y="87" text-anchor="middle" font-size="13" fill="#24414a">图 1</text></g><g transform="translate(110 0)"><rect x="0" y="0" width="99" height="96" rx="8" fill="#fff0db" stroke="#9ebabc"/><rect x="25" y="18" width="34" height="52" fill="none" stroke="#087f8c" stroke-width="2.5"/><text x="49" y="87" text-anchor="middle" font-size="13" fill="#24414a">图 2</text></g><g transform="translate(0 106)"><rect x="0" y="0" width="99" height="96" rx="8" fill="#e5e0f1" stroke="#9ebabc"/><rect x="32" y="21" width="38" height="52" fill="none" stroke="#087f8c" stroke-width="2.5"/><text x="49" y="87" text-anchor="middle" font-size="13" fill="#24414a">图 3</text></g><g transform="translate(110 106)"><rect x="0" y="0" width="99" height="96" rx="8" fill="#e0efe5" stroke="#9ebabc"/><rect x="39" y="24" width="42" height="52" fill="none" stroke="#087f8c" stroke-width="2.5"/><text x="49" y="87" text-anchor="middle" font-size="13" fill="#24414a">图 4</text></g>
+<text x="106" y="244" text-anchor="middle" font-size="15" fill="#24414a" font-weight="700">独立样本</text>
+</g>
+<path d="M274 159 H369" stroke="#087f8c" stroke-width="3"/><path d="M359 151 l12 8 -12 8" stroke="#087f8c" stroke-width="3" fill="none"/>
+<g transform="translate(399 38)">
+<rect width="248" height="248" rx="13" fill="#eef4f4" stroke="#80acae" stroke-width="2"/>
+<rect x="0" y="0" width="110" height="138" fill="#dcebed"/>
+<rect x="110" y="0" width="138" height="138" fill="#fff0db"/>
+<rect x="0" y="138" width="110" height="110" fill="#e5e0f1"/>
+<rect x="110" y="138" width="138" height="110" fill="#e0efe5"/>
+<path d="M110 0 V248 M0 138 H248" stroke="#fff" stroke-width="5"/>
+<rect x="30" y="30" width="53" height="79" rx="4" fill="none" stroke="#087f8c" stroke-width="3"/>
+<rect x="150" y="33" width="64" height="68" rx="4" fill="none" stroke="#c47b31" stroke-width="3"/>
+<rect x="25" y="165" width="64" height="49" rx="4" fill="none" stroke="#6c5b91" stroke-width="3"/>
+<rect x="145" y="164" width="70" height="60" rx="4" fill="none" stroke="#327f59" stroke-width="3"/>
+<text x="124" y="274" text-anchor="middle" font-size="15" fill="#24414a" font-weight="700">合成训练画布</text>
+</g>
+<g transform="translate(676 103)" fill="#5c737a" font-size="15">
+<text x="0" y="0">随机切分位置</text><text x="0" y="28">逐块缩放与平移</text><text x="0" y="56">边界框重新映射</text><text x="0" y="84">超出画布的框裁剪</text>
+</g>
+</svg>
+<figcaption>“四张拼一张”只是视觉结果；要训练正确，必须对所有被裁剪目标执行相同的仿射变换并重新计算合法框。</figcaption>
+</figure>
+<p>需要特别审计 Mosaic 拼接边缘：目标可能被截成很窄的一段，框变得退化或面积过小；有的实现会丢弃低可见度框，有的则使用特定过滤阈值。这些条件应与代码 commit 一起记录，不应该把“使用 Mosaic”作为足够完整的训练方法描述。</p></section>
+<section id="loss"><h2>5. CIoU：定位误差不仅是重叠面积</h2>
+<p>检测框可能重叠比例相同，但中心距和长宽比不同。CIoU 将 IoU、中心距离和长宽比三个几何要素同时纳入框回归项；YOLOv4 把它作为重要训练策略之一。完整公式、退化框处理与可运行计算示例详见 <a href="09.html">损失函数演进</a>，这里强调其作用位置：<strong>CIoU 是训练中的定位损失，不是替代 objectness、分类损失或推理 NMS 的万能函数</strong>。</p>
+<div class="equation" tabindex="0" role="region" aria-label="CIoU 定位损失公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="CIoU 损失等于一减去交并比，加归一化中心距离的平方，再加长宽比惩罚">
+<mrow><msub><mi>L</mi><mi>CIoU</mi></msub><mo>=</mo><mn>1</mn><mo>−</mo><mi>IoU</mi><mo>+</mo><mfrac><msup><mi>ρ</mi><mn>2</mn></msup><msup><mi>c</mi><mn>2</mn></msup></mfrac><mo>+</mo><mi>α</mi><mi>v</mi></mrow>
+</math></div>
+<p>其中 ρ 是两个框中心点间的欧氏距离，c 是覆盖两个框的最小外接矩形的对角线长度；v 与 α 描述长宽比偏差和自适应系数。它出自 <a href="https://arxiv.org/abs/1911.08287" target="_blank" rel="noreferrer">DIoU/CIoU 原论文</a>，不能把它追认为 YOLOv1 或最初的 YOLOv3 原生损失。</p></section>
+<section id="results"><h2>6. 如何阅读原论文的 COCO 数字</h2>
+<p>YOLOv4 论文摘要报告：在 MS COCO 数据集上，模型达到 <strong>43.5 AP</strong>（COCO IoU 0.50:0.95）和 <strong>65.7 AP50</strong>，在 Tesla V100 上约 65 FPS。其主表中的速度还区分其他 GPU 测试设备及计时配置，因此不要把一个 FPS 与表中任意一行混合起来声称“同一条件下更快”。</p>
+<div class="table-wrap"><table><thead><tr><th>来自 YOLOv4 原论文的配置</th><th>COCO test-dev AP</th><th>AP50</th><th>读数前提</th></tr></thead><tbody>
+<tr><td>YOLOv4 416</td><td>41.2</td><td>62.8</td><td>输入 416×416，原论文 Table 9</td></tr>
+<tr><td>YOLOv4 512</td><td>43.0</td><td>64.9</td><td>输入 512×512，原论文 Table 9</td></tr>
+<tr><td>YOLOv4 608</td><td>43.5</td><td>65.7</td><td>输入 608×608，原论文 Table 9</td></tr>
+</tbody></table></div>
+<p>三行数值展示同一模型家族在不同输入尺寸下的精度变化。它们不意味着每次增大输入都保证增长；完整比较还应给出吞吐量、显存、测试硬件、后处理计时边界和是否使用推理加速。</p></section>
+<section id="choices"><h2>7. 组件选择的实验矩阵</h2>
+<div class="table-wrap"><table><thead><tr><th>待评估改动</th><th>训练期开销</th><th>推理图可能变化</th><th>应监控的证据</th></tr></thead><tbody>
+<tr><td>Mosaic、标签平滑</td><td>增强与样本处理</td><td>通常不直接增加</td><td>各目标尺寸召回、难例误检</td></tr>
+<tr><td>CSPDarknet53、Mish</td><td>网络与优化变化</td><td>会</td><td>AP、吞吐、算子支持与显存</td></tr>
+<tr><td>SPP、PAN-style Neck</td><td>网络模块训练</td><td>会</td><td>特征形状、AP<sub>S/M/L</sub> 与实际延迟</td></tr>
+<tr><td>CIoU</td><td>改变定位优化目标</td><td>通常不改变前向架构</td><td>收敛趋势、框定位 AP75</td></tr>
+</tbody></table></div>
+<p>可比较的消融实验必须固定数据划分、训练预算、评估协议和部署设备。否则一个新组件带来的增益，可能只是输入尺寸、训练轮数或数据增强强度改变的结果。</p></section>
+<section id="references"><h2>参考资料</h2><ol class="references">
+<li>Bochkovskiy, Wang &amp; Liao, <a href="https://arxiv.org/abs/2004.10934" target="_blank" rel="noreferrer">YOLOv4: Optimal Speed and Accuracy of Object Detection</a>，§3–4、Table 9 与摘要。</li>
+<li>Wang et al., <a href="https://arxiv.org/abs/1911.11929" target="_blank" rel="noreferrer">CSPNet: A New Backbone that can Enhance Learning Capability of CNN</a>。</li>
+<li>Liu et al., <a href="https://arxiv.org/abs/1803.01534" target="_blank" rel="noreferrer">Path Aggregation Network for Instance Segmentation</a>。</li>
+<li>Zheng et al., <a href="https://arxiv.org/abs/1911.08287" target="_blank" rel="noreferrer">Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression</a>。</li>
+<li><a href="https://github.com/AlexeyAB/darknet" target="_blank" rel="noreferrer">YOLOv4 reference implementation (AlexeyAB/darknet)</a>。</li>
+</ol></section></article>
+<nav class="chapter-nav" aria-label="章节切换"><a href="06.html" class="previous"><small>上一章</small><strong>← YOLOv3 工程实战</strong></a><a href="../index.html" class="chapter-index">全部章节</a><a href="08.html" class="next"><small>下一章</small><strong>锚框与聚类 →</strong></a></nav>
+<footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 证据可追溯 · 离线优先</span></footer>
+</main>
 </div>
-</div>
+<script src="../assets/site.js" defer></script>
 </body>
 </html>

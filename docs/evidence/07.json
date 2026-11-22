@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "article": "chapters/07.html",
+  "batch": "2026-11-22-06-10",
+  "method": "Primary paper and implementation references; derived numerical checks are separate from published metrics.",
+  "claims": [
+    {
+      "id": "07-01",
+      "claim": "YOLOv4 于 2020 年提出，强调系统整合与单 GPU 训练可行性",
+      "kind": "historical",
+      "source_url": "https://arxiv.org/abs/2004.10934",
+      "locator": "Abstract; §1–3",
+      "status": "verified",
+      "notes": "由 Bochkovskiy、Wang 和 Liao 提出。"
+    },
+    {
+      "id": "07-02",
+      "claim": "YOLOv4 的骨干为 CSPDarknet53，Neck 使用 SPP 和 PAN 式路径",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/2004.10934",
+      "locator": "§3.3; §4; architecture overview",
+      "status": "verified",
+      "notes": "PAN-style 不等于原始 PANet 全部模块。"
+    },
+    {
+      "id": "07-03",
+      "claim": "Mish 由 x*tanh(softplus(x)) 定义",
+      "kind": "formula",
+      "source_url": "https://arxiv.org/abs/1908.08681",
+      "locator": "Mish: A Self Regularized Non-Monotonic Activation Function, §2",
+      "status": "verified",
+      "notes": "与 YOLOv4 的激活选型结合解释。"
+    },
+    {
+      "id": "07-04",
+      "claim": "Mosaic 是四图拼接的训练增强，要求同步变换标签",
+      "kind": "training",
+      "source_url": "https://arxiv.org/abs/2004.10934",
+      "locator": "§3.2; §3.3 Bag of Freebies",
+      "status": "verified",
+      "notes": "实际裁剪阈值与变换细节依实现而异。"
+    },
+    {
+      "id": "07-05",
+      "claim": "CIoU 同时使用 IoU、中心距离与长宽比约束",
+      "kind": "formula",
+      "source_url": "https://arxiv.org/abs/1911.08287",
+      "locator": "CIoU loss formulation",
+      "status": "verified",
+      "notes": "定位损失，不是分类器与 NMS 的统一替代。"
+    },
+    {
+      "id": "07-06",
+      "claim": "YOLOv4 416/512/608 在 COCO test-dev 上 AP 分别为 41.2/43.0/43.5、AP50 分别为 62.8/64.9/65.7",
+      "kind": "quantitative",
+      "source_url": "https://arxiv.org/abs/2004.10934",
+      "locator": "Table 9",
+      "status": "verified",
+      "notes": "输入尺寸分别为 416、512、608；不可混合不同 GPU FPS。"
+    },
+    {
+      "id": "07-07",
+      "claim": "论文摘要给出的 43.5 AP/65.7 AP50 及 Tesla V100 上约 65 FPS 属于特定报告口径",
+      "kind": "quantitative",
+      "source_url": "https://arxiv.org/abs/2004.10934",
+      "locator": "Abstract",
+      "status": "verified",
+      "notes": "如需端到端部署推理时延应重新实测。"
+    }
+  ]
+}

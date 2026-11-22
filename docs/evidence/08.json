@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "article": "chapters/08.html",
+  "batch": "2026-11-22-06-10",
+  "method": "Primary paper and implementation references; derived numerical checks are separate from published metrics.",
+  "claims": [
+    {
+      "id": "08-01",
+      "claim": "YOLOv2 使用 k-means 对标注框尺寸做聚类，以 1−IoU 为距离",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "§2 Better; Dimension Clusters",
+      "status": "verified",
+      "notes": "同中心几何匹配，与位置无关。"
+    },
+    {
+      "id": "08-02",
+      "claim": "YOLOv2 参数化使用 sigmoid 中心偏移与相对先验宽高的指数缩放",
+      "kind": "formula",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "§2 Better; Direct Location Prediction",
+      "status": "verified",
+      "notes": "坐标必须先统一到网格单位。"
+    },
+    {
+      "id": "08-03",
+      "claim": "YOLOv3 使用 9 个先验、三尺度，每层分配 3 个框",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.3 Predictions Across Scales",
+      "status": "verified",
+      "notes": "不同数据集可能有不同先验。"
+    },
+    {
+      "id": "08-04",
+      "claim": "YOLOv3 每个真实目标选择一个负责锚框，其他高 IoU 未负责预测可以忽略背景惩罚",
+      "kind": "training",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.1 Bounding Box Prediction",
+      "status": "verified",
+      "notes": "忽略阈值按原论文为 0.5。"
+    },
+    {
+      "id": "08-05",
+      "claim": "聚类脚本中的中心更新采用算术平均，属于教学实现而非 Darknet calc_anchors 完全复刻",
+      "kind": "implementation",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "Dimension Clusters motivation",
+      "status": "derived",
+      "notes": "实验只作形状覆盖度教学，不应将输出直接视为某论文原始结果。"
+    },
+    {
+      "id": "08-06",
+      "claim": "可切换的三个目标框宽高和三个先验尺寸为人工设计的教学例子",
+      "kind": "illustration",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "Dimension Clusters conceptual model",
+      "status": "illustrative",
+      "notes": "UI 算术可由形状 IoU 验证。"
+    }
+  ]
+}
