@@ -27,7 +27,7 @@
 <section id="motivation">
 <h2>1. 从“自由回归”到“带先验的回归”</h2>
 <p>YOLOv1 的框坐标由全连接层直接预测。模型必须同时学习目标中心在哪里、宽高是多少；不同尺度和长宽比的框都在同一输出空间中竞争。YOLOv2 将预测改为相对于预设锚框（anchor box）的偏移：先给每个特征位置若干种参考框形状，再让网络学习怎样移动和缩放它们。</p>
-<figure class="diagram">
+<figure class="diagram" tabindex="0" aria-label="结构图，可在窄屏左右滚动查看">
 <svg viewBox="0 0 900 300" role="img" aria-labelledby="anchor-title anchor-desc" xmlns="http://www.w3.org/2000/svg">
 <title id="anchor-title">锚框先验与预测偏移</title><desc id="anchor-desc">同一特征网格位置预设多个不同长宽比的参考框，网络预测中心点偏移和宽高缩放量，得到最终检测框。</desc>
 <rect x="8" y="8" width="884" height="284" rx="18" fill="#f6fafb"/>
@@ -95,7 +95,7 @@
 <section id="wordtree">
 <h2>6. WordTree：把检测标签与分类标签组织到同一层级</h2>
 <p>YOLO9000 解决的是另一个问题：检测数据昂贵，检测数据集的类别远少于图像分类数据集。COCO 有边界框标注，但 ImageNet 提供了更广泛的类别标签。若把所有标签直接放进一个互斥 Softmax，“狗”和“诺福克梗”就会变成互斥类别，语义关系被破坏。</p>
-<figure class="diagram">
+<figure class="diagram" tabindex="0" aria-label="结构图，可在窄屏左右滚动查看">
 <svg viewBox="0 0 900 300" role="img" aria-labelledby="tree-title tree-desc" xmlns="http://www.w3.org/2000/svg">
 <title id="tree-title">WordTree 层次化类别概率</title><desc id="tree-desc">类别沿着物理对象、动物、哺乳动物、犬科、梗犬到具体犬种形成层次路径，节点概率由路径上的条件概率相乘得到。</desc>
 <rect x="8" y="8" width="884" height="284" rx="18" fill="#f6fafb"/>

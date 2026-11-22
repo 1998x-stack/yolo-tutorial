@@ -27,7 +27,7 @@
 <section id="why">
 <h2>1. 为什么要把检测压缩成一次预测？</h2>
 <p>在两阶段检测流程中，模型先回答“哪些区域值得检查”，再回答“每个区域里是什么”。这种分工合理，却引入候选区域生成、区域特征提取和候选框精修等环节。YOLO 的关键选择是：让一个共享卷积网络直接从整张图像预测目标位置与类别，把检测建模为统一的密集回归任务。</p>
-<figure class="diagram">
+<figure class="diagram" tabindex="0" aria-label="结构图，可在窄屏左右滚动查看">
 <svg viewBox="0 0 900 310" role="img" aria-labelledby="paradigm-title paradigm-desc" xmlns="http://www.w3.org/2000/svg">
 <title id="paradigm-title">两阶段检测与 YOLO 单阶段预测的流程差异</title><desc id="paradigm-desc">左侧先产生候选区域，再进行区域分类与框回归；右侧共享图像特征后直接输出密集预测，并通过后处理得到检测结果。</desc>
 <rect x="8" y="8" width="884" height="294" rx="18" fill="#f6fafb"/>

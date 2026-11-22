@@ -41,7 +41,7 @@
 <section id="pyramid">
 <h2>2. 三尺度预测：把深层语义送回高分辨率特征</h2>
 <p>YOLOv3 借鉴 FPN 的自顶向下融合思路：先在最深层特征上进行卷积变换并预测一组框；随后把深层特征上采样 2 倍，与较早层的特征拼接，再经过卷积预测下一尺度；这一过程再执行一次，得到第三个、更高分辨率的预测层。</p>
-<figure class="diagram">
+<figure class="diagram" tabindex="0" aria-label="结构图，可在窄屏左右滚动查看">
 <svg viewBox="0 0 900 340" role="img" aria-labelledby="pyramid-title pyramid-desc" xmlns="http://www.w3.org/2000/svg">
 <title id="pyramid-title">YOLOv3 三尺度特征融合与预测</title><desc id="pyramid-desc">Darknet-53 输出 13、26、52 三种尺寸的特征。深层特征先预测，再上采样并与中层、浅层特征拼接，形成三个检测尺度。</desc>
 <rect x="8" y="8" width="884" height="324" rx="18" fill="#f6fafb"/>

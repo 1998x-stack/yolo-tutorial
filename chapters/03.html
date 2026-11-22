@@ -27,7 +27,7 @@
 <section id="grid">
 <h2>1. 网格责任分配：目标中心决定由谁预测</h2>
 <p>YOLOv1 的输入尺寸为 448×448。对于 PASCAL VOC 的实验配置，图像被划分为 7×7 个网格，每个网格覆盖 64×64 像素。若目标边界框中心落在某个网格内，该网格就负责预测这个目标。注意，负责关系由<strong>中心点</strong>决定，而不是由边界框与网格相交的面积决定。</p>
-<figure class="diagram">
+<figure class="diagram" tabindex="0" aria-label="结构图，可在窄屏左右滚动查看">
 <svg viewBox="0 0 900 320" role="img" aria-labelledby="grid-title grid-desc" xmlns="http://www.w3.org/2000/svg">
 <title id="grid-title">YOLOv1 的 7×7 网格与中心点责任分配</title><desc id="grid-desc">左侧图像被划分为七乘七网格，中心点落在高亮网格中的目标由该网格负责；右侧展示每个网格预测两个框和一组类别概率。</desc>
 <rect x="8" y="8" width="884" height="304" rx="18" fill="#f6fafb"/>
