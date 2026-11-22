@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "article": "chapters/26.html",
+  "batch": "21-28",
+  "claims": [
+    {
+      "id": "26-01",
+      "claim": "常规检测器把类别集合写在输出头上，推理时无法新增类别；开放词汇检测改用文本描述参与判定。",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/2401.17270",
+      "locator": "YOLO-World: open-vocabulary detection formulation",
+      "status": "verified",
+      "notes": "对照 YOLO-World 对开放词汇检测的问题定义。"
+    },
+    {
+      "id": "26-02",
+      "claim": "YOLO9000 的 WordTree 是预定义的层次化固定词表，与依赖自然语言对齐的开放词汇检测机制不同。",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "YOLO9000: WordTree hierarchical classification",
+      "status": "verified",
+      "notes": "与 AGENTS.md 要求一致：不把 WordTree 说成现代文本提示开放词汇检测。"
+    },
+    {
+      "id": "26-03",
+      "claim": "CLIP 用对比学习把图像与文本编码到同一嵌入空间，相似度常用余弦相似度衡量。",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/2103.00020",
+      "locator": "CLIP: contrastive pretraining and shared embedding space",
+      "status": "verified",
+      "notes": "对照 CLIP 论文的对比学习目标。"
+    },
+    {
+      "id": "26-04",
+      "claim": "文本编码器可离线预计算类别嵌入，在线仅保留视觉分支与对齐，可降低在线开销。",
+      "kind": "engineering",
+      "source_url": "https://arxiv.org/abs/2401.17270",
+      "locator": "YOLO-World: offline vocabulary embeddings / re-parameterizable path",
+      "status": "derived",
+      "notes": "由预计算与重参数化思路推导；页面限定为常见工程做法，未承诺零开销。"
+    },
+    {
+      "id": "26-05",
+      "claim": "YOLO-seg 的分割头与检测一起训练；YOLO+SAM 使用独立的可提示分割模型，参数与检测器无关。",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/2304.02643",
+      "locator": "Segment Anything: promptable segmentation (points, boxes)",
+      "status": "verified",
+      "notes": "区分共享特征的分割头与独立可提示分割器两种路线。"
+    },
+    {
+      "id": "26-06",
+      "claim": "ByteTrack 先用高分框、再用低分框做二次关联，因此低置信度框不等于噪声。",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/2110.06864",
+      "locator": "ByteTrack: association of low-score detection boxes",
+      "status": "verified",
+      "notes": "对照 ByteTrack 的二次关联机制。"
+    },
+    {
+      "id": "26-07",
+      "claim": "跟踪指标（MOTA/IDF1）与检测指标不是同一口径，跟踪失效模式主要是 ID 切换与漏跟。",
+      "kind": "engineering",
+      "source_url": "https://arxiv.org/abs/2110.06864",
+      "locator": "ByteTrack: MOT evaluation metrics (MOTA, IDF1, ID switches)",
+      "status": "derived",
+      "notes": "由多目标跟踪评估口径推导；页面不引用具体数值。"
+    },
+    {
+      "id": "26-08",
+      "claim": "交互实验中的夹角与余弦值、以及图中的流程排布均为教学示意，不代表任何具体模型。",
+      "kind": "illustrative",
+      "source_url": "chapters/26.html",
+      "locator": "section#lab lab-input-26",
+      "status": "illustrative",
+      "notes": "页面正文已就近标注为教学示意。"
+    }
+  ]
+}

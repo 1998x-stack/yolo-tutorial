@@ -37,6 +37,11 @@
       const F1 = 2 * P * R / (P + R);
       return "P=0.80，R=" + R.toFixed(2) + "：F1 = 2×0.80×" + R.toFixed(2) + " / (0.80+" +
         R.toFixed(2) + ") = " + F1.toFixed(3) + "（教学示意值）。";
+    },
+    "26": (v) => {
+      const deg = Number(v), c = Math.cos(deg * Math.PI / 180);
+      return "θ=" + deg + "°：cos θ = " + c.toFixed(3) +
+        "（取值范围 [-1, 1]，越大表示两向量越同向；教学示意值）。";
     }
   };
   for (const [id, render] of Object.entries(configs)) {
