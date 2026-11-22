@@ -90,9 +90,9 @@ class SiteStructureTests(unittest.TestCase):
             self.assertIn(f'href="chapters/{num}.html"', content)
             self.assertIn('name="robots" content="noindex"', content)
 
-    def test_first_ten_chapters_are_self_contained_articles(self):
+    def test_first_fifteen_chapters_are_self_contained_articles(self):
         forbidden = ("大家好，我是你们的讲师", "上一章我们", "下一章我们", "讲义介绍了")
-        for i in range(1, 11):
+        for i in range(1, 16):
             num = f"{i:02d}"
             content, parser = read_page(ROOT / "chapters" / f"{num}.html")
             self.assertEqual(parser.h1_count, 1, num)
@@ -103,8 +103,8 @@ class SiteStructureTests(unittest.TestCase):
             for phrase in forbidden:
                 self.assertNotIn(phrase, content, f"{num}: {phrase}")
 
-    def test_first_ten_inline_svgs_are_accessible_and_well_formed(self):
-        for i in range(1, 11):
+    def test_first_fifteen_inline_svgs_are_accessible_and_well_formed(self):
+        for i in range(1, 16):
             num = f"{i:02d}"
             content = (ROOT / "chapters" / f"{num}.html").read_text(encoding="utf-8")
             figures = re.findall(r"<svg\b[\s\S]*?</svg>", content, flags=re.IGNORECASE)
@@ -117,14 +117,14 @@ class SiteStructureTests(unittest.TestCase):
                 self.assertTrue(root.attrib.get("viewBox"), num)
 
     def test_no_remote_runtime_assets(self):
-        for page in [ROOT / "index.html", *(ROOT / "chapters" / f"{i:02d}.html" for i in range(1, 11))]:
+        for page in [ROOT / "index.html", *(ROOT / "chapters" / f"{i:02d}.html" for i in range(1, 16))]:
             _, parser = read_page(page)
             for raw in parser.links:
                 if raw.startswith(("https://", "http://")):
                     self.assertNotIn(raw, [raw for raw in parser.links if raw.lower().endswith((".js", ".css"))])
 
     def test_mathml_is_accessible_and_outside_svg(self):
-        for i in range(1, 11):
+        for i in range(1, 16):
             num = f"{i:02d}"
             content = (ROOT / "chapters" / f"{num}.html").read_text(encoding="utf-8")
             math_attrs = re.findall(r"<math\b([^>]*)>", content, flags=re.IGNORECASE)
@@ -156,8 +156,8 @@ class SiteStructureTests(unittest.TestCase):
         self.assertIn('src="../assets/anchor-demo.js"', content)
         self.assertTrue((ROOT / "assets" / "anchor-demo.js").is_file())
 
-    def test_standalone_svgs_match_inline_figures_for_second_batch(self):
-        for i in range(6, 11):
+    def test_standalone_svgs_match_inline_figures_for_reviewed_chapters(self):
+        for i in range(6, 16):
             num = f"{i:02d}"
             content = (ROOT / "chapters" / f"{num}.html").read_text(encoding="utf-8")
             svgs = re.findall(r"<svg\b[\s\S]*?</svg>", content, flags=re.IGNORECASE)
@@ -170,6 +170,32 @@ class SiteStructureTests(unittest.TestCase):
                 tags = {node.tag.split("}")[-1] for node in root.iter()}
                 self.assertIn("title", tags)
                 self.assertIn("desc", tags)
+
+    def test_third_batch_article_labs_evidence_and_navigation(self):
+        for i in range(11, 16):
+            num=f"{i:02d}"
+            content,parser=read_page(ROOT / "chapters" / f"{num}.html")
+            self.assertEqual(parser.h1_count,1,num)
+            self.assertEqual(parser.article_count,1,num)
+            self.assertEqual(parser.main_count,1,num)
+            self.assertGreaterEqual(parser.svg_count,1,num)
+            self.assertIn(f'data-chapter="{num}" aria-current="page"',content,num)
+            self.assertIn('class="references"',content,num)
+            ledger=json.loads((ROOT/"docs"/"evidence"/f"{num}.json").read_text(encoding="utf-8"))
+            self.assertEqual(ledger["article"],f"chapters/{num}.html")
+            self.assertGreaterEqual(len(ledger["claims"]),6,num)
+            for claim in ledger["claims"]:
+                self.assertTrue(claim.get("source_url"),(num,claim))
+                self.assertTrue(claim.get("locator"),(num,claim))
+                self.assertIn(claim.get("status"),{"verified","derived","illustrative","unverified"},claim)
+
+    def test_nms_demo_has_local_script_and_accessible_controls(self):
+        content=(ROOT/"chapters"/"14.html").read_text(encoding="utf-8")
+        self.assertIn('id="nms-threshold"',content)
+        self.assertIn('id="nms-mode"',content)
+        self.assertIn('id="nms-demo-output" aria-live="polite"',content)
+        self.assertIn('src="../assets/nms-demo.js"',content)
+        self.assertTrue((ROOT/"assets"/"nms-demo.js").is_file())
 
     def test_corrected_yolov3_large_object_ap_is_present(self):
         content = (ROOT / "chapters" / "05.html").read_text(encoding="utf-8")

@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "article": "chapters/12.html",
+  "batch": "chapters-11-15",
+  "claims": [
+    {
+      "id": "12-01",
+      "claim": "Darknet-19 contains 19 convolutional layers and 5 max pooling layers",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/1612.08242",
+      "locator": "YOLO9000 §2 Faster, Darknet-19",
+      "status": "verified",
+      "notes": "Classification backbone description; not entire detection graph."
+    },
+    {
+      "id": "12-02",
+      "claim": "YOLOv3 uses Darknet-53 with residual connections and multiscale features",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.2 Feature Extractor, §2.3 Predictions Across Scales",
+      "status": "verified",
+      "notes": "Depth alone does not specify detection neck/head."
+    },
+    {
+      "id": "12-03",
+      "claim": "CSPNet splits stage feature flow to reduce redundant computation",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/1911.11929",
+      "locator": "CSPNet cross-stage partition mechanism",
+      "status": "verified",
+      "notes": "Specific ratios and branches vary by block."
+    },
+    {
+      "id": "12-04",
+      "claim": "RepVGG training multi-branch linear blocks can merge to a single deployed 3x3 conv after BN folding",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/2101.03697",
+      "locator": "§3 structural reparameterization",
+      "status": "verified",
+      "notes": "Requires matched spatial settings and linear branch addition."
+    },
+    {
+      "id": "12-05",
+      "claim": "YOLOv6 technical report uses an EfficientRep design for efficient real-time detection",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/2209.02976",
+      "locator": "Backbone architecture and re-parameterization",
+      "status": "verified",
+      "notes": "Release/version-specific implementation details may differ."
+    },
+    {
+      "id": "12-06",
+      "claim": "C2f is implemented in Ultralytics model block code for YOLOv8-family",
+      "kind": "implementation",
+      "source_url": "https://github.com/ultralytics/ultralytics/blob/main/ultralytics/nn/modules/block.py",
+      "locator": "C2f definition",
+      "status": "verified",
+      "notes": "Not a retrospective property of YOLOv5 original heads."
+    },
+    {
+      "id": "12-07",
+      "claim": "YOLOv9 paper introduces GELAN and Programmable Gradient Information",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/2402.13616",
+      "locator": "§3 methods, GELAN and PGI",
+      "status": "verified",
+      "notes": "Distinguishes inference architecture from training gradient strategy."
+    },
+    {
+      "id": "12-08",
+      "claim": "The example 80x80,32→64,3x3 conv takes 117,964,800 MACs",
+      "kind": "derived",
+      "source_url": "https://arxiv.org/abs/2101.03697",
+      "locator": "Convolution arithmetic; verified by lab",
+      "status": "derived",
+      "notes": "MACs are not measured latency or GPU FLOPs."
+    },
+    {
+      "id": "12-09",
+      "claim": "The plotted 640→80/40/20 spatial shapes are pedagogical for stride 8/16/32",
+      "kind": "illustration",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.3 Predictions Across Scales",
+      "status": "illustrative",
+      "notes": "Model layer naming and channels may vary."
+    }
+  ]
+}

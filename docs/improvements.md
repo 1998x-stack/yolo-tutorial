@@ -29,3 +29,12 @@
 - Visual narrative: 8 original explanatory SVGs (also exported under `assets/figures/`), native MathML, Chapter 08 anchor selector with keyboard-accessible controls, mobile figure scrolling.
 - Navigation: first ten articles share a stage sidebar, Chapter 05 now advances to 06; homepage metadata and README reflect actual reviewed coverage.
 - Validation: GitHub Actions Quality run #1 for PR #3 (run ID 44986969762) passed: all 17 Python static/lab tests, Chromium for the homepage and chapters 01–10 at 1440/768/390/360 px, Chapter 08 shape controls, MathML/SVG rendering, responsive figure scrolling and browser errors (none). Browser screenshots and JSON report were uploaded as an Actions artifact.
+
+### 2026-11-22 — Batch 03 (chapters 11–15, detailed one-by-one rebuild)
+
+- Five independent explainers: synchronized detection augmentation and clipping; Darknet/CSP/Rep backbone evolution and MAC conventions; SPPF/PAN/decoupled heads vs training-only assignment; class-wise Hard/Soft NMS and NMS-free training; pinned YOLOv5 v7.0 training/data/export path.
+- Added 8 independently viewable original SVGs with exact inline parity; total reviewed gallery for chapters 06–15 is now 16 figures.
+- Added deterministic stdlib labs with their own unit tests for image/label geometry, Rep linear folding, SPPF max-pool equivalence, NMS semantics and v7.0 anchor decode/label validation.
+- Preserved verifiable primary citations, frozen source references and per-chapter evidence ledgers `11.json`–`15.json`; explicitly separate illustrative calculations from paper metrics.
+- Updated the 28-card offline-first homepage and 01–15 sidebar navigation, README, architecture notes, AGENTS guardrails, browser interactivity tests and responsive coverage.
+- CI and Pages release: pending validation at the time of authoring. Inspect workflow execution before marking the batch as passed.

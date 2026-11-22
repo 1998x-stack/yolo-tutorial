@@ -1,0 +1,12 @@
+<svg viewBox="0 0 900 310" role="img" aria-labelledby="c13b-title c13b-desc" xmlns="http://www.w3.org/2000/svg"><title id="c13b-title">SPPF 的串行最大池化与等效感受野</title><desc id="c13b-desc">输入 x 连续三次经过5乘5最大池化，得到有效感受野5、9、13。随后将x和三个池化结果沿通道维拼接，保持H和W不变。</desc>
+<rect x="8" y="8" width="884" height="293" rx="18" fill="#f6fafb"/>
+<g text-anchor="middle" fill="#24414a" font-size="15">
+<rect x="31" y="68" width="135" height="63" rx="9" fill="#dcebed" stroke="#99bdbe"/><text x="98" y="95">输入 x</text><text x="98" y="114" font-size="13">H×W×C</text>
+<rect x="221" y="68" width="148" height="63" rx="9" fill="#e3f1ef" stroke="#87b4b1"/><text x="295" y="95">MaxPool 5×5</text><text x="295" y="114" font-size="13">有效 5×5</text>
+<rect x="424" y="68" width="148" height="63" rx="9" fill="#e3f1ef" stroke="#87b4b1"/><text x="498" y="95">MaxPool 5×5</text><text x="498" y="114" font-size="13">有效 9×9</text>
+<rect x="627" y="68" width="148" height="63" rx="9" fill="#e3f1ef" stroke="#87b4b1"/><text x="701" y="95">MaxPool 5×5</text><text x="701" y="114" font-size="13">有效 13×13</text>
+<rect x="293" y="207" width="318" height="59" rx="11" fill="#fff0df" stroke="#d8b17b"/><text x="452" y="231" font-weight="700">Concat(x, y1, y2, y3)</text><text x="452" y="250" font-size="13">H×W×4C（池化部分之前的通道计数）</text>
+</g>
+<g fill="none" stroke="#087f8c" stroke-width="2.5"><path d="M169 100 H219 M372 100 H422 M575 100 H625 M98 135 V190 H451 V204 M295 135 V182 H451 M498 135 V172 H451 M701 135 V190 H451"/></g>
+<text x="452" y="293" text-anchor="middle" font-size="13" fill="#5b7379">相同最大值操作可通过不同数据流达到同样感受野；这不等于一般卷积可如此替换</text>
+</svg>

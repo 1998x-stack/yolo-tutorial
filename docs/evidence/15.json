@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "article": "chapters/15.html",
+  "batch": "chapters-11-15",
+  "claims": [
+    {
+      "id": "15-01",
+      "claim": "YOLOv5 v7.0 is a versioned Ultralytics source-code release rather than a YOLOv1-v3 Redmon paper",
+      "kind": "historical",
+      "source_url": "https://github.com/ultralytics/yolov5/releases/tag/v7.0",
+      "locator": "2022-11 v7.0 release details",
+      "status": "verified",
+      "notes": "Scope is classic v7.0 object detection task."
+    },
+    {
+      "id": "15-02",
+      "claim": "YOLOv5s v7.0 YAML contains C3, SPPF and multiscale PAN-style up/down routes",
+      "kind": "code",
+      "source_url": "https://github.com/ultralytics/yolov5/blob/v7.0/models/yolov5s.yaml",
+      "locator": "backbone and head entries",
+      "status": "verified",
+      "notes": "Other YOLOv5 models/versions differ."
+    },
+    {
+      "id": "15-03",
+      "claim": "v7.0 Detect.forward decodes xy=(2sigmoid(tx)-0.5+grid)*stride and wh=(2sigmoid(tw))^2 * anchor",
+      "kind": "code",
+      "source_url": "https://github.com/ultralytics/yolov5/blob/v7.0/models/yolo.py",
+      "locator": "Detect.forward and Detect._make_grid",
+      "status": "verified",
+      "notes": "Anchor pixel units and grid shift explicitly recognized."
+    },
+    {
+      "id": "15-04",
+      "claim": "For 640 input with strides 8/16/32, 3 anchors per cell yield 25200 raw candidates",
+      "kind": "derived",
+      "source_url": "https://github.com/ultralytics/yolov5/blob/v7.0/models/yolo.py",
+      "locator": "Detect outputs flattened per scale",
+      "status": "derived",
+      "notes": "Not final post-NMS detections."
+    },
+    {
+      "id": "15-05",
+      "claim": "v7.0 training/validation/detection/export use separate root scripts and CLI arguments",
+      "kind": "code",
+      "source_url": "https://github.com/ultralytics/yolov5/tree/v7.0",
+      "locator": "train.py val.py detect.py export.py",
+      "status": "verified",
+      "notes": "Commands are instructed, not executed in this repository."
+    },
+    {
+      "id": "15-06",
+      "claim": "YOLOv5 classic dataset labels follow class cx cy w h normalized coordinate scheme",
+      "kind": "code",
+      "source_url": "https://github.com/ultralytics/yolov5/blob/v7.0/utils/dataloaders.py",
+      "locator": "YOLO label loading and verification",
+      "status": "verified",
+      "notes": "No implied support for masks/segmentation in this exercise."
+    },
+    {
+      "id": "15-07",
+      "claim": "AutoAnchor checks and may evolve anchor priors during training",
+      "kind": "code",
+      "source_url": "https://github.com/ultralytics/yolov5/blob/v7.0/utils/autoanchor.py",
+      "locator": "check_anchors and kmean_anchors",
+      "status": "verified",
+      "notes": "Not an inference-time box reranking routine."
+    },
+    {
+      "id": "15-08",
+      "claim": "The zero-logit xywh at grid (4,6), stride32, anchor116x90 decodes to center144/208 and dimensions116/90",
+      "kind": "derived",
+      "source_url": "https://github.com/ultralytics/yolov5/blob/v7.0/models/yolo.py",
+      "locator": "Detect.forward formula verified by stdlib lab",
+      "status": "derived",
+      "notes": "Toy deterministic data; not real inference."
+    },
+    {
+      "id": "15-09",
+      "claim": "The example class names bolt/nut and 100 epochs are placeholders",
+      "kind": "illustration",
+      "source_url": "https://github.com/ultralytics/yolov5/blob/v7.0/train.py",
+      "locator": "CLI arguments",
+      "status": "illustrative",
+      "notes": "No training metrics or real deployment speed claimed."
+    }
+  ]
+}

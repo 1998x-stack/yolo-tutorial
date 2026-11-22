@@ -297,3 +297,9 @@ button, input, select { font: inherit; }
   .article-page .diagram svg { width: 650px; min-width: 650px; max-height: none; }
   .article-page .diagram figcaption { min-width: 0; }
 }
+
+/* Accessible small controls used in the geometry and post-processing labs. */
+.article-page input[type="range"] { accent-color: var(--teal); cursor: pointer; }
+.article-page select { background: #fff; color: var(--ink); font: inherit; }
+.article-page select:focus-visible,
+.article-page input[type="range"]:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }

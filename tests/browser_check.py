@@ -57,6 +57,19 @@ def main() -> None:
                 assert "横长先验" in page.locator("#anchor-demo-output").inner_text()
 
 
+                # Chapter 14 tests threshold control, score decay and class-aware suppression.
+                page.goto(base + "/chapters/14.html", wait_until="networkidle")
+                assert "Hard NMS" in page.locator("#nms-demo-output").inner_text()
+                assert "B(cat" not in page.locator("#nms-demo-output").inner_text()
+                page.locator("#nms-threshold").focus()
+                page.keyboard.press("End")
+                assert "B(cat" in page.locator("#nms-demo-output").inner_text()
+                page.keyboard.press("Home")
+                assert "B(cat" not in page.locator("#nms-demo-output").inner_text()
+                page.locator("#nms-mode").select_option("soft")
+                assert "Soft-NMS" in page.locator("#nms-demo-output").inner_text()
+                assert "B(cat" in page.locator("#nms-demo-output").inner_text()
+
                 for width in results["viewports"]:
                     page.set_viewport_size({"width": width, "height": 1000})
                     page.goto(base + "/index.html", wait_until="networkidle")
@@ -65,7 +78,7 @@ def main() -> None:
                     if width in (1440, 390):
                         page.screenshot(path=str(Path(temp) / f"home-{width}.png"), full_page=True)
 
-                    for chapter in range(1, 11):
+                    for chapter in range(1, 16):
                         num = f"{chapter:02d}"
                         page.goto(base + f"/chapters/{num}.html", wait_until="networkidle")
                         assert page.locator("main article h1").count() == 1, num
@@ -99,6 +112,8 @@ def main() -> None:
                         if width in (1440, 390):
                             page.screenshot(path=str(Path(temp) / f"chapter-{num}-{width}.png"), full_page=True)
                         if width == 1440:
+                            assert page.locator('article .diagram').first.get_attribute("tabindex") == "0", num
+
                             results["chapters_checked"].append(num)
 
                 assert not results["browser_errors"], results["browser_errors"]

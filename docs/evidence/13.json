@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "article": "chapters/13.html",
+  "batch": "chapters-11-15",
+  "claims": [
+    {
+      "id": "13-01",
+      "claim": "FPN, Neck and Head serve multiscale fusion and prediction purposes",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/1612.03144",
+      "locator": "FPN §3 architecture",
+      "status": "verified",
+      "notes": "Final architecture modularization is conceptual; source class structures can differ."
+    },
+    {
+      "id": "13-02",
+      "claim": "YOLOv4 includes a spatial pyramid pooling neck and PAN-style feature path",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/2004.10934",
+      "locator": "§3–4 architecture design",
+      "status": "verified",
+      "notes": "SPP here is detection feature pooling, not a multi-image crop."
+    },
+    {
+      "id": "13-03",
+      "claim": "SPPF in YOLOv5 v7.0 performs three sequential 5x5 max pools with concatenated outputs",
+      "kind": "code",
+      "source_url": "https://github.com/ultralytics/yolov5/blob/v7.0/models/common.py",
+      "locator": "class SPPF",
+      "status": "verified",
+      "notes": "Pooling subgraph equivalence to 5/9/13 requires stride-1 and matching padding."
+    },
+    {
+      "id": "13-04",
+      "claim": "YOLOv5 model configuration uses SPPF and top-down/bottom-up concatenations",
+      "kind": "code",
+      "source_url": "https://github.com/ultralytics/yolov5/blob/v7.0/models/yolov5s.yaml",
+      "locator": "backbone/head YAML",
+      "status": "verified",
+      "notes": "Anchor-based head must not be generalized to Ultralytics v5u package configs."
+    },
+    {
+      "id": "13-05",
+      "claim": "YOLOX proposes a decoupled detection head",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/2107.08430",
+      "locator": "Decoupled Head section",
+      "status": "verified",
+      "notes": "Classification and regression branches differ from GT assignment."
+    },
+    {
+      "id": "13-06",
+      "claim": "TOOD proposes task-aligned training with joint classification/localization supervision",
+      "kind": "paper",
+      "source_url": "https://arxiv.org/abs/2108.07755",
+      "locator": "TOOD, Task Alignment Learning",
+      "status": "verified",
+      "notes": "Assignment is training-time, dependent on GT."
+    },
+    {
+      "id": "13-07",
+      "claim": "Head channel count A*(5+C) is for classic anchor-based detectors with objectness",
+      "kind": "formula",
+      "source_url": "https://arxiv.org/abs/1804.02767",
+      "locator": "§2.3 three anchor predictions per cell",
+      "status": "derived",
+      "notes": "Does not hold for all anchor-free/DFL or NMS-free branches."
+    },
+    {
+      "id": "13-08",
+      "claim": "SPPF three max pools are exactly equivalent to direct 5/9/13 max pooling in the demonstrated boundary convention",
+      "kind": "derived",
+      "source_url": "https://github.com/ultralytics/yolov5/blob/v7.0/models/common.py",
+      "locator": "SPPF code plus deterministic lab",
+      "status": "derived",
+      "notes": "Does not assert equal latency or entire module equivalence."
+    }
+  ]
+}

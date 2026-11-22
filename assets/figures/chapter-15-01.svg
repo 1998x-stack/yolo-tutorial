@@ -1,0 +1,12 @@
+<svg viewBox="0 0 900 320" role="img" aria-labelledby="c15a-title c15a-desc" xmlns="http://www.w3.org/2000/svg"><title id="c15a-title">YOLOv5s v7.0 的 C3、SPPF、PAN式 Neck 和三尺度锚框检测</title><desc id="c15a-desc">输入640乘640依次经过C3特征骨干和SPPF模块，再经过自顶向下与自底向上的PAN式跨层拼接，最终在80、40和20网格输出经典三锚框Detect预测。</desc>
+<rect x="8" y="8" width="884" height="304" rx="18" fill="#f6fafb"/>
+<g text-anchor="middle" fill="#24414a" font-size="16" font-weight="700"><text x="139" y="39">Backbone</text><text x="426" y="39">Neck</text><text x="730" y="39">Detect Head</text></g>
+<g fill="#dcebed" stroke="#83b4b4"><rect x="22" y="68" width="230" height="80" rx="12"/><rect x="22" y="163" width="230" height="80" rx="12"/></g>
+<g text-anchor="middle" fill="#24414a" font-size="15"><text x="137" y="97">Conv + C3</text><text x="137" y="119">分层 C3/C4/C5</text><text x="137" y="194">SPPF</text><text x="137" y="217">5×5 max pool ×3</text></g>
+<g fill="#e3f3ef" stroke="#83b4b0"><rect x="313" y="68" width="221" height="80" rx="12"/><rect x="313" y="163" width="221" height="80" rx="12"/></g>
+<g text-anchor="middle" fill="#24535a" font-size="15"><text x="424" y="97">Top-down</text><text x="424" y="119">Upsample + Concat</text><text x="424" y="193">Bottom-up</text><text x="424" y="216">Downsample + Concat</text></g>
+<g fill="#fff0df" stroke="#d8ae79"><rect x="602" y="61" width="242" height="58" rx="10"/><rect x="602" y="134" width="242" height="58" rx="10"/><rect x="602" y="207" width="242" height="58" rx="10"/></g>
+<g text-anchor="middle" fill="#754719" font-size="14"><text x="723" y="85">P3: 80×80，stride 8</text><text x="723" y="103">每格 3 个 anchors</text><text x="723" y="157">P4: 40×40，stride 16</text><text x="723" y="175">每格 3 个 anchors</text><text x="723" y="230">P5: 20×20，stride 32</text><text x="723" y="248">每格 3 个 anchors</text></g>
+<g fill="none" stroke="#087f8c" stroke-width="3"><path d="M255 108 H310 M138 150 V160 M256 204 H310 M537 109 H576 V90 H598 M537 109 H576 V163 H598 M537 204 H576 V236 H598"/></g>
+<text x="450" y="298" text-anchor="middle" font-size="13" fill="#5b7379">640×640 为例子，具体 C3 重复次数、通道与锚框值由 v7.0 模型 YAML 控制</text>
+</svg>
