@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "article": "chapters/25.html",
+  "batch": "21-28",
+  "claims": [
+    {
+      "id": "25-01",
+      "claim": "检测评估先按类别与 IoU 阈值匹配预测与真实框，再由 TP/FP/FN 定义精确率与召回率。",
+      "kind": "specification",
+      "source_url": "https://cocodataset.org/#detection-eval",
+      "locator": "COCO detection evaluation: matching and precision/recall",
+      "status": "verified",
+      "notes": "对照 COCO 官方评估说明。"
+    },
+    {
+      "id": "25-02",
+      "claim": "AP 是 PR 曲线下的面积，按置信度排序逐条累加 TP/FP 计算。",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/1405.0312",
+      "locator": "Microsoft COCO: average precision definition",
+      "status": "verified",
+      "notes": "对照 COCO 论文与评估协议中的 AP 定义。"
+    },
+    {
+      "id": "25-03",
+      "claim": "AP@0.5 只在 IoU=0.5 计算，COCO AP（AP@0.50:0.95）在十个 IoU 阈值上平均，两者不可直接比较。",
+      "kind": "specification",
+      "source_url": "https://cocodataset.org/#detection-eval",
+      "locator": "COCO detection evaluation: IoU thresholds 0.50:0.95",
+      "status": "verified",
+      "notes": "与 AGENTS.md 要求一致：不把 AP@0.5 与 COCO AP 当作同一指标。"
+    },
+    {
+      "id": "25-04",
+      "claim": "AP_s/m/l 按原始标注面积分组，COCO 以 32² 与 96² 为边界。",
+      "kind": "specification",
+      "source_url": "https://cocodataset.org/#detection-eval",
+      "locator": "COCO evaluation: area ranges small/medium/large",
+      "status": "verified",
+      "notes": "与第 20 章口径一致。"
+    },
+    {
+      "id": "25-05",
+      "claim": "F1 = 2PR/(P+R)；同一模型在不同阈值下位于 PR 曲线不同工作点。",
+      "kind": "derived",
+      "source_url": "chapters/25.html",
+      "locator": "section#threshold equation",
+      "status": "derived",
+      "notes": "F1 定义与 PR 曲线的直接推论。"
+    },
+    {
+      "id": "25-06",
+      "claim": "检测错误可分为定位、分类、背景误检与重复检测四类，各有不同的修复方向。",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/2008.08115",
+      "locator": "TIDE: object detection error types (Cls, Loc, Bkg, Dupe, Miss)",
+      "status": "verified",
+      "notes": "对照 TIDE 的错误分类口径。"
+    },
+    {
+      "id": "25-07",
+      "claim": "调优应遵循单一变量、固定预算与隔离测试集；否则无法归因或会隐式过拟合测试集。",
+      "kind": "engineering",
+      "source_url": "https://docs.ultralytics.com/modes/val/",
+      "locator": "Validation mode: metrics and plots",
+      "status": "derived",
+      "notes": "由受控实验与验证/测试划分的通用原则推导。"
+    },
+    {
+      "id": "25-08",
+      "claim": "交互实验中的 P=0.80 与 PR 曲线形状是教学示意，不代表任何真实模型。",
+      "kind": "illustrative",
+      "source_url": "chapters/25.html",
+      "locator": "section#lab lab-input-25",
+      "status": "illustrative",
+      "notes": "页面正文已就近标注为教学示意。"
+    }
+  ]
+}

@@ -31,6 +31,12 @@
       return "每卡 batch=" + b + "，设备 " + N + "，累积 " + k + "：有效批大小 = " + Beff +
         "；按线性缩放 η = " + eta0 + "×" + Beff + "/" + B0 + " = " + eta.toFixed(4) +
         "（教学示意，需在自有数据上重新验证）。";
+    },
+    "25": (v) => {
+      const R = Number(v) / 100, P = 0.8;
+      const F1 = 2 * P * R / (P + R);
+      return "P=0.80，R=" + R.toFixed(2) + "：F1 = 2×0.80×" + R.toFixed(2) + " / (0.80+" +
+        R.toFixed(2) + ") = " + F1.toFixed(3) + "（教学示意值）。";
     }
   };
   for (const [id, render] of Object.entries(configs)) {
