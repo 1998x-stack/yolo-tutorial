@@ -48,6 +48,12 @@
       const E = 1 * nFP + r * nFN;
       return "c_FN/c_FP=" + r + "：E = 1×" + nFP + " + " + r + "×" + nFN + " = " + E +
         "（教学示意值；代价比越高，越应偏向降低漏检）。";
+    },
+    "28": (v) => {
+      const n = Number(v), p = 0.9;
+      const se = Math.sqrt(p * (1 - p) / n);
+      return "n=" + n + "，p=0.90：SE = √(0.90×0.10/" + n + ") ≈ " + (se * 100).toFixed(2) +
+        " 个百分点（教学示意值；样本越小，指标波动越大）。";
     }
   };
   for (const [id, render] of Object.entries(configs)) {

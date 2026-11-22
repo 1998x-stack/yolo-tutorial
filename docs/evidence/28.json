@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "article": "chapters/28.html",
+  "batch": "21-28",
+  "claims": [
+    {
+      "id": "28-01",
+      "claim": "端到端项目在开工前需写清验收契约：标签空间、指标口径、部署预算与错误代价。",
+      "kind": "engineering",
+      "source_url": "chapters/28.html",
+      "locator": "section#contract",
+      "status": "derived",
+      "notes": "综合第 21–27 章的约束归纳的项目契约。"
+    },
+    {
+      "id": "28-02",
+      "claim": "数据阶段应交付镜像目录、固定划分清单、数据字典与校验报告，校验不过不进入训练。",
+      "kind": "engineering",
+      "source_url": "https://docs.ultralytics.com/datasets/",
+      "locator": "Dataset structure and label validation",
+      "status": "derived",
+      "notes": "与第 23 章的数据校验口径一致。"
+    },
+    {
+      "id": "28-03",
+      "claim": "基线需用固定配置与种子跑出，迭代遵循单一变量，测试划分在定稿前不参与决策。",
+      "kind": "engineering",
+      "source_url": "https://docs.pytorch.org/docs/stable/notes/randomness.html",
+      "locator": "PyTorch reproducibility notes",
+      "status": "derived",
+      "notes": "由可复现性与受控实验原则推导；与第 24、25 章一致。"
+    },
+    {
+      "id": "28-04",
+      "claim": "比例估计的标准误为 SE = √(p(1−p)/n)，验证集越小指标波动越大。",
+      "kind": "derived",
+      "source_url": "chapters/28.html",
+      "locator": "section#iterate equation",
+      "status": "derived",
+      "notes": "二项比例标准误的经典公式，页面用于提醒显著性边界。"
+    },
+    {
+      "id": "28-05",
+      "claim": "交付需要同时验收任务质量（固定划分指标）与运行指标（目标设备 p95 延迟等），两者口径不同。",
+      "kind": "engineering",
+      "source_url": "https://docs.ultralytics.com/modes/export/",
+      "locator": "Export mode: model vs runtime metrics",
+      "status": "derived",
+      "notes": "与第 21、22 章的评估协议一致。"
+    },
+    {
+      "id": "28-06",
+      "claim": "接口契约应包含张量形状、颜色空间、归一化、letterbox 参数、输出结构与坐标参考系。",
+      "kind": "engineering",
+      "source_url": "https://docs.ultralytics.com/modes/predict/",
+      "locator": "Predict mode: input/output conventions and preprocessing",
+      "status": "derived",
+      "notes": "由预测接口的输入输出约定推导。"
+    },
+    {
+      "id": "28-07",
+      "claim": "AP@0.5 与 COCO AP 必须分开报告，不可混用；验收报告须写明划分与口径。",
+      "kind": "specification",
+      "source_url": "https://cocodataset.org/#detection-eval",
+      "locator": "COCO detection evaluation: IoU thresholds",
+      "status": "verified",
+      "notes": "与第 25 章及 AGENTS.md 要求一致。"
+    },
+    {
+      "id": "28-08",
+      "claim": "交互实验中的 p=0.90 与样本量为教学示意，不代表任何真实数据集的规模。",
+      "kind": "illustrative",
+      "source_url": "chapters/28.html",
+      "locator": "section#iterate lab-input-28",
+      "status": "illustrative",
+      "notes": "页面正文已就近标注为教学示意值。"
+    }
+  ]
+}

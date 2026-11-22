@@ -1,438 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第28章 综合实训项目 — YOLO教程</title>
-    <link rel="stylesheet" href="../assets/theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="把一次端到端检测项目写成可验收的流程：任务契约、数据门槛、基线对照、错误驱动迭代与交付清单，每一步都有可复核的产物。">
+<title>第 28 章｜综合实训：一次可验收的检测项目 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
 </head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🤖 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 目标检测概述</a></li>
-            <li><a href="02.html">第2章 YOLO设计哲学</a></li>
-            <li><a href="03.html">第3章 YOLOv1详解</a></li>
-            <li><a href="04.html">第4章 YOLOv2/YOLO9000</a></li>
-            <li><a href="05.html">第5章 YOLOv3核心架构</a></li>
-            <li><a href="06.html">第6章 YOLOv3工程实战</a></li>
-            <li><a href="07.html">第7章 YOLOv4集大成</a></li>
-            <li><a href="08.html">第8章 锚框机制与聚类</a></li>
-            <li><a href="09.html">第9章 损失函数演进</a></li>
-            <li><a href="10.html">第10章 特征金字塔FPN</a></li>
-            <li><a href="11.html">第11章 数据增强策略</a></li>
-            <li><a href="12.html">第12章 骨干网络对比</a></li>
-            <li><a href="13.html">第13章 Neck与Head设计</a></li>
-            <li><a href="14.html">第14章 NMS与后处理</a></li>
-            <li><a href="15.html">第15章 YOLOv5入门</a></li>
-            <li><a href="16.html">第16章 YOLOv8新特性</a></li>
-            <li><a href="17.html">第17章 YOLOv9/v10前沿</a></li>
-            <li><a href="18.html">第18章 YOLO11/v12演进</a></li>
-            <li><a href="19.html">第19章 模型轻量化</a></li>
-            <li><a href="20.html">第20章 小目标检测优化</a></li>
-            <li><a href="21.html">第21章 部署与推理加速</a></li>
-            <li><a href="22.html">第22章 边缘设备部署</a></li>
-            <li><a href="23.html">第23章 数据标注与格式</a></li>
-            <li><a href="24.html">第24章 训练流水线搭建</a></li>
-            <li><a href="25.html">第25章 模型评估与调优</a></li>
-            <li><a href="26.html">第26章 YOLO+多模态</a></li>
-            <li><a href="27.html">第27章 行业实战案例</a></li>
-            <li><a href="28.html" class="active">第28章 综合实训项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
+<aside class="sidebar" aria-label="课程导航"><a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a><p class="sidebar-label">DEEP REVIEWS · 01—28</p><nav><ol class="chapter-list"><li><a href="01.html" data-chapter="01"><span>01</span>目标检测概述</a></li><li><a href="02.html" data-chapter="02"><span>02</span>YOLO设计哲学</a></li><li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1详解</a></li><li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2/YOLO9000</a></li><li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3核心架构</a></li><li><a href="06.html" data-chapter="06"><span>06</span>YOLOv3 工程实战</a></li><li><a href="07.html" data-chapter="07"><span>07</span>YOLOv4 系统设计</a></li><li><a href="08.html" data-chapter="08"><span>08</span>锚框机制与聚类</a></li><li><a href="09.html" data-chapter="09"><span>09</span>检测损失函数演进</a></li><li><a href="10.html" data-chapter="10"><span>10</span>特征金字塔 FPN</a></li><li><a href="11.html" data-chapter="11"><span>11</span>数据增强策略</a></li><li><a href="12.html" data-chapter="12"><span>12</span>骨干网络与计算效率</a></li><li><a href="13.html" data-chapter="13"><span>13</span>Neck 与 Head 设计</a></li><li><a href="14.html" data-chapter="14"><span>14</span>NMS 与后处理</a></li><li><a href="15.html" data-chapter="15"><span>15</span>YOLOv5 v7.0 实战</a></li><li><a href="16.html" data-chapter="16"><span>16</span>YOLOv8新特性</a></li><li><a href="17.html" data-chapter="17"><span>17</span>YOLOv9/v10前沿</a></li><li><a href="18.html" data-chapter="18"><span>18</span>YOLO11/v12演进</a></li><li><a href="19.html" data-chapter="19"><span>19</span>模型轻量化</a></li><li><a href="20.html" data-chapter="28" aria-current="page" ><span>20</span>小目标检测优化</a></li><li><a href="21.html" data-chapter="21"><span>21</span>部署与推理加速</a></li><li><a href="22.html" data-chapter="22"><span>22</span>边缘设备部署</a></li><li><a href="23.html" data-chapter="23"><span>23</span>数据标注与格式</a></li><li><a href="24.html" data-chapter="24"><span>24</span>训练流水线搭建</a></li><li><a href="25.html" data-chapter="25"><span>25</span>模型评估与调优</a></li><li><a href="26.html" data-chapter="26"><span>26</span>YOLO+多模态</a></li><li><a href="27.html" data-chapter="27"><span>27</span>行业实战案例</a></li><li><a href="28.html" data-chapter="28"><span>28</span>综合实训项目</a></li></ol></nav><a class="all-chapters" href="../index.html">查看全部 28 章 ↗</a></aside>
+<main id="main" class="main-content"><article class="article">
+<header class="article-header"><p class="eyebrow">CAPSTONE / ACCEPTANCE <span>／</span> CHAPTER 28</p><h1>综合实训：一次可验收的检测项目</h1><p class="article-dek">一个项目是否完成，不取决于它讲过什么，而取决于每一步留下了什么可复核的产物。本章给出一条带门槛的端到端流程与交付清单。</p></header>
+<section id="contract"><h2>1. 先用契约定义“完成”</h2>
+<p>一个可验收的项目在开工前就写清了验收条件，否则“做完了”只是主观判断。契约至少要回答：检几类、每类边界如何定义；用哪个划分与哪个指标验收；在什么设备与输入尺寸下达到什么延迟；两类错误各自的后采代价与可接受范围。这些参数一旦写入，后续所有改动都要与它对比。</p>
+<p>以“桌面物品检测”为例，一个可验收的契约形如：7 类常见物品；输入为手机拍摄的桌面图像；在指定的验证/测试划分上报告 COCO AP 与 AP@0.5（两者分开写）；在目标设备上报告 p95 端到端延迟；错误按漏检与误报分开统计。具体的数值阈值由项目方设定，不能由算法人员自行粉饰。</p>
+<figure class="diagram" tabindex="0" aria-label="端到端检测项目的阶段与产物"><svg viewBox="0 0 900 240" role="img" aria-labelledby="c28-title c28-desc" xmlns="http://www.w3.org/2000/svg"><title id="c28-title">端到端检测项目的阶段与产物</title><desc id="c28-desc">项目依次经过契约、数据、基线训练、错误驱动迭代与导出交付五个阶段，每个阶段都产出可复核的物件而非口头结论。</desc><rect x="2" y="3" width="896" height="231" rx="18" fill="#f6fafb"/><rect x="14" y="61" width="162" height="110" rx="14" fill="#dcebed" stroke="#86a8ae"/><text x="95" y="98" text-anchor="middle" font-size="16" font-weight="700" fill="#23404b">任务契约</text><text x="95" y="126" text-anchor="middle" font-size="13" fill="#405e67">类别 · 指标 · 预算</text><rect x="191" y="61" width="162" height="110" rx="14" fill="#e3f3ef" stroke="#86a8ae"/><text x="272" y="98" text-anchor="middle" font-size="16" font-weight="700" fill="#23404b">数据与划分</text><text x="272" y="126" text-anchor="middle" font-size="13" fill="#405e67">清单 + 校验</text><rect x="368" y="61" width="162" height="110" rx="14" fill="#fff0df" stroke="#86a8ae"/><text x="449" y="98" text-anchor="middle" font-size="16" font-weight="700" fill="#23404b">基线对照</text><text x="449" y="126" text-anchor="middle" font-size="13" fill="#405e67">固定配置 + 记录</text><rect x="545" y="61" width="162" height="110" rx="14" fill="#e9e5f5" stroke="#86a8ae"/><text x="626" y="98" text-anchor="middle" font-size="16" font-weight="700" fill="#23404b">迭代与验收</text><text x="626" y="126" text-anchor="middle" font-size="13" fill="#405e67">错误分解驱动</text><rect x="722" y="61" width="162" height="110" rx="14" fill="#deedf4" stroke="#86a8ae"/><text x="803" y="98" text-anchor="middle" font-size="16" font-weight="700" fill="#23404b">导出与交付</text><text x="803" y="126" text-anchor="middle" font-size="13" fill="#405e67">接口 + 双验收</text><path d="M179 116 H187" stroke="#087f8c" stroke-width="3" fill="none"/><path d="M187 116 l-6 -5 v10 z" fill="#087f8c"/><path d="M356 116 H364" stroke="#087f8c" stroke-width="3" fill="none"/><path d="M364 116 l-6 -5 v10 z" fill="#087f8c"/><path d="M533 116 H541" stroke="#087f8c" stroke-width="3" fill="none"/><path d="M541 116 l-6 -5 v10 z" fill="#087f8c"/><path d="M710 116 H718" stroke="#087f8c" stroke-width="3" fill="none"/><path d="M718 116 l-6 -5 v10 z" fill="#087f8c"/><text x="450" y="199" text-anchor="middle" font-size="13" fill="#50666e">每个阶段产出可复核的物件；任何阶段变更都回溯到契约重新验收</text><text x="450" y="220" text-anchor="middle" font-size="12" fill="#6b7f86">教学示意 · 不代表任何具体项目</text></svg><figcaption>端到端项目的五个阶段：契约、数据、基线对照、迭代验收、导出交付。图中每个阶段对应一个可复核的产物（配置、清单、对照记录、验收报告、导出模型），而非口头结论。</figcaption></figure>
+</section>
+<section id="data"><h2>2. 数据门槛：先过检查再审模型</h2>
+<p>数据阶段的产物不是“一堆图片”，而是一份可复核的数据集：图像与标签目录镜像、一份固定的划分清单、一份数据字典（类别名与 id 的对应）以及一份校验报告。采集覆盖度应先定义再执行：不同背景、不同光照、不同拍摄设备与距离、不同摆放与遮挡程度。覆盖度不够时，再好的模型也无法泛化。</p>
+<p>校验至少包含：标签与图像一一对应（无用标签、无漏图像）；每行字段合法；类别 id 在范围内；归一化坐标在约定范围内；换算回像素后面积大于零。划分必须先于任何增强或切片，且连续帧、同一场景的样本不得跨划分。完成后再统计类别频率、目标尺度与宽高比分布，判断验证集是否能代表部署分布。</p>
+<p>这些规则不是建议，而是门槛：校验报告不过，就不要进入训练阶段。否则你会在 loss 曲线里花大量时间排查一个本质上是数据的问题。</p>
+</section>
+<section id="baseline"><h2>3. 基线对照：一次只动一个旋钮</h2>
+<p>训练阶段的第一产物是<strong>基线</strong>：一个用最小模型与固定配置跑出的、可复现的结果。它的作用是给出参照点，而不是终点。基线阶段就要把配置（模型结构、输入尺寸、epoch、增强、优化器、种子、硬件与库版本）写入实验记录，以后每次对比都以此为基准。</p>
+<p>迭代时遵循单一变量：先看数据（补充哪类样本、修正哪类标注），再看输入（分辨率、增强强度），最后才是模型容量与超参。模型容量几乎总能提高拟合能力，却也增加延迟；在契约规定的延迟预算内选择最小可行模型，通常比追求最大模型更符合工程目标。</p>
+<pre style="overflow-x:auto"><code># 基线训练的最小入口（选项与默认值以所用版本文档为准）
+from ultralytics import YOLO
+model = YOLO("yolo11n.pt")
+model.train(data="desktop.yaml", epochs=100, imgsz=640, batch=16, seed=0)
 
-<h2>第28章 综合实训项目</h2>
-
-<p>大家好，我是你们的讲师。</p>
-
-<p>到这个章节为止，你已经学完了 YOLO 的所有理论知识。但真正的学习才刚刚开始——这一章，你将从头到尾完成一个完整的检测项目。准备好了吗？</p>
-
-<p>我们的实训项目是：<strong>构建一个"桌面物品检测系统"</strong>。它能实时检测桌面上的常见物品：手机、笔记本、水杯、眼镜、钥匙、笔、书籍。这个项目麻雀虽小五脏俱全，覆盖了从数据采集到部署的全部流程。而且桌面物品检测是一个很好的"样板项目"——你学会了这套流程后，可以轻松迁移到任何检测任务中。</p>
-
-<h2>Phase 1：问题定义</h2>
-
-<p>任何项目的第一步都是明确需求。我们的需求如下：</p>
-
-<table>
-    <thead>
-        <tr>
-            <th>需求项</th>
-            <th>定义</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>检测目标</td>
-            <td>7类桌面物品：手机、笔记本、水杯、眼镜、钥匙、笔、书籍</td>
-        </tr>
-        <tr>
-            <td>输入</td>
-            <td>桌面场景的 RGB 图像（手机拍摄，分辨率 1080×1920）</td>
-        </tr>
-        <tr>
-            <td>输出</td>
-            <td>检测框 + 类别标签 + 置信度分数</td>
-        </tr>
-        <tr>
-            <td>性能要求</td>
-            <td>推理延迟 &lt; 50ms（在 RTX 3060 上），mAP@0.5 &gt; 0.90</td>
-        </tr>
-        <tr>
-            <td>部署形式</td>
-            <td>Web Demo（用户上传图片 → 返回检测结果）</td>
-        </tr>
-    </tbody>
-</table>
-
-<h2>Phase 2：数据采集与标注</h2>
-
-<p>我们遵循第 23 章的方法论来采集和标注数据：</p>
-
-<ol>
-    <li><strong>数据采集</strong>：在不同的桌面场景下拍摄 500 张照片（不同桌面纹理、不同光照、不同摆放方式）</li>
-    <li><strong>数据标注</strong>：使用 LabelImg 进行标注，导出为 YOLO TXT 格式</li>
-    <li><strong>数据划分</strong>：350 张训练、100 张验证、50 张测试</li>
-    <li><strong>数据验证</strong>：运行验证脚本确保标注格式正确、坐标在 [0,1] 范围内</li>
+# 训练前先过数据校验（参见第 23 章的检查项），并把生效配置存档
+metrics = model.val(data="desktop.yaml", split="val")</code></pre>
+<p>注意：不要把<strong>验证集</strong>当成训练信号反复调参。每次改动都应在同一验证划分上比较，而测试划分在定稿前不参与任何决策。</p>
+</section>
+<section id="iterate"><h2>4. 迭代与不确定性：分清“真的提升了”与“噪声”</h2>
+<p>迭代的依据是错误分解，而不是随机换参。先把错误按定位、分类、背景误检与重复检测分类统计（口径参见第 25 章），再把错误与样本属性（尺度、密度、光照）交叉，找出被平均值掩盖的模式。每次只针对一个模式改动并做受控对比。</p>
+<p>对比时要估计<strong>指标本身的抽样不确定性</strong>。验证集很小的时候，一两个样本就能拉动指标。若把单类比例 <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline" aria-label="被估计的比例 p"><mi>p</mi></math> 看作二项比例，其估计的标准误为：</p>
+<div class="equation math-scroll" tabindex="0" role="region" aria-label="比例估计的标准误等于 p 乘一减 p 除以样本量的平方根"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="标准误 SE 等于 p(1-p)/n 的平方根"><mrow><mi>SE</mi><mo>=</mo><msqrt><mfrac><mrow><mi>p</mi><mo>(</mo><mn>1</mn><mo>-</mo><mi>p</mi><mo>)</mo></mrow><mi>n</mi></mfrac></msqrt></mrow></math></div>
+<p>其中 <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline" aria-label="样本量 n"><mi>n</mi></math> 为用于估计的样本数。它说明：验证集越小，指标波动越大，小幅“提升”可能只是噪声。下面是固定 <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline" aria-label="比例 p 等于 0.9"><mrow><mi>p</mi><mo>=</mo><mn>0.9</mn></mrow></math> 时的标准误：</p>
+<div class="callout info"><label for="lab-input-28"><strong>交互实验 · 验证集规模与标准误</strong></label><p>固定 p=0.9（教学示意），拖动样本量 n，按 SE = √(p(1−p)/n) 估算标准误；它提醒你指标差异是否值得当真。</p><input type="range" id="lab-input-28" min="50" max="2000" step="50" value="200"><p id="lab-output-28" role="status" aria-live="polite"></p></div>
+</section>
+<section id="deliver"><h2>5. 导出与交付：接口和双验收</h2>
+<p>交付阶段要同时验收两件事：<strong>任务质量</strong>（在固定划分上的指标）与<strong>运行指标</strong>（目标设备上的 p95 延迟、峰值内存/显存与持续帧率）。两者分属不同口径，不能用一个代替另一个。导出时应记录后端、精度、输入尺寸与动态维度设置，并用同一批输入比较原模型与导出模型的输出差异。</p>
+<p>除模型文件，交付物还包括接口契约：输入张量的形状、通道顺序、颜色空间、归一化方式、尺寸变换（letterbox 的填充与缩放因子）、输出结构（框、分数、类别、可选掩码/ID）以及坐标所处的参考系。接口不清会导致上游预处理与下游解码错位，表现为“模型明明很准，集成后却全错”。成熟做法是把预处理与后处理参数一并版本化，并写一个用固定输入验证全链路的冒烟测试。</p>
+</section>
+<section id="checklist"><h2>6. 交付清单：拿什么证明项目完成</h2>
+<p>下表把前文各阶段的门槛汇总为一份可勾选的交付清单。每一项都对应一个<strong>可被第三方复核的物件</strong>，而不是描述性的结论。</p>
+<div class="table-wrap"><table><tr><th>交付物</th><th>内容</th><th>验收方式</th></tr>
+<tr><td>数据集与划分</td><td>images/labels 镜像目录、固定划分清单、数据字典</td><td>校验脚本零错误；划分不跨场景泄漏</td></tr>
+<tr><td>生效配置</td><td>模型结构、超参、数据、种子、库与驱动版本</td><td>重新跑一遍能得到容差内一致的结果</td></tr>
+<tr><td>基线对照记录</td><td>每次改动的单一变量与同划分指标</td><td>改动可归因，不能叠加多项后归功于一项</td></tr>
+<tr><td>评估报告</td><td>指标口径 + 划分 + 分类别/分尺寸 + 错误分解</td><td>AP@0.5 与 COCO AP 分开报告，不混用</td></tr>
+<tr><td>导出模型</td><td>ONNX/engine 等目标格式与精度、维度设置</td><td>与原模型输出差异在容差内</td></tr>
+<tr><td>接口契约</td><td>预处理/后处理参数、张量约定、坐标参考系</td><td>固定输入的端到端冒烟测试通过</td></tr>
+<tr><td>运行指标</td><td>目标设备上的 p95 延迟、吞吐与峰值内存</td><td>热平衡后测得，口径写清</td></tr>
+</table></div>
+<p>这份清单同时也是自检手册：任何一项缺失，项目就还没真正完成。把它与第 27 章的任务契约结合，就得到一条从需求到验收的完整链条。</p>
+</section>
+<section id="references"><h2>一手来源与复核边界</h2>
+<ol class="references">
+<li><a href="https://cocodataset.org/#detection-eval">COCO 检测评估指标</a>：核对 AP 与 AP@0.50:0.95 的官方定义，用于本文的验收口径。</li>
+<li><a href="https://docs.ultralytics.com/modes/train/">Ultralytics 训练文档</a>：核对训练/验证入口与配置项。</li>
+<li><a href="https://docs.ultralytics.com/modes/export/">Ultralytics 导出文档</a>：核对导出格式与精度选项。</li>
+<li><a href="https://docs.pytorch.org/docs/stable/notes/randomness.html">PyTorch 可复现性说明</a>：核对种子与硬件差异导致的复现边界。</li>
+<li><a href="https://arxiv.org/abs/1405.0312">Microsoft COCO 原论文（ECCV 2014）</a>：核对评估协议的原始描述。</li>
 </ol>
-
-<pre><code># 数据验证脚本
-import os
-
-def validate_yolo_labels(label_dir, img_dir, num_classes):
-    """验证 YOLO 格式标注文件"""
-    issues = []
-    for fname in os.listdir(label_dir):
-        if not fname.endswith('.txt'):
-            continue
-        base = os.path.splitext(fname)[0]
-        # 检查对应图像是否存在
-        img_found = any(base in img for img in os.listdir(img_dir))
-        if not img_found:
-            issues.append(f"缺少图像: {base}")
-            continue
-        with open(os.path.join(label_dir, fname)) as f:
-            for i, line in enumerate(f, 1):
-                parts = line.strip().split()
-                if len(parts) != 5:
-                    issues.append(f"{fname}:{i} 字段数≠5")
-                    continue
-                cls = int(parts[0])
-                if cls &lt; 0 or cls &gt;= num_classes:
-                    issues.append(f"{fname}:{i} 类别ID越界: {cls}")
-                vals = list(map(float, parts[1:]))
-                if any(v &lt; 0 or v &gt; 1 for v in vals):
-                    issues.append(f"{fname}:{i} 坐标超范围")
-    return issues
-
-# 检查
-errors = validate_yolo_labels("labels/train", "images/train", 7)
-if errors:
-    for e in errors:
-        print(f"[错误] {e}")
-else:
-    print("所有标注验证通过！")</code></pre>
-
-<div class="highlight">
-    <strong>数据采集技巧：</strong>不要只在一个桌面上拍摄。变换 5-10 种不同的桌面（木纹、白色、黑色、大理石、布艺），在不同时间段（上午自然光、晚上灯光、阴天）拍摄。这些变化对于模型的泛化能力至关重要。如果要做一个真正工业级的模型，至少需要 3000-5000 张图像。
-</div>
-
-<h2>Phase 3：模型选型与训练</h2>
-
-<p>我们从 YOLOv8n（nano 版本）开始，先在验证集上跑出 baseline，再逐步优化。</p>
-
-<pre><code># Step 1: 创建数据集 YAML 文件
-# desktop.yaml
-"""
-path: ./desktop_dataset
-train: images/train
-val: images/val
-test: images/test
-
-nc: 7
-names: ['phone', 'laptop', 'cup', 'glasses', 'keys', 'pen', 'book']
-"""
-
-# Step 2: 训练 baseline 模型
-from ultralytics import YOLO
-
-model = YOLO("yolov8n.pt")
-results = model.train(
-    data="desktop.yaml",
-    epochs=100,
-    imgsz=640,
-    batch=16,
-    lr0=0.01,
-    optimizer="AdamW",
-    amp=True,
-    project="desktop_detector",
-    name="baseline",
-)
-
-# 评估 baseline
-metrics = model.val()
-print(f"Baseline mAP@0.5: {metrics.box.map50:.4f}")</code></pre>
-
-<h2>Phase 4：迭代优化</h2>
-
-<p>假设 baseline 的 mAP@0.5 是 0.85，离目标 0.90 还有差距。我们按照第 25 章的方法论逐步优化：</p>
-
-<pre><code># 优化1: 分析混淆矩阵，找出易混淆的类别对
-# 如果 "pen" 和 "keys" 经常混淆 →
-# 补充更多笔和钥匙的区分性样本
-
-# 优化2: 尝试更大的模型
-model = YOLO("yolov8s.pt")  # small 版本
-results = model.train(
-    data="desktop.yaml",
-    epochs=100,
-    imgsz=640,
-    batch=16,
-    lr0=0.005,
-    optimizer="AdamW",
-    project="desktop_detector",
-    name="yolov8s",
-)
-
-# 优化3: 贝叶斯调参
-import optuna
-
-def objective(trial):
-    lr0 = trial.suggest_float("lr0", 1e-4, 1e-2, log=True)
-    momentum = trial.suggest_float("momentum", 0.8, 0.95)
-    weight_decay = trial.suggest_float("weight_decay", 1e-5, 1e-3, log=True)
-
-    model = YOLO("yolov8n.pt")
-    results = model.train(
-        data="desktop.yaml", epochs=50,
-        lr0=lr0, momentum=momentum, weight_decay=weight_decay,
-        project="desktop_detector", name=f"tune_{trial.number}",
-        verbose=False,
-    )
-    return results.results_dict["metrics/mAP50-95(B)"]
-
-study = optuna.create_study(direction="maximize")
-study.optimize(objective, n_trials=15)
-print("最佳参数:", study.best_params)
-print("最佳 mAP:", study.best_value)</code></pre>
-
-<p>经过 3 轮迭代优化后，最终的模型指标：</p>
-
-<table>
-    <thead>
-        <tr>
-            <th>模型版本</th>
-            <th>mAP@0.5</th>
-            <th>mAP@0.5:0.95</th>
-            <th>推理延迟 (RTX 3060)</th>
-            <th>参数量</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>yolov8n (baseline)</td>
-            <td>0.852</td>
-            <td>0.613</td>
-            <td>8ms</td>
-            <td>3.2M</td>
-        </tr>
-        <tr>
-            <td>yolov8s</td>
-            <td>0.881</td>
-            <td>0.652</td>
-            <td>12ms</td>
-            <td>11.2M</td>
-        </tr>
-        <tr>
-            <td>yolov8m</td>
-            <td>0.901</td>
-            <td>0.674</td>
-            <td>18ms</td>
-            <td>25.9M</td>
-        </tr>
-        <tr>
-            <td>yolov8m + 调参</td>
-            <td>0.917</td>
-            <td>0.691</td>
-            <td>18ms</td>
-            <td>25.9M</td>
-        </tr>
-    </tbody>
-</table>
-
-<div class="tip">
-    <strong>模型选型的教训：</strong>这个项目中，yolov8n 的 mAP 只有 0.85，但切换到 yolov8m 就达到了 0.90。在桌面物品这种相对简单的场景中，模型容量对性能的影响立竿见影。但要注意，在很多生产场景中，推理延迟和模型大小的权衡更为重要——我们选择了 yolov8m 而不是 yolov8x，因为 18ms 的延迟完全满足 50ms 的需求，没必要用更大的模型。
-</div>
-
-<h2>Phase 5：模型导出与部署</h2>
-
-<p>训练完成的模型需要导出为推理格式。我们选择 ONNX + TensorRT 方案：</p>
-
-<pre><code># 导出为 ONNX
-model.export(format="onnx", imgsz=640)
-
-# 导出为 TensorRT（需要 TensorRT 库）
-model.export(format="engine", imgsz=640)  # TensorRT 引擎
-
-# 使用导出的模型做推理
-trt_model = YOLO("desktop_detector/weights/best.engine")
-results = trt_model("test_image.jpg")
-
-# 推理结果可视化
-from PIL import Image, ImageDraw
-
-img = Image.open("test_image.jpg")
-draw = ImageDraw.Draw(img)
-colors = ['red', 'blue', 'green', 'orange', 'purple', 'brown', 'pink']
-
-for box in results[0].boxes:
-    x1, y1, x2, y2 = map(int, box.xyxy[0])
-    cls = int(box.cls[0])
-    conf = float(box.conf[0])
-    label = f"{results[0].names[cls]}: {conf:.2f}"
-
-    draw.rectangle([x1, y1, x2, y2], outline=colors[cls], width=3)
-    draw.text((x1, y1-20), label, fill=colors[cls])
-
-img.save("result.jpg")</code></pre>
-
-<h2>Phase 6：Web Demo 搭建</h2>
-
-<p>使用 Gradio 快速搭建一个 Web 演示界面：</p>
-
-<pre><code># app.py — 完整的 Web Demo
-import gradio as gr
-from ultralytics import YOLO
-import numpy as np
-from PIL import Image
-
-# 加载训练好的模型
-model = YOLO("desktop_detector/weights/best.pt")
-
-def detect_objects(image: np.ndarray, conf_threshold: float):
-    """推理函数"""
-    results = model(image, conf=conf_threshold)
-    annotated = results[0].plot()  # 绘制检测框
-    return annotated
-
-# 创建 Gradio 界面
-with gr.Blocks(title="桌面物品检测系统", css="footer {visibility: hidden}") as demo:
-    gr.Markdown("# 桌面物品检测系统")
-    gr.Markdown("上传一张桌面照片，YOLO 模型将自动检测并标注手机、笔记本、水杯、眼镜、钥匙、笔、书籍")
-
-    with gr.Row():
-        with gr.Column():
-            image_input = gr.Image(type="numpy", label="上传图片")
-            conf_slider = gr.Slider(
-                minimum=0.1, maximum=0.9, value=0.3, step=0.05,
-                label="置信度阈值"
-            )
-            submit_btn = gr.Button("开始检测", variant="primary")
-
-        with gr.Column():
-            image_output = gr.Image(type="numpy", label="检测结果")
-
-    submit_btn.click(
-        fn=detect_objects,
-        inputs=[image_input, conf_slider],
-        outputs=image_output,
-    )
-
-    gr.Markdown("### 使用说明")
-    gr.Markdown("1. 点击"上传图片"选择桌面照片")
-    gr.Markdown("2. 调整置信度阈值控制检测灵敏度")
-    gr.Markdown("3. 点击"开始检测"查看结果")
-    gr.Markdown("---")
-    gr.Markdown("**模型**: YOLOv8m | **类别**: 7类桌面物品 | **框架**: Ultralytics + Gradio")
-
-if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)</code></pre>
-
-<p>运行 <code>python app.py</code>，然后在浏览器中打开 <code>http://localhost:7860</code>，即可看到我们的 Web Demo 界面。上传一张桌面照片，点击检测，模型就会返回标注后的图像。</p>
-
-<div class="warning">
-    <strong>部署踩坑经验：</strong>Gradio 默认的图片处理会丢失 EXIF 方向信息——手机拍摄的竖屏照片可能会被旋转。解决方法是在 Gradio 的 <code>Image</code> 组件中设置 <code>type="filepath"</code>，然后手动用 PIL 读取并校正方向。另外，生产环境部署时建议使用 <code>docker</code> 打包，避免环境依赖问题。
-</div>
-
-<h2>课程总结与学习路线</h2>
-
-<p>到这里，我们的 28 章 YOLO 教程就全部结束了。回顾一下我们走过的旅程：</p>
-
-<table>
-    <thead>
-        <tr>
-            <th>阶段</th>
-            <th>章节</th>
-            <th>核心收获</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>基础理论（第1-7章）</td>
-            <td>目标检测概述 → YOLOv4</td>
-            <td>理解 YOLO 的设计哲学和核心演进脉络</td>
-        </tr>
-        <tr>
-            <td>核心技术（第8-14章）</td>
-            <td>锚框机制 → NMS 后处理</td>
-            <td>掌握检测模型的各个核心模块</td>
-        </tr>
-        <tr>
-            <td>现代 YOLO（第15-18章）</td>
-            <td>YOLOv5 → YOLO11/v12</td>
-            <td>了解 YOLO 生态的多样化和最新发展</td>
-        </tr>
-        <tr>
-            <td>工程实践（第19-22章）</td>
-            <td>轻量化 → 边缘部署</td>
-            <td>掌握模型优化和部署的工程技能</td>
-        </tr>
-        <tr>
-            <td>数据与训练（第23-25章）</td>
-            <td>数据标注 → 训练 → 调优</td>
-            <td>学会完整的"数据到模型"工作流</td>
-        </tr>
-        <tr>
-            <td>前沿与实战（第26-28章）</td>
-            <td>多模态 → 行业案例 → 实训</td>
-            <td>拓展视野并完成端到端项目</td>
-        </tr>
-    </tbody>
-</table>
-
-<p>但学习是一个没有终点的旅程。在课程结束之际，我想给你几个学习路线建议：</p>
-
-<div class="highlight">
-    <strong>持续进阶路线图：</strong>
-    <ul>
-        <li><strong>初级进阶（1-3 个月）</strong>：用你自己收集的数据集完成 3 个不同的检测项目，把本章的实训流程跑熟练。开源项目如 Roboflow 上有超过 10 万个免费数据集可用来练习</li>
-        <li><strong>中级进阶（3-6 个月）</strong>：深入学习模型部署，掌握 TensorRT、ONNX Runtime、NCNN 等推理引擎的调优技巧。尝试在 Jetson Nano、树莓派等边缘设备上部署</li>
-        <li><strong>高级进阶（6-12 个月）</strong>：阅读 YOLOv8 / YOLOv9 的源码，理解每个模块的 PyTorch 实现。尝试修改检测头结构、自定义损失函数、实现自己的改进方案</li>
-        <li><strong>专家路线（12 个月+）</strong>：关注顶会论文（CVPR、ICCV、ECCV）中的检测方向最新进展，尝试复现并改进前沿算法。考虑投稿论文或参与开源项目贡献</li>
-    </ul>
-</div>
-
-<p>最后，送你三句话，也是我在这个领域最深的感触：</p>
-
-<p><strong>第一，做比看重要一万倍。</strong>你读完 28 章，可能觉得懂了 80%。但当你实际上手做第一个项目时，会发现还有 80% 的问题是你没遇到的。去动手，去犯错，去解决——这是唯一的学习路径。</p>
-
-<p><strong>第二，数据比模型更重要。</strong>这个观点我在课程中反复强调，但值得再说一次。花时间理解你的数据、清洗数据、做数据增强，比花时间调参的回报大得多。</p>
-
-<p><strong>第三，保持好奇心。</strong>计算机视觉领域的发展速度令人惊叹。三年前我们还在纠结 YOLOv4 的 Bag-of-Freebies，今天 YOLO-World 已经能靠一句话检测任何目标。保持对前沿技术的关注，但不要追逐每一个新模型——掌握底层原理，才能以不变应万变。</p>
-
-<p>感谢你跟随这个课程走到最后。希望这 28 章的内容能成为你计算机视觉之路的坚实基础。如果课程对你有帮助，欢迎分享给更多学习者。如果你有任何问题、建议或想深入探讨的话题，随时可以回到这个教程中重温相关章节。</p>
-
-<p>祝你在计算机视觉的道路上一路顺风！我们后会有期！</p>
-
-        <div class="footer-nav">
-            <a href="27.html">← 上一章</a>
-            <a href="../index.html">📖 返回目录</a>
-            <a href="javascript:void(0)">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
-</body>
-</html>
+<p>本文不给出任何具体项目的 mAP、延迟或参数量结果；图中阶段与交互计算均为<strong>教学示意</strong>。一个项目能不能算完成，以本文的交付清单与第 27 章的任务契约为准，并需附上在目标数据与目标设备上实测的记录。</p>
+</section>
+</article>
+<nav class="chapter-nav" aria-label="章节切换"><a href="27.html" class="previous"><small>上一章</small><strong>← 行业实战</strong></a><a href="../index.html" class="chapter-index">全部章节</a><a href="01.html" class="next"><small>回到开篇</small><strong>目标检测概述 →</strong></a></nav><footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 原创图解 · 证据可追溯</span></footer></main></div>
+<script src="../assets/site.js" defer></script><script src="../assets/lab-21-28.js" defer></script></body></html>
