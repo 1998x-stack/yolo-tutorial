@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "article": "chapters/24.html",
+  "batch": "21-28",
+  "claims": [
+    {
+      "id": "24-01",
+      "claim": "可复现要求固定库版本、代码 commit、数据划分、随机种子与预处理，并在数值容差内一致。",
+      "kind": "engineering",
+      "source_url": "https://docs.pytorch.org/docs/stable/notes/randomness.html",
+      "locator": "PyTorch reproducibility notes: seeds, nondeterministic algorithms",
+      "status": "verified",
+      "notes": "对照 PyTorch 可复现性说明；页面未承诺逐位一致。"
+    },
+    {
+      "id": "24-02",
+      "claim": "训练配置可分为数据集、模型与超参数三层，实验目录应保留生效后的完整配置。",
+      "kind": "documentation",
+      "source_url": "https://docs.ultralytics.com/modes/train/",
+      "locator": "Train mode: arguments and configuration files",
+      "status": "derived",
+      "notes": "由训练参数与配置文件的分工推导，页面强调记录而非默认值。"
+    },
+    {
+      "id": "24-03",
+      "claim": "AMP 用半精度计算并需损失缩放以避免梯度下溢，部分算子会回退到其他精度。",
+      "kind": "documentation",
+      "source_url": "https://docs.pytorch.org/docs/stable/amp.html",
+      "locator": "Automatic Mixed Precision: loss scaling and op casting",
+      "status": "verified",
+      "notes": "对照 PyTorch AMP 文档。"
+    },
+    {
+      "id": "24-04",
+      "claim": "有效批大小 B_eff = b · N · k，即每卡批大小 × 设备数 × 梯度累积步数。",
+      "kind": "derived",
+      "source_url": "https://docs.pytorch.org/docs/stable/distributed.html",
+      "locator": "DDP: gradient accumulation and effective batch semantics",
+      "status": "derived",
+      "notes": "由分布式训练与梯度累积定义推导。"
+    },
+    {
+      "id": "24-05",
+      "claim": "学习率线性缩放（η = η0 · B_eff / B_0）是经验规则而非定理，需配合预热并重新验证。",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/1706.02677",
+      "locator": "Accurate, Large Minibatch SGD: linear scaling rule and warmup",
+      "status": "verified",
+      "notes": "对照原始论文对线性缩放与预热的表述；页面标注为经验规则。"
+    },
+    {
+      "id": "24-06",
+      "claim": "恢复训练需同时恢复优化器、调度器与 EMA 状态；epochs 通常表示总轮数而非剩余轮数。",
+      "kind": "documentation",
+      "source_url": "https://docs.ultralytics.com/modes/train/",
+      "locator": "Train mode: resume training",
+      "status": "derived",
+      "notes": "由检查点内容与恢复参数语义推导。"
+    },
+    {
+      "id": "24-07",
+      "claim": "多卡训练中每个进程各自持有数据加载器，种子需按 rank 区分以避免重复采样。",
+      "kind": "engineering",
+      "source_url": "https://docs.pytorch.org/docs/stable/distributed.html",
+      "locator": "DDP: DistributedSampler and per-process seeding",
+      "status": "verified",
+      "notes": "对照分布式采样与种子设置说明。"
+    },
+    {
+      "id": "24-08",
+      "claim": "交互实验中的 4 卡、基准批 16 与基准学习率 0.01 是演示参数，非最优超参数。",
+      "kind": "illustrative",
+      "source_url": "chapters/24.html",
+      "locator": "section#scaling lab-input-24",
+      "status": "illustrative",
+      "notes": "页面正文已就近标注为教学示意，并说明需在自有数据验证。"
+    }
+  ]
+}

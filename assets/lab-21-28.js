@@ -24,6 +24,13 @@
         y.toFixed(1) + ", " + w.toFixed(1) + ", " + h.toFixed(1) + "]（像素）；VOC xmin=" +
         x.toFixed(1) + " ymin=" + y.toFixed(1) + " xmax=" + (x + w).toFixed(1) +
         " ymax=" + (y + h).toFixed(1) + "。";
+    },
+    "24": (v) => {
+      const b = Number(v), N = 4, k = 1, B0 = 16, eta0 = 0.01;
+      const Beff = b * N * k, eta = eta0 * Beff / B0;
+      return "每卡 batch=" + b + "，设备 " + N + "，累积 " + k + "：有效批大小 = " + Beff +
+        "；按线性缩放 η = " + eta0 + "×" + Beff + "/" + B0 + " = " + eta.toFixed(4) +
+        "（教学示意，需在自有数据上重新验证）。";
     }
   };
   for (const [id, render] of Object.entries(configs)) {
