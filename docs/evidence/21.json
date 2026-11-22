@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "article": "chapters/21.html",
+  "batch": "21-28",
+  "claims": [
+    {
+      "id": "21-01",
+      "claim": "单帧延迟、批吞吐与峰值内存是三个互不相同的部署指标；增大 batch 通常提高吞吐却抬高单帧延迟。",
+      "kind": "engineering",
+      "source_url": "https://docs.nvidia.com/deeplearning/tensorrt/latest/",
+      "locator": "TensorRT Developer Guide: performance / batching discussion",
+      "status": "derived",
+      "notes": "由后端文档对 batch 与延迟/吞吐关系的描述推导；页面标注为教学说明。"
+    },
+    {
+      "id": "21-02",
+      "claim": "目标检测端到端延迟还包含图像解码、letterbox 与 NMS 等模型图之外的步骤，后处理多运行在 CPU 上。",
+      "kind": "engineering",
+      "source_url": "https://docs.ultralytics.com/modes/export/",
+      "locator": "Export mode: model graph vs postprocessing notes",
+      "status": "derived",
+      "notes": "导出图默认不含 NMS 等后处理；由导出文档与工程常识推导。"
+    },
+    {
+      "id": "21-03",
+      "claim": "ONNX 以有向无环图与版本化 opset 表示模型，充当训练框架与推理后端之间的中间表示。",
+      "kind": "specification",
+      "source_url": "https://github.com/onnx/onnx/blob/main/docs/IR.md",
+      "locator": "ONNX IR specification: graph, opset import",
+      "status": "verified",
+      "notes": "对照 IR 规范中的图结构与算子集导入描述。"
+    },
+    {
+      "id": "21-04",
+      "claim": "Ultralytics 导出接口用 format 选择后端，用 half/int8/dynamic 控制精度与动态维度，选项随版本变化。",
+      "kind": "documentation",
+      "source_url": "https://docs.ultralytics.com/modes/export/",
+      "locator": "Export mode arguments table",
+      "status": "verified",
+      "notes": "文档语气限定为“随版本变化”，页面命令为示意。"
+    },
+    {
+      "id": "21-05",
+      "claim": "TensorRT 的图级优化包括层融合、常量折叠/内存复用、内核自动调优以及需要校准数据的 INT8 量化。",
+      "kind": "documentation",
+      "source_url": "https://docs.nvidia.com/deeplearning/tensorrt/latest/",
+      "locator": "TensorRT Developer Guide: layer fusion, INT8 calibration",
+      "status": "verified",
+      "notes": "只描述机制，不引用任何具体吞吐数字。"
+    },
+    {
+      "id": "21-06",
+      "claim": "仿射量化可写为 q = clamp(round(x/S) + Z, q_min, q_max)，S 为缩放因子、Z 为整数零点。",
+      "kind": "research",
+      "source_url": "https://arxiv.org/abs/2103.13630",
+      "locator": "A Survey of Quantization Methods for Efficient Neural Network Inference, affine quantization section",
+      "status": "verified",
+      "notes": "对照量化综述中的仿射量化定义。"
+    },
+    {
+      "id": "21-07",
+      "claim": "权重文件字节数只由参数量与位宽决定，不能推断运行时延迟；未量化的算子会插入反量化节点。",
+      "kind": "derived",
+      "source_url": "https://arxiv.org/abs/2103.13630",
+      "locator": "Survey of Quantization Methods: storage vs runtime cost",
+      "status": "derived",
+      "notes": "由量化的存储/运行时区分推导，与第 19 章口径一致。"
+    },
+    {
+      "id": "21-08",
+      "claim": "交互实验中的固定开销 5 ms 与每帧成本 2.5 ms 是假定的教学参数，不是任何硬件实测值。",
+      "kind": "illustrative",
+      "source_url": "chapters/21.html",
+      "locator": "section#benchmark lab-input-21",
+      "status": "illustrative",
+      "notes": "页面正文已就近标注为教学示意值。"
+    }
+  ]
+}

@@ -1,312 +1,74 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第21章 部署与推理加速 — YOLO教程</title>
-    <link rel="stylesheet" href="../assets/theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="把推理加速拆成导出、图优化、精度校准与基准测试四个环节；区分延迟、吞吐与文件大小，并给出可复核的测量口径。">
+<title>第 21 章｜部署与推理加速：导出、后端与基准口径 · YOLO 目标检测教程</title>
+<link rel="stylesheet" href="../assets/theme.css">
 </head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🤖 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 目标检测概述</a></li>
-            <li><a href="02.html">第2章 YOLO设计哲学</a></li>
-            <li><a href="03.html">第3章 YOLOv1详解</a></li>
-            <li><a href="04.html">第4章 YOLOv2/YOLO9000</a></li>
-            <li><a href="05.html">第5章 YOLOv3核心架构</a></li>
-            <li><a href="06.html">第6章 YOLOv3工程实战</a></li>
-            <li><a href="07.html">第7章 YOLOv4集大成</a></li>
-            <li><a href="08.html">第8章 锚框机制与聚类</a></li>
-            <li><a href="09.html">第9章 损失函数演进</a></li>
-            <li><a href="10.html">第10章 特征金字塔FPN</a></li>
-            <li><a href="11.html">第11章 数据增强策略</a></li>
-            <li><a href="12.html">第12章 骨干网络对比</a></li>
-            <li><a href="13.html">第13章 Neck与Head设计</a></li>
-            <li><a href="14.html">第14章 NMS与后处理</a></li>
-            <li><a href="15.html">第15章 YOLOv5入门</a></li>
-            <li><a href="16.html">第16章 YOLOv8新特性</a></li>
-            <li><a href="17.html">第17章 YOLOv9/v10前沿</a></li>
-            <li><a href="18.html">第18章 YOLO11/v12演进</a></li>
-            <li><a href="19.html">第19章 模型轻量化</a></li>
-            <li><a href="20.html">第20章 小目标检测优化</a></li>
-            <li><a href="21.html" class="active">第21章 部署与推理加速</a></li>
-            <li><a href="22.html">第22章 边缘设备部署</a></li>
-            <li><a href="23.html">第23章 数据标注与格式</a></li>
-            <li><a href="24.html">第24章 训练流水线搭建</a></li>
-            <li><a href="25.html">第25章 模型评估与调优</a></li>
-            <li><a href="26.html">第26章 YOLO+多模态</a></li>
-            <li><a href="27.html">第27章 行业实战案例</a></li>
-            <li><a href="28.html">第28章 综合实训项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第21章 部署与推理加速</h2>
-
-        <p>大家好，我是你们的讲师。训练一个模型只是万里长征的第一步，真正困难的是让它稳定高效地跑在生产环境里。部署工程师和训练工程师看到的往往是不同的YOLO——训练时我们关注mAP、loss曲线、学习率调度，部署时我们关注延迟、吞吐量、显存占用和框架兼容性。这一章我们来完整走一遍YOLO模型从PyTorch到生产环境的部署流水线，重点剖析ONNX、TensorRT、OpenVINO三大推理后端的优化原理和实践技巧。</p>
-
-        <h3>21.1 模型导出流水线</h3>
-
-        <p>YOLO模型部署的第一步是<strong>模型导出</strong>——将PyTorch训练好的.pt文件转换为目标推理后端支持的格式。典型的导出流水线是：PyTorch → ONNX → TensorRT / OpenVINO / CoreML。</p>
-
-        <p>为什么需要中间格式ONNX？直接原因：不同推理后端支持不同的输入格式，ONNX作为中间表示（Intermediate Representation），充当了模型格式的"通用翻译器"。更重要的原因是：ONNX将计算图做了静态化处理——PyTorch的动态图在推理时有很多运行时开销（梯度跟踪、autograd图构建），而ONNX的静态图将这些都消除了。</p>
-
-        <p>YOLOv8/YOLO11的导出命令非常简洁：</p>
-
-        <pre><code># YOLO模型导出命令集合
-
-# 导出ONNX
-yolo export model=yolo11n.pt format=onnx   # 默认FP32
-yolo export model=yolo11n.pt format=onnx half=True  # FP16 ONNX
-
-# 导出TensorRT
-yolo export model=yolo11n.pt format=engine  # 自动构建TensorRT引擎
-yolo export model=yolo11n.pt format=engine half=True  # FP16 TensorRT
-
-# 导出OpenVINO
-yolo export model=yolo11n.pt format=openvino  # OpenVINO IR格式
-
-# 导出CoreML（Apple）
-yolo export model=yolo11n.pt format=coreml  # .mlmodel格式
-
-# 导出NCNN（移动端）
-yolo export model=yolo11n.pt format=ncnn  # NCNN格式</code></pre>
-
-        <div class="tip">
-            <p><strong>最佳实践</strong>：导出ONNX时，强烈建议加入<code>--half</code>参数启用FP16。FP16 ONNX模型的体积减半，在TensorRT中构建引擎的速度也更快。但需要注意：如果你的目标硬件不支持FP16（如某些旧款Jetson或Intel CPU），则需要保留FP32。另外，ONNX opset version建议使用最新的稳定版本（当前为19或20），旧版本可能不支持某些算子。</p>
-        </div>
-
-        <h3>21.2 ONNX：跨平台标准</h3>
-
-        <p>ONNX（Open Neural Network Exchange）是微软和Meta联合推出的开放式神经网络交换格式。它的核心价值在于：一次导出，到处运行。</p>
-
-        <p>ONNX的工作机制是：将模型的计算图表示为有向无环图（DAG），每个节点代表一个算子（如Conv、Relu、Add），边代表张量数据流。ONNX的算子集（opsets）是版本化的标准规范，不同推理后端只要实现了对同一版本算子集的支持，就能运行同一个ONNX模型。</p>
-
-        <p>YOLO导出ONNX时的常见问题包括：</p>
-
-        <ul>
-            <li><strong>动态shape vs 静态shape</strong>：ONNX默认使用静态shape，但YOLO通常在推理时batch size不固定。解决方法是使用<code>--dynamic</code>参数启用动态batch和动态宽高。</li>
-            <li><strong>Resize算子兼容性</strong>：YOLO中的上采样操作（Upsample/Resize）在不同ONNX opset版本中的定义不同。导出时建议使用opset 15以上，确保coordinate_transformation_mode参数的正确设置。</li>
-            <li><strong>NMS集成</strong>：YOLOv8及以后的版本将NMS放在了模型外部（后处理脚本），但ONNX Runtime支持EfficientNMS插件。将NMS集成到ONNX图中的好处是可以利用后端优化加速NMS。</li>
-        </ul>
-
-        <pre><code># 更精细的ONNX导出控制
-import torch
-import onnx
-
-def export_onnx_with_details():
-    """YOLO模型的专业ONNX导出"""
-    model = torch.load('yolo11n.pt', map_location='cpu')['model'].float()
-    model.eval()
-
-    # 创建dummy input
-    dummy = torch.randn(1, 3, 640, 640)
-
-    # 导出ONNX
-    torch.onnx.export(
-        model,
-        dummy,
-        'yolo11n.onnx',
-        input_names=['images'],
-        output_names=['output0'],
-        dynamic_axes={
-            'images': {0: 'batch', 2: 'height', 3: 'width'},
-            'output0': {0: 'batch'},
-        },
-        opset_version=19,
-        do_constant_folding=True,
-    )
-
-    # 验证ONNX模型
-    onnx_model = onnx.load('yolo11n.onnx')
-    onnx.checker.check_model(onnx_model)
-    print(f"ONNX模型验证通过，算子集版本: {onnx_model.opset_import[0].version}")</code></pre>
-
-        <h3>21.3 TensorRT：NVIDIA GPU的终极加速</h3>
-
-        <p>TensorRT是NVIDIA的深度学习推理优化引擎，也是YOLO在NVIDIA GPU上达到最高推理性能的必经之路。它的优化手段包括：</p>
-
-        <ul>
-            <li><strong>层融合（Layer Fusion）</strong>：将连续的卷积+BN+ReLU等操作融合为单一kernel，减少kernel launch开销和内存读写。例如，Conv2d + BatchNorm2d + SiLU三个算子的组合可以融合为一个CBR kernel。</li>
-            <li><strong>精度校准（INT8/FP16）</strong>：将模型的权重和激活值从FP32降低到FP16或INT8。INT8量化需要额外的校准步骤——用一小批代表数据（calibration dataset）扫描激活值范围，确定每个张量的量化参数。</li>
-            <li><strong>内核自动调优（Kernel Auto-Tuning）</strong>：TensorRT为每个算子层尝试数十种kernel实现（不同tile size、不同shared memory使用策略），选择性能最优的那个。这个调优过程在构建engine时执行，一次构建可多次使用。</li>
-            <li><strong>内存优化</strong>：TensorRT使用内存池复用技术——在engine构建阶段分析所有张量的生命周期，计算最小内存需求，实现高效的内存复用，避免运行时的动态分配开销。</li>
-        </ul>
-
-        <div class="highlight">
-            <p><strong>性能数据</strong>：以YOLO11n为例，在T4 GPU上，原生PyTorch推理延迟约9.8ms，ONNX Runtime FP16约6.2ms，TensorRT FP16约3.1ms，TensorRT INT8约1.8ms。从PyTorch到TensorRT INT8，速度提升了5倍以上，而精度损失通常可以控制在0.5%以内。这就是为什么TensorRT是所有NVIDIA GPU推理系统的首选方案。</p>
-        </div>
-
-        <pre><code># TensorRT推理代码示例（使用Python API）
-import tensorrt as trt
-import pycuda.driver as cuda
-
-class YOLOTRTInfer:
-    """基于TensorRT的YOLO推理器"""
-    def __init__(self, engine_path):
-        self.logger = trt.Logger(trt.Logger.WARNING)
-        self.runtime = trt.Runtime(self.logger)
-
-        # 加载engine
-        with open(engine_path, 'rb') as f:
-            self.engine = self.runtime.deserialize_cuda_engine(f.read())
-
-        self.context = self.engine.create_execution_context()
-        self.stream = cuda.Stream()
-
-        # 分配device和host内存
-        self.inputs = []
-        self.outputs = []
-        for i in range(self.engine.num_io_tensors):
-            name = self.engine.get_tensor_name(i)
-            shape = self.engine.get_tensor_shape(name)
-            size = trt.volume(shape)
-            dtype = trt.nptype(self.engine.get_tensor_dtype(name))
-
-            host_mem = cuda.pagelocked_empty(size, dtype)
-            device_mem = cuda.mem_alloc(host_mem.nbytes)
-
-            self.inputs.append({'name': name, 'host': host_mem,
-                                'device': device_mem, 'shape': shape})
-            self.outputs.append({'name': name, 'host': host_mem,
-                                 'device': device_mem, 'shape': shape})
-
-    def infer(self, input_image):
-        """执行单帧推理"""
-        # 预处理后的图像数据拷贝到device
-        cuda.memcpy_htod_async(
-            self.inputs[0]['device'], self.inputs[0]['host'], self.stream)
-
-        # 设置tensor地址并执行推理
-        for tensor in self.inputs + self.outputs:
-            self.context.set_tensor_address(tensor['name'], int(tensor['device']))
-        self.context.execute_async_v3(stream_handle=self.stream.handle)
-
-        # 结果回传host
-        cuda.memcpy_dtoh_async(
-            self.outputs[0]['host'], self.outputs[0]['device'], self.stream)
-        self.stream.synchronize()
-
-        return self.outputs[0]['host']</code></pre>
-
-        <h3>21.4 OpenVINO：Intel平台的优化</h3>
-
-        <p>对于Intel CPU、集成显卡和Movidius VPU，OpenVINO（Open Visual Inference and Neural Network Optimization）是官方推荐的推理框架。它的优化原理与TensorRT类似，但针对Intel硬件做了专门优化。</p>
-
-        <p>OpenVINO的操作流程比TensorRT更简洁：从ONNX转换到OpenVINO IR格式（.xml + .bin），然后使用Inference Engine加载推理。YOLO11的OpenVINO导出已经做了充分的算子适配，基本可以一键完成。</p>
-
-        <pre><code># OpenVINO推理示例
-from openvino import Core, PartialShape
-
-# 加载OpenVINO模型
-core = Core()
-model = core.read_model('yolo11n.xml')
-
-# 设置动态shape
-model.reshape({0: PartialShape([1, 3, 640, 640])})
-
-# 编译模型（自动优化）
-compiled = core.compile_model(model, 'CPU')
-
-# 推理
-infer_request = compiled.create_infer_request()
-output = infer_request.infer({'images': input_tensor})
-
-# 后处理
-detections = output[compiled.output(0)]</code></pre>
-
-        <p>OpenVINO在Intel CPU上的性能通常比ONNX Runtime快1.5-2倍，比原生PyTorch快3-4倍。在Intel集成显卡（Iris Xe等）上，通过OpenVINO的GPU插件可以进一步利用GPU的并行计算能力。</p>
-
-        <div class="warning">
-            <p><strong>踩坑案例</strong>：我们在一个需要部署在Intel Xeon服务器上的项目中用了OpenVINO。YOLOv8s模型在PyTorch下推理延迟是45ms，远远不满足30FPS的需求。切换到OpenVINO FP16后降到了18ms——仍然不够。最后我们做了两件事：启用了OpenVINO的throughput模式（同时处理4个请求，累计吞吐量提升）和将模型从YOLOv8s换成YOLOv8n（精度降了2个点，但延迟降到了8ms）。最终在Xeon上实现了125FPS的吞吐量。教训：在CPU上部署YOLO，一定要用OpenVINO，而且通常需要用nano或small级别的模型才能真正达到实时性能。</p>
-        </div>
-
-        <h3>21.5 CoreML与Apple设备</h3>
-
-        <p>对于iOS和macOS平台，CoreML是Apple的原生推理框架。YOLO导出CoreML后，可以利用Apple Neural Engine（ANE）进行硬件加速，在iPhone上达到30FPS以上的实时检测。</p>
-
-        <p>CoreML导出的关键优化包括：使用ANE友好的算子结构（避免使用ANE不支持的算子导致fallback到CPU）、设置适当的compute precision（float16 vs float32）和启用CoreML的实时视频流处理模式。</p>
-
-        <h3>21.6 推理性能基准测试</h3>
-
-        <p>选择推理后端需要基于实际硬件和性能需求做对比测试。以下是一组典型数据（YOLO11s模型，640输入）：</p>
-
-        <table>
-            <tr>
-                <th>推理后端</th>
-                <th>硬件</th>
-                <th>精度</th>
-                <th>延迟(ms)</th>
-                <th>吞吐量(FPS)</th>
-                <th>显存/内存占用</th>
-            </tr>
-            <tr>
-                <td>PyTorch</td>
-                <td>RTX 4090</td>
-                <td>FP32</td>
-                <td>6.2</td>
-                <td>161</td>
-                <td>1.8 GB</td>
-            </tr>
-            <tr>
-                <td>ONNX Runtime</td>
-                <td>RTX 4090</td>
-                <td>FP16</td>
-                <td>3.8</td>
-                <td>263</td>
-                <td>0.9 GB</td>
-            </tr>
-            <tr>
-                <td>TensorRT</td>
-                <td>RTX 4090</td>
-                <td>FP16</td>
-                <td>1.9</td>
-                <td>526</td>
-                <td>0.6 GB</td>
-            </tr>
-            <tr>
-                <td>TensorRT</td>
-                <td>RTX 4090</td>
-                <td>INT8</td>
-                <td>1.2</td>
-                <td>833</td>
-                <td>0.4 GB</td>
-            </tr>
-            <tr>
-                <td>OpenVINO</td>
-                <td>i9-13900K</td>
-                <td>FP16</td>
-                <td>12.5</td>
-                <td>80</td>
-                <td>1.1 GB</td>
-            </tr>
-            <tr>
-                <td>CoreML</td>
-                <td>iPhone 15 Pro</td>
-                <td>FP16</td>
-                <td>18.0</td>
-                <td>55</td>
-                <td>0.3 GB</td>
-            </tr>
-        </table>
-
-        <p>从表中可以看出一个关键规律：<strong>推理后端的选择比GPU型号对延迟的影响更大</strong>。同样在RTX 4090上，PyTorch和TensorRT的延迟差距超过3倍。所以在考虑升级硬件之前，先确保你的软件栈已经做到了最优——这往往是性价比最高的优化路径。</p>
-
-        <div class="tip">
-            <p><strong>最佳实践总结</strong>：YOLO模型部署的"三字经"——先导出ONNX，再根据目标硬件选择后端（NVIDIA用TensorRT，Intel用OpenVINO，Apple用CoreML），最后根据延迟目标选择合适的精度（FP16起步，INT8追求极致性能）。batched inference（批量推理）在吞吐量优先的场景下非常有价值——TensorRT对batched推理的优化效率极高，batch=4的吞吐量通常是batch=1的3-3.5倍。</p>
-        </div>
-
-        <p>好了，第21章的内容就到这里。我们从模型导出到ONNX，再到TensorRT的层融合和精度校准，再到OpenVINO和CoreML的各自优化，每一个推理后端都有自己的"功守道"。但部署只是起点，真正的挑战是在资源受限的硬件上让YOLO跑出高性能——这就引出了边缘设备部署的话题。<strong>第22章「边缘设备部署」</strong>，我们来实战Jetson、Raspberry Pi和移动端的YOLO部署方案。下章见。</p>
-
-        <div class="footer-nav">
-            <a href="20.html">← 上一章</a>
-            <a href="../index.html">📖 返回目录</a>
-            <a href="22.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
-</body>
-</html>
+<body class="article-page">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <a href="../index.html" class="site-logo"><span class="brand-mark">Y</span><span>YOLO <b>FIELD GUIDE</b></span></a>
+  <div class="header-meta"><span>计算机视觉</span><span class="meta-dot"></span><span>目标检测专题</span></div>
+</header>
+<div class="page-shell">
+<aside class="sidebar" aria-label="课程导航"><a class="sidebar-brand" href="../index.html"><span class="brand-mark">Y</span><span><strong>YOLO Tutorial</strong><small>目标检测学习路径</small></span></a><p class="sidebar-label">DEEP REVIEWS · 01—28</p><nav><ol class="chapter-list"><li><a href="01.html" data-chapter="01"><span>01</span>目标检测概述</a></li><li><a href="02.html" data-chapter="02"><span>02</span>YOLO设计哲学</a></li><li><a href="03.html" data-chapter="03"><span>03</span>YOLOv1详解</a></li><li><a href="04.html" data-chapter="04"><span>04</span>YOLOv2/YOLO9000</a></li><li><a href="05.html" data-chapter="05"><span>05</span>YOLOv3核心架构</a></li><li><a href="06.html" data-chapter="06"><span>06</span>YOLOv3 工程实战</a></li><li><a href="07.html" data-chapter="07"><span>07</span>YOLOv4 系统设计</a></li><li><a href="08.html" data-chapter="08"><span>08</span>锚框机制与聚类</a></li><li><a href="09.html" data-chapter="09"><span>09</span>检测损失函数演进</a></li><li><a href="10.html" data-chapter="10"><span>10</span>特征金字塔 FPN</a></li><li><a href="11.html" data-chapter="11"><span>11</span>数据增强策略</a></li><li><a href="12.html" data-chapter="12"><span>12</span>骨干网络与计算效率</a></li><li><a href="13.html" data-chapter="13"><span>13</span>Neck 与 Head 设计</a></li><li><a href="14.html" data-chapter="14"><span>14</span>NMS 与后处理</a></li><li><a href="15.html" data-chapter="15"><span>15</span>YOLOv5 v7.0 实战</a></li><li><a href="16.html" data-chapter="16"><span>16</span>YOLOv8新特性</a></li><li><a href="17.html" data-chapter="17"><span>17</span>YOLOv9/v10前沿</a></li><li><a href="18.html" data-chapter="18"><span>18</span>YOLO11/v12演进</a></li><li><a href="19.html" data-chapter="19"><span>19</span>模型轻量化</a></li><li><a href="20.html" data-chapter="21" aria-current="page" ><span>20</span>小目标检测优化</a></li><li><a href="21.html" data-chapter="21"><span>21</span>部署与推理加速</a></li><li><a href="22.html" data-chapter="22"><span>22</span>边缘设备部署</a></li><li><a href="23.html" data-chapter="23"><span>23</span>数据标注与格式</a></li><li><a href="24.html" data-chapter="24"><span>24</span>训练流水线搭建</a></li><li><a href="25.html" data-chapter="25"><span>25</span>模型评估与调优</a></li><li><a href="26.html" data-chapter="26"><span>26</span>YOLO+多模态</a></li><li><a href="27.html" data-chapter="27"><span>27</span>行业实战案例</a></li><li><a href="28.html" data-chapter="28"><span>28</span>综合实训项目</a></li></ol></nav><a class="all-chapters" href="../index.html">查看全部 28 章 ↗</a></aside>
+<main id="main" class="main-content"><article class="article">
+<header class="article-header"><p class="eyebrow">DEPLOY / RUNTIMES <span>／</span> CHAPTER 21</p><h1>部署与推理加速：导出、后端与基准口径</h1><p class="article-dek">把推理加速拆成导出、图优化、精度校准与基准测试四个环节，说明每个环节能改变什么、不能改变什么。</p></header>
+<section id="metrics"><h2>1. “加速”要优化的到底是哪个指标？</h2>
+<p>部署语境里被笼统称为“延迟”的量至少包含三组互不相同的指标：单帧<strong>延迟</strong>（从输入到输出，通常报告 p50/p95 而不是平均值）、批量<strong>吞吐</strong>（单位时间处理的帧数）以及峰值<strong>内存/显存</strong>占用。三者经常互相冲突：把 batch 调大通常提高吞吐，却抬高单帧延迟；把输入分辨率调低降低计算量，却可能损失小目标精度。</p>
+<p>更关键的是，模型前向只是整条流水线的一段。目标检测的端到端时间通常还要计入图像解码、letterbox 缩放、归一化、张量搬运、坐标解码、置信度筛选与 NMS。这些后处理大多运行在 CPU 上，只测量 GPU 前向内核会把真正的瓶颈藏起来。</p>
+<p>因此一个可复核的优化目标必须写成带约束的形式，例如“在同一设备、同一输入分辨率下，使 640×640 输入的 p95 端到端延迟低于某阈值，同时验证集 COCO AP 相对 FP32 基线的下降不超过事先约定的量”。缺少设备、精度口径和基线参照的“快 N 倍”无法比较。</p>
+</section>
+<section id="export"><h2>2. 导出流水线：为什么中间要经过 ONNX？</h2>
+<p>训练框架（如 PyTorch）保存的权重面向<strong>动态图</strong>：前向计算在运行 Python 时才被逐条记录，便于调试却带来运行时开销。生产推理更希望得到一个<strong>静态计算图</strong>——算子、数据流与张量形状在运行前就确定，从而允许常量折叠、算子融合与内存规划。</p>
+<p>ONNX（Open Neural Network Exchange）正是这个静态图的<strong>中间表示</strong>：它把模型表示为有向无环图，节点是算子（Conv、Add、Resize…），边是张量。它用<strong>版本化的算子集（opset）</strong>规范算子语义，不同后端只要支持同一 opset，就能读取同一份模型，因此它常被当作格式转换的“中间站”。</p>
+<p>YOLO 官方工具链提供统一的导出入口，用 <code>format</code> 选择目标后端，用 <code>half</code>/<code>int8</code> 选择精度、<code>dynamic</code> 控制是否保留动态维度（命令与默认值会随版本变化）：</p>
+<pre style="overflow-x:auto"><code># 导出为不同后端的目标格式（Ultralytics 导出接口，具体选项随版本变化）
+yolo export model=yolo11n.pt format=onnx            # FP32 ONNX
+yolo export model=yolo11n.pt format=onnx half=True   # FP16 ONNX
+yolo export model=yolo11n.pt format=engine           # TensorRT 引擎
+yolo export model=yolo11n.pt format=openvino         # OpenVINO IR
+yolo export model=yolo11n.pt format=coreml           # Apple CoreML</code></pre>
+<p>导出不是无损复制。转成静态图时必须把控制流、动态形状和自定义算子表达为目标格式支持的算子；不被支持的算子会被拆解、替换，甚至回退到 CPU。因此导出后应当用同一批输入比较原模型与导出模型的输出差异，而不是只看文件能否加载。</p>
+</section>
+<section id="graph"><h2>3. 图优化：融合、折叠与内存复用</h2>
+<p>拿到静态图后，推理后端会执行几类与硬件无关或半无关的图级优化。它们改变的是<strong>图结构</strong>，而不是数值本身，通常在保持数值等价的前提下减少开销。</p>
+<ul>
+<li><strong>常量折叠</strong>：把只依赖常量输入的子树在构建期算完，直接写入结果。</li>
+<li><strong>算子融合</strong>：把连续的 Conv → BatchNorm → 激活合并为一个内核，减少内核启动次数与中间张量的显存读写；BN 在推理期可以折叠为卷积的缩放与偏置。</li>
+<li><strong>内存复用</strong>：分析各张量的生命周期，让不重叠的张量共用同一块显存，压低峰值占用。</li>
+<li><strong>内核自动调优</strong>：对同一算子尝试不同的 tile、分块与并行策略，在目标设备上挑选较快实现。</li>
+</ul>
+<figure class="diagram" tabindex="0" aria-label="推理加速流水线：从训练权重到后端执行"><svg viewBox="0 0 900 240" role="img" aria-labelledby="c21-title c21-desc" xmlns="http://www.w3.org/2000/svg"><title id="c21-title">从训练权重到后端执行的推理流水线</title><desc id="c21-desc">导出、图优化、精度校准和后端执行依次作用于模型；预处理与后处理位于模型图之外，通常不计入前向耗时但计入端到端延迟。</desc><rect x="2" y="3" width="896" height="231" rx="18" fill="#f6fafb"/><rect x="14" y="61" width="162" height="110" rx="14" fill="#dcebed" stroke="#86a8ae"/><text x="95" y="98" text-anchor="middle" font-size="16" font-weight="700" fill="#23404b">训练权重</text><text x="95" y="126" text-anchor="middle" font-size="13" fill="#405e67">动态图 / .pt</text><rect x="191" y="61" width="162" height="110" rx="14" fill="#e3f3ef" stroke="#86a8ae"/><text x="272" y="98" text-anchor="middle" font-size="16" font-weight="700" fill="#23404b">导出静态图</text><text x="272" y="126" text-anchor="middle" font-size="13" fill="#405e67">ONNX · opset</text><rect x="368" y="61" width="162" height="110" rx="14" fill="#fff0df" stroke="#86a8ae"/><text x="449" y="98" text-anchor="middle" font-size="16" font-weight="700" fill="#23404b">图优化</text><text x="449" y="126" text-anchor="middle" font-size="13" fill="#405e67">融合 / 折叠 / 复用</text><rect x="545" y="61" width="162" height="110" rx="14" fill="#e9e5f5" stroke="#86a8ae"/><text x="626" y="98" text-anchor="middle" font-size="16" font-weight="700" fill="#23404b">精度校准</text><text x="626" y="126" text-anchor="middle" font-size="13" fill="#405e67">FP16 / INT8</text><rect x="722" y="61" width="162" height="110" rx="14" fill="#deedf4" stroke="#86a8ae"/><text x="803" y="98" text-anchor="middle" font-size="16" font-weight="700" fill="#23404b">后端执行</text><text x="803" y="126" text-anchor="middle" font-size="13" fill="#405e67">引擎 / IR / runtime</text><path d="M179 116 H187" stroke="#087f8c" stroke-width="3" fill="none"/><path d="M187 116 l-6 -5 v10 z" fill="#087f8c"/><path d="M356 116 H364" stroke="#087f8c" stroke-width="3" fill="none"/><path d="M364 116 l-6 -5 v10 z" fill="#087f8c"/><path d="M533 116 H541" stroke="#087f8c" stroke-width="3" fill="none"/><path d="M541 116 l-6 -5 v10 z" fill="#087f8c"/><path d="M710 116 H718" stroke="#087f8c" stroke-width="3" fill="none"/><path d="M718 116 l-6 -5 v10 z" fill="#087f8c"/><text x="450" y="199" text-anchor="middle" font-size="13" fill="#50666e">预处理（letterbox / 归一化）与后处理（解码 / NMS）在上述模型图之外</text><text x="450" y="220" text-anchor="middle" font-size="12" fill="#6b7f86">教学示意 · 实际可用优化取决于后端与版本</text></svg><figcaption>推理流水线：导出把动态图固化为静态图，图优化与精度校准发生在构建/转换阶段，后端执行才是运行时前向；预处理与后处理位于模型图之外，却计入端到端延迟。</figcaption></figure>
+<p>这些优化“等价”需要验证：先用一组固定随机输入比较优化前后的最大绝对误差，再在目标设备上测量真实延迟。同一算子在某个后端可能落到不同实现，数值结果与速度都会随之改变，两者都要单独记录。</p>
+</section>
+<section id="precision"><h2>4. 精度：FP16 降位宽，INT8 先标定</h2>
+<p><strong>FP16</strong> 把权重与激活从 16/32 位浮点降为半精度，通常只需在导出时声明，不需要额外数据。它的数值范围足够宽，但对极小/极大的激活仍可能溢出或下溢。<strong>INT8</strong> 则把连续值映射到 8 位整数，必须为每个（或每组）张量确定缩放因子与零点，这个过程称为<strong>校准</strong>。</p>
+<p>常见的仿射量化把浮点值 <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline" aria-label="浮点值 x"><mi>x</mi></math> 映射为整数：</p>
+<div class="equation math-scroll" tabindex="0" role="region" aria-label="量化公式：量化整数等于输入除以缩放因子后四舍五入加零点，再夹紧到整数范围"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="量化整数 q 等于 x 除以缩放因子 S 四舍五入后加零点 Z，并夹紧到 q_min 与 q_max 之间"><mrow><mi>q</mi><mo>=</mo><mi>clamp</mi><mo>(</mo><mrow><mi>round</mi><mo>(</mo><mfrac><mi>x</mi><mi>S</mi></mfrac><mo>)</mo></mrow><mo>+</mo><mi>Z</mi><mo>,</mo><msub><mi>q</mi><mi>min</mi></msub><mo>,</mo><msub><mi>q</mi><mi>max</mi></msub><mo>)</mo></mrow></math></div>
+<p>其中 <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline" aria-label="缩放因子 S"><mi>S</mi></math> 通常由校准数据的激活范围估计，<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline" aria-label="零点 Z"><mi>Z</mi></math> 是整数零点。这里存在两层彼此独立的误差：<strong>参数存储</strong>只决定文件字节数，而<strong>运行时是否是整数运算</strong>取决于后端是否为该算子匹配了量化内核。若某层未被量化，它会插入反量化/量化节点，既增加访存又不能带来相应加速，因此不能由“权重文件缩小到四分之一”推断延迟也变成四分之一。</p>
+<p>后训练量化（PTQ）用一批有代表性的图片估计激活范围；量化感知训练（QAT）则在训练中模拟量化误差。校准集必须贴近部署分布，否则激活范围估计会偏离实际推流。量化后还应分别检查分尺寸 AP、类别混淆与长尾样本，而不仅是整体 AP。</p>
+</section>
+<section id="benchmark"><h2>5. 基准测试协议：让数字可以被别人重算</h2>
+<p>一个可信的延迟/吞吐报告需要交代：设备型号与驱动、输入分辨率与 batch、浮点精度与推理后端版本、是否包含预处理与后处理、预热次数与重复次数、以及报告的是均值还是 p95。缺少任何一项，“快了几倍”都不可复现。</p>
+<p>延迟与吞吐不是倒数关系。设单次调用含固定开销 <var>a</var> 与每帧成本 <var>c</var>，batch 为 <var>b</var> 时，单次延迟约 <var>a</var>+<var>b</var>·<var>c</var>，吞吐则为 <var>b</var> 除以该延迟。增大 batch 会提高吞吐，但单帧延迟也随之上升：</p>
+<div class="callout info"><label for="lab-input-21"><strong>交互实验 · batch 与吞吐</strong></label><p>教学参数：固定开销 5 ms、每帧成本 2.5 ms，仅前向、不含预处理与后处理。拖动 batch，观察吞吐与单帧延迟如何同时变化（单位为教学示意值）。</p><input type="range" id="lab-input-21" min="1" max="16" step="1" value="1"><p id="lab-output-21" role="status" aria-live="polite"></p></div>
+<p>报告时还应区分构建时间与运行时间：图优化与内核调优发生在引擎构建阶段，一次构建可多次加载，把它计入首帧延迟会误导在线服务的容量规划。同一模型的多次导出（不同 opset、不同动态形状）会得到不同的引擎，因此“某模型在某 GPU 上的延迟”必须绑定到具体的引擎与配置。</p>
+</section>
+<section id="references"><h2>6. 一手来源与复核边界</h2>
+<ol class="references">
+<li><a href="https://docs.ultralytics.com/modes/export/">Ultralytics 模型导出文档</a>：核对 <code>format</code>、<code>half</code>、<code>int8</code>、<code>dynamic</code> 等导出选项及其随版本的变化。</li>
+<li><a href="https://github.com/onnx/onnx/blob/main/docs/IR.md">ONNX IR 规范</a>：核对计算图、算子集（opset）版本与张量形状的静态表示。</li>
+<li><a href="https://onnxruntime.ai/docs/execution-providers/">ONNX Runtime Execution Providers</a>：核对同一 ONNX 模型在不同硬件后端上的落地方式。</li>
+<li><a href="https://docs.nvidia.com/deeplearning/tensorrt/latest/">NVIDIA TensorRT Developer Guide</a>：核对层融合、INT8 校准与引擎构建流程。</li>
+<li><a href="https://docs.openvino.ai/">OpenVINO 文档</a>：核对 IR 转换、shape 重设与设备插件。</li>
+<li><a href="https://arxiv.org/abs/2103.13630">量化方法综述（Gholami et al., 2021）</a>：核对仿射量化、校准与量化感知训练的术语边界。</li>
+</ol>
+<p>本文的交互计算与代码片段是<strong>确定性教学示例</strong>：其中的固定开销、每帧成本与吞吐都是说明概念的假定值，没有运行真实引擎构建、TensorRT INT8 校准或任何硬件延迟基准；正文不引用任何未经核实的加速倍率。</p>
+</section>
+</article>
+<nav class="chapter-nav" aria-label="章节切换"><a href="20.html" class="previous"><small>上一章</small><strong>← 小目标检测优化</strong></a><a href="../index.html" class="chapter-index">全部章节</a><a href="22.html" class="next"><small>下一章</small><strong>边缘设备部署 →</strong></a></nav><footer class="article-footer"><span>YOLO 目标检测教程</span><span>独立阅读 · 原创图解 · 证据可追溯</span></footer></main></div>
+<script src="../assets/site.js" defer></script><script src="../assets/lab-21-28.js" defer></script></body></html>
