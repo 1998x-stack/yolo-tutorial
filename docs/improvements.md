@@ -28,4 +28,4 @@
 - Geometry: add deterministic anchor clusters, IoU/GIoU/DIoU/CIoU, cfg audit, FPN shape checks; add optional OpenCV/Darknet inference with explicit class-wise NMS and coordinate conventions.
 - Visual narrative: 8 original explanatory SVGs (also exported under `assets/figures/`), native MathML, Chapter 08 anchor selector with keyboard-accessible controls, mobile figure scrolling.
 - Navigation: first ten articles share a stage sidebar, Chapter 05 now advances to 06; homepage metadata and README reflect actual reviewed coverage.
-- Validation: CI pending for this batch; do not mark checks passed until run log verifies.
+- Validation: GitHub Actions Quality run #1 for PR #3 (run ID 44986969762) passed: all 17 Python static/lab tests, Chromium for the homepage and chapters 01–10 at 1440/768/390/360 px, Chapter 08 shape controls, MathML/SVG rendering, responsive figure scrolling and browser errors (none). Browser screenshots and JSON report were uploaded as an Actions artifact.
