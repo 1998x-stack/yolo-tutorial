@@ -33,7 +33,7 @@
 </section>
 <section id="math"><h2>4. 用可调数字理解注意力矩阵开销</h2>
 <p>以下不模拟 YOLOv12 的真实算子，而只比较<strong>全局注意力关系数 N²</strong>和“把 token 划分为大小为 W 的不重叠区域”时约 <strong>N·W</strong> 的关系数。忽略 Q/K/V 投影、通道维、卷积、张量搬运与窗口边界，因此结果仅用于解释尺度，不能当作实际 FLOPs 或速度提升。</p>
-<div class="equation" tabindex="0" role="region" aria-label="全局注意力关系数为 N 的平方，区域注意力粗略关系数为 N 乘 W"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="全局关系数 N 平方，对比区域关系数约为 N 乘 W"><mrow><msub><mi>C</mi><mi>global</mi></msub><mo>∝</mo><msup><mi>N</mi><mn>2</mn></msup><mo>,</mo><mspace width="1em"/><msub><mi>C</mi><mi>region</mi></msub><mo>∝</mo><mi>N</mi><mo>·</mo><mi>W</mi></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="全局注意力关系数为 N 的平方，区域注意力粗略关系数为 N 乘 W"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="全局关系数 N 平方，对比区域关系数约为 N 乘 W"><mrow><msub><mi>C</mi><mi>global</mi></msub><mo>∝</mo><msup><mi>N</mi><mn>2</mn></msup><mo>,</mo><mspace width="1em"/><msub><mi>C</mi><mi>region</mi></msub><mo>∝</mo><mi>N</mi><mo>·</mo><mi>W</mi></mrow></math></div>
 <div class="callout info"><label for="lab-input-18"><strong>交互实验 · 区域大小的关系数</strong></label><p>固定 N=256 个 token，拖动每个区域的 token 数 W（不代表真实模型计算量）。</p><input type="range" id="lab-input-18" min="16" max="256" step="16" value="64"><p id="lab-output-18" role="status" aria-live="polite"></p></div></section>
 <section id="compare"><h2>5. 从论文 AP 到工程效能还差哪些量？</h2>
 <p>对照同一 COCO val2017、640 之类的输入尺寸、验证脚本、模型规模、batch=1 与否、是否包含 NMS，区分作者给出的 benchmark 与自己的复现。进一步记录设备型号、驱动、推理后端、FP16/INT8、warm-up 次数、p50/p95 延迟、峰值显存与吞吐；跨硬件 FPS 排行没有解释力。</p>

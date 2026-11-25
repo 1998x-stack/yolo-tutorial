@@ -21,7 +21,7 @@
 <section id="scope"><h2>1. 问题：移除预设框，是否就不需要格点？</h2>
 <p>目标检测既需要判断<strong>有什么物体</strong>，也需要定位其<strong>边界在哪里</strong>。经典 YOLOv5 v7.0 为每个尺度的每个格点预设多组宽高不同的锚框；YOLOv8 的检测头不再依赖这些预先聚类的宽高，而是用特征图位置作为预测参考点，回归到矩形四条边的距离。这里的 <em>anchor-free</em> 指不使用预设宽高模板，<strong>不是</strong>没有格点中心或参照坐标。</p>
 <p>以 640×640 输入、stride = 8/16/32 的三尺度示例为例，格点总数为 80²+40²+20²=8400。一个格点可以输出多类别分数以及 4 组距离概率。8400 是原始位置数量，不是最终的检测框数量，也不保证每个位置对应真实物体。</p>
-<div class="equation" tabindex="0" role="region" aria-label="三尺度特征图总位置数为八十平方加四十平方加二十平方，等于八千四百"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="N 等于八十的平方加四十的平方加二十的平方，等于八千四百"><mrow><mi>N</mi><mo>=</mo><msup><mn>80</mn><mn>2</mn></msup><mo>+</mo><msup><mn>40</mn><mn>2</mn></msup><mo>+</mo><msup><mn>20</mn><mn>2</mn></msup><mo>=</mo><mn>8400</mn></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="三尺度特征图总位置数为八十平方加四十平方加二十平方，等于八千四百"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="N 等于八十的平方加四十的平方加二十的平方，等于八千四百"><mrow><mi>N</mi><mo>=</mo><msup><mn>80</mn><mn>2</mn></msup><mo>+</mo><msup><mn>40</mn><mn>2</mn></msup><mo>+</mo><msup><mn>20</mn><mn>2</mn></msup><mo>=</mo><mn>8400</mn></mrow></math></div>
 </section>
 <section id="diagram"><h2>2. C2f 与解耦头：特征如何走向预测</h2>
 <p>在 C2f 中，首个卷积把输入特征投影为两部分，一部分提供旁路，一部分依次经过若干 Bottleneck；各级中间结果再沿通道维拼接，由最后一个卷积融合。<strong>重复次数 n</strong> 决定中间变换深度，因此不能把“C2f 一定更快、一定提高 2 AP”当成无条件真理：参数量、算子实现与设备都会影响延迟。</p>
