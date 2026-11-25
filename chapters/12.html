@@ -37,7 +37,7 @@
 <section id="darknet"><h2>2. Darknet-19 与 Darknet-53：从计算简洁到残差可训练性</h2>
 <p><a href="https://arxiv.org/abs/1612.08242">YOLO9000/YOLOv2</a> 采用 Darknet-19：在分类主干中使用 19 个卷积层与 5 个最大池化层，强调计算效率，并通过 BatchNorm 与较小卷积核组合控制计算。其检测版本会修改尾部结构，不能把“19 层分类网络”机械等同于所有 YOLOv2 检测层数。</p>
 <p><a href="https://arxiv.org/abs/1804.02767">YOLOv3</a> 的 Darknet-53 引入残差连接和更深的卷积栈：在保持计算可行的条件下加强特征表达，并给三尺度检测提供多层特征。残差块输出通常写作 <code>y=x+F(x)</code>，当主分支的梯度不充分时，恒等路径仍提供信息与梯度通路。不过如果通道或空间尺寸改变，加法就需要投影/下采样处理，不能随意相加。</p>
-<div class="equation" tabindex="0" role="region" aria-label="残差块映射公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="残差块输出等于输入恒等映射加可学习残差映射"><mrow><mi>y</mi><mo>=</mo><mi>x</mi><mo>+</mo><mi>F</mi><mo>(</mo><mi>x</mi><mo>;</mo><mi>θ</mi><mo>)</mo></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="残差块映射公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="残差块输出等于输入恒等映射加可学习残差映射"><mrow><mi>y</mi><mo>=</mo><mi>x</mi><mo>+</mo><mi>F</mi><mo>(</mo><mi>x</mi><mo>;</mo><mi>θ</mi><mo>)</mo></mrow></math></div>
 <p>从 Darknet-19 到 Darknet-53，增加了残差块和不同深度的特征提取；但更深会带来不同的权重大小与运行时开销。比较它们的实际训练表现需要固定检测头、输入分辨率、训练日程和数据集，而不能仅把原论文中不同实验配置的 FPS 或 ImageNet top-1 并排当作公平对照。</p></section>
 <section id="csp"><h2>3. CSPNet：为什么把特征流拆成两支</h2>
 <p><a href="https://arxiv.org/abs/1911.11929">CSPNet</a>（Cross Stage Partial）把一个阶段的输入特征拆成两支，一支经过较多的残差/卷积变换，另一支沿较短路径传播，最后再组合。这样可以调节重复梯度路径与计算开销；它的主要特点是<strong>跨阶段拆分与再融合</strong>，并非单纯把一半通道剪掉就结束。</p>
@@ -59,7 +59,7 @@
 <section id="rep"><h2>4. EfficientRep 与重参数化：复杂训练图如何变成简单推理图</h2>
 <p><a href="https://arxiv.org/abs/2101.03697">RepVGG</a> 提出的结构重参数化允许训练时一个块同时含 3×3 Conv、1×1 Conv 与恒等分支（配合各自 BN），在推理时把分支合成单个 3×3 Conv。<a href="https://arxiv.org/abs/2209.02976">YOLOv6</a> 的 EfficientRep 系列沿用训练/部署结构分离的思路，以适配工业实时推理。</p>
 <p>关键代数条件是：所有待融合分支在相加前没有会破坏线性的激活或空间不匹配；BN 先以冻结的运行统计量折叠进卷积权重/偏置；1×1 卷积在 3×3 核中心补零，恒等映射写为中心为 1 的 Delta 核。这样推理时按同样 padding/stride 执行等效卷积，才能得到匹配输出。带不同非线性、不同采样网格或不一致 BN 状态的分支不能随意融合。</p>
-<div class="equation" tabindex="0" role="region" aria-label="结构重参数化加和公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="等效卷积核等于三乘三卷积核加一乘一嵌入到中心的核再加恒等映射 delta 核"><mrow><msub><mi>K</mi><mi>deploy</mi></msub><mo>=</mo><msub><mi>K</mi><mrow><mn>3</mn><mo>×</mo><mn>3</mn></mrow></msub><mo>+</mo><mi>pad</mi><mo>(</mo><msub><mi>K</mi><mrow><mn>1</mn><mo>×</mo><mn>1</mn></mrow></msub><mo>)</mo><mo>+</mo><msub><mi>K</mi><mi>identity</mi></msub></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="结构重参数化加和公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="等效卷积核等于三乘三卷积核加一乘一嵌入到中心的核再加恒等映射 delta 核"><mrow><msub><mi>K</mi><mi>deploy</mi></msub><mo>=</mo><msub><mi>K</mi><mrow><mn>3</mn><mo>×</mo><mn>3</mn></mrow></msub><mo>+</mo><mi>pad</mi><mo>(</mo><msub><mi>K</mi><mrow><mn>1</mn><mo>×</mo><mn>1</mn></mrow></msub><mo>)</mo><mo>+</mo><msub><mi>K</mi><mi>identity</mi></msub></mrow></math></div>
 <pre><code>python -m labs.backbone_cost
 # 在无 BN、1 输入/1 输出通道、stride=1 的极小示例中，
 # 检查 3×3 + 1×1 + identity 与折叠后 3×3 的数值等价。

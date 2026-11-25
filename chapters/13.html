@@ -46,7 +46,7 @@
 <g fill="none" stroke="#087f8c" stroke-width="2.5"><path d="M169 100 H219 M372 100 H422 M575 100 H625 M98 135 V190 H451 V204 M295 135 V182 H451 M498 135 V172 H451 M701 135 V190 H451"/></g>
 <text x="452" y="293" text-anchor="middle" font-size="13" fill="#5b7379">相同最大值操作可通过不同数据流达到同样感受野；这不等于一般卷积可如此替换</text>
 </svg><figcaption>串行池化是 SPPF 的关键计算图。每一步空间 H×W 保持不变，通道数在最后拼接时扩为四份；前后通常还会有降维/融合卷积。</figcaption></figure>
-<div class="equation" tabindex="0" role="region" aria-label="最大池化嵌套有效感受野递推公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="连续相同五乘五池化的有效视野尺寸每次增加四，三次后依次为五九十三"><mrow><msub><mi>r</mi><mi>n</mi></msub><mo>=</mo><mn>1</mn><mo>+</mo><mn>4</mn><mi>n</mi><mo>,</mo><mspace width="1em"/><mi>n</mi><mo>=</mo><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="最大池化嵌套有效感受野递推公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="连续相同五乘五池化的有效视野尺寸每次增加四，三次后依次为五九十三"><mrow><msub><mi>r</mi><mi>n</mi></msub><mo>=</mo><mn>1</mn><mo>+</mo><mn>4</mn><mi>n</mi><mo>,</mo><mspace width="1em"/><mi>n</mi><mo>=</mo><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow></math></div>
 <pre><code>python -m labs.neck_head_contract
 # 对 7x7 的确定性矩阵，逐像素检查：
 # pool5(pool5(x)) == pool9(x)
@@ -60,11 +60,11 @@
 <section id="decoupled"><h2>4. 解耦检测头：为什么分类与定位分开</h2>
 <p>分类分支需要区分类别相关的外观模式；定位分支要对边缘与框几何保持敏感。耦合头用同一套卷积变换直接产生多种输出，可能形成优化冲突。<a href="https://arxiv.org/abs/2107.08430">YOLOX</a> 等工作采用解耦头，让共享输入特征先经过不同卷积分支再预测类别与回归；是否有 objectness 独立分支取决于版本。</p>
 <p>它不是“每种输出一个独立 Backbone”，而通常只是在 Head 的尾部拆分轻量卷积分支。若 anchor-based 且每格 A 个参考框，可能输出 A×4 定位通道、A×1 objectness 与 A×C 分类通道；anchor-free 的距离分布回归还可能使用 <code>4×reg_max</code> 个通道。<strong>一定要从版本的实际 YAML、Head 源码和 loss 定义推导形状</strong>，不能凭一个“Decoupled Head”的名字猜。</p>
-<div class="equation" tabindex="0" role="region" aria-label="按锚框的YOLO检测头预测通道公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="经典anchor-based检测头每个位置的通道数是每格先验数量乘以四加一加类别数"><mrow><mi>D</mi><mo>=</mo><mi>A</mi><mo>(</mo><mn>4</mn><mo>+</mo><mn>1</mn><mo>+</mo><mi>C</mi><mo>)</mo></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="按锚框的YOLO检测头预测通道公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="经典anchor-based检测头每个位置的通道数是每格先验数量乘以四加一加类别数"><mrow><mi>D</mi><mo>=</mo><mi>A</mi><mo>(</mo><mn>4</mn><mo>+</mo><mn>1</mn><mo>+</mo><mi>C</mi><mo>)</mo></mrow></math></div>
 <p>这个公式适用于有独立 objectness 输出的经典 anchor-based YOLO 检测头，不适用于所有 anchor-free/DFL 或 NMS-free 变体。拆分分支并不会自动改变预测量的定义。</p></section>
 <section id="assignment"><h2>5. TaskAlignedAssigner 不是 Neck，也不是推理阶段的新层</h2>
 <p>训练检测器需要决定哪个候选位置负责哪一个真值框。只用 IoU 最大的候选可能有好的定位但错误类别；只看分类分数可能选择定位很差的位置。<a href="https://arxiv.org/abs/2108.07755">TOOD</a> 提出的 Task Alignment Learning 让正样本选择同时参考分类质量与定位质量，后续部分 YOLO 实现将其发展为 TaskAlignedAssigner 类的匹配器。</p>
-<div class="equation" tabindex="0" role="region" aria-label="分类与定位共同决定对齐指标的示意公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="候选匹配分数等于分类分数的alpha次方乘以交并比的beta次方"><mrow><mi>m</mi><mo>=</mo><msup><mi>s</mi><mi>α</mi></msup><msup><mi>IoU</mi><mi>β</mi></msup></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="分类与定位共同决定对齐指标的示意公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="候选匹配分数等于分类分数的alpha次方乘以交并比的beta次方"><mrow><mi>m</mi><mo>=</mo><msup><mi>s</mi><mi>α</mi></msup><msup><mi>IoU</mi><mi>β</mi></msup></mrow></math></div>
 <p>其中 <code>s</code> 是当前预测与目标类别对应的质量分数，<code>IoU</code> 是预测框与目标的重叠，α、β 为可配置指数。实际实现还需要空间内约束、top-k 筛选、冲突处理和目标分配权重；这一简式只解释直觉，不是完整 TOOD/Ultralytics 匹配代码。在推理阶段没有真值框，因此不会运行依赖 GT 的这个分配器。</p>
 <p>辅助训练头也应区分：部分模型训练时使用额外分支监督主干梯度，在部署时去除辅助输出。与之相对，NMS-Free 家族在训练分配和推理输出上另有机制，不等于所有“解耦头”都自动可以删去 NMS。</p></section>
 <section id="checks"><h2>6. 工程验收：哪些错误肉眼难以发现</h2>
