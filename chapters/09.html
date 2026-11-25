@@ -58,7 +58,7 @@
 </section>
 <section id="iou-giou"><h2>3. IoU 与 GIoU：让不相交的框不再完全同分</h2>
 <p>设预测框为 A、真值框为 B，C 为同时包围二者的最小轴对齐矩形。IoU 是交集面积除以并集面积，范围是 0–1；GIoU 对外接矩形中没有被 A∪B 覆盖的区域施加惩罚，因此 GIoU 可能为负，范围是 −1–1。</p>
-<div class="equation" tabindex="0" role="region" aria-label="交并比与广义交并比的定义，可横向滚动">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="交并比与广义交并比的定义，可横向滚动">
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="IoU 等于 A 交 B 的面积除以 A 并 B 的面积；GIoU 等于 IoU 减去 C 中不属于并集的面积占 C 面积的比例">
 <mtable columnalign="left">
 <mtr><mtd><mi>IoU</mi><mo>=</mo><mfrac><mrow><mo>|</mo><mi>A</mi><mo>∩</mo><mi>B</mi><mo>|</mo></mrow><mrow><mo>|</mo><mi>A</mi><mo>∪</mo><mi>B</mi><mo>|</mo></mrow></mfrac></mtd></mtr>
@@ -68,14 +68,14 @@
 <p>GIoU 出自 <a href="https://arxiv.org/abs/1902.09630" target="_blank" rel="noreferrer">Rezatofighi 等人的 CVPR 2019 论文</a>。当一个框完全包含另一个框时，C 与并集可能恰好一样大，GIoU 的额外惩罚消失，因此 GIoU 也不是所有几何情形的最优优化方向。</p></section>
 <section id="diou-ciou"><h2>4. DIoU 与 CIoU：中心位置与形状一起参与</h2>
 <p>DIoU 使用两个框中心点之间的距离 ρ，并除以包围它们的最小外接框对角线长度 c 的平方，形成无量纲惩罚；CIoU 在此基础上加上长宽比差异项 v 和自适应权重 α。</p>
-<div class="equation" tabindex="0" role="region" aria-label="DIoU 和 CIoU 的损失公式，可横向滚动">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="DIoU 和 CIoU 的损失公式，可横向滚动">
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="DIoU 损失等于一减交并比加中心距离平方除以外接框对角线平方；CIoU 损失另外加 alpha 乘以 v">
 <mtable columnalign="left">
 <mtr><mtd><msub><mi>L</mi><mi>DIoU</mi></msub><mo>=</mo><mn>1</mn><mo>−</mo><mi>IoU</mi><mo>+</mo><mfrac><msup><mi>ρ</mi><mn>2</mn></msup><msup><mi>c</mi><mn>2</mn></msup></mfrac></mtd></mtr>
 <mtr><mtd><msub><mi>L</mi><mi>CIoU</mi></msub><mo>=</mo><msub><mi>L</mi><mi>DIoU</mi></msub><mo>+</mo><mi>αv</mi></mtd></mtr>
 </mtable>
 </math></div>
-<div class="equation" tabindex="0" role="region" aria-label="CIoU 长宽比惩罚和自适应权重，可横向滚动">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="CIoU 长宽比惩罚和自适应权重，可横向滚动">
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="v 为四除以 pi 的平方乘以两框宽高比反正切之差的平方；alpha 为 v 除以一减 IoU 加 v">
 <mtable columnalign="left">
 <mtr><mtd><mi>v</mi><mo>=</mo><mfrac><mn>4</mn><msup><mi>π</mi><mn>2</mn></msup></mfrac><msup><mrow><mo>(</mo><mi>atan</mi><mo>(</mo><mfrac><msub><mi>w</mi><mi>B</mi></msub><msub><mi>h</mi><mi>B</mi></msub></mfrac><mo>)</mo><mo>−</mo><mi>atan</mi><mo>(</mo><mfrac><msub><mi>w</mi><mi>A</mi></msub><msub><mi>h</mi><mi>A</mi></msub></mfrac><mo>)</mo><mo>)</mo></mrow><mn>2</mn></msup></mtd></mtr>

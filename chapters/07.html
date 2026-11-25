@@ -61,7 +61,7 @@
 </section>
 <section id="mish"><h2>3. Mish：连续非线性为什么进入骨干网络</h2>
 <p>YOLOv4 将 Mish 激活用于部分骨干模块。相对 ReLU 的硬截断，Mish 在负输入区域保持平滑的非零响应；其连续性质会影响梯度传播，不过这不意味着它在任何模型、硬件或混合精度下都一定优于 ReLU。选择激活函数也需要比较算子支持与延迟。</p>
-<div class="equation" tabindex="0" role="region" aria-label="Mish 激活函数，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="Mish x 等于 x 乘以双曲正切的 log 一加 e 的 x 次方">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="Mish 激活函数，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="Mish x 等于 x 乘以双曲正切的 log 一加 e 的 x 次方">
 <mrow><mi>Mish</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>x</mi><mo>·</mo><mi>tanh</mi><mo>(</mo><mi>log</mi><mo>(</mo><mn>1</mn><mo>+</mo><msup><mi>e</mi><mi>x</mi></msup><mo>)</mo><mo>)</mo></mrow>
 </math></div>
 <p>在部署加速器上，Mish 可能需要额外内核或图融合支持，理论上更平滑的函数并不自动带来更低的推理延迟。工程上应以相同模型配置与设备实测为准。</p></section>
@@ -98,7 +98,7 @@
 <p>需要特别审计 Mosaic 拼接边缘：目标可能被截成很窄的一段，框变得退化或面积过小；有的实现会丢弃低可见度框，有的则使用特定过滤阈值。这些条件应与代码 commit 一起记录，不应该把“使用 Mosaic”作为足够完整的训练方法描述。</p></section>
 <section id="loss"><h2>5. CIoU：定位误差不仅是重叠面积</h2>
 <p>检测框可能重叠比例相同，但中心距和长宽比不同。CIoU 将 IoU、中心距离和长宽比三个几何要素同时纳入框回归项；YOLOv4 把它作为重要训练策略之一。完整公式、退化框处理与可运行计算示例详见 <a href="09.html">损失函数演进</a>，这里强调其作用位置：<strong>CIoU 是训练中的定位损失，不是替代 objectness、分类损失或推理 NMS 的万能函数</strong>。</p>
-<div class="equation" tabindex="0" role="region" aria-label="CIoU 定位损失公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="CIoU 损失等于一减去交并比，加归一化中心距离的平方，再加长宽比惩罚">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="CIoU 定位损失公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="CIoU 损失等于一减去交并比，加归一化中心距离的平方，再加长宽比惩罚">
 <mrow><msub><mi>L</mi><mi>CIoU</mi></msub><mo>=</mo><mn>1</mn><mo>−</mo><mi>IoU</mi><mo>+</mo><mfrac><msup><mi>ρ</mi><mn>2</mn></msup><msup><mi>c</mi><mn>2</mn></msup></mfrac><mo>+</mo><mi>α</mi><mi>v</mi></mrow>
 </math></div>
 <p>其中 ρ 是两个框中心点间的欧氏距离，c 是覆盖两个框的最小外接矩形的对角线长度；v 与 α 描述长宽比偏差和自适应系数。它出自 <a href="https://arxiv.org/abs/1911.08287" target="_blank" rel="noreferrer">DIoU/CIoU 原论文</a>，不能把它追认为 YOLOv1 或最初的 YOLOv3 原生损失。</p></section>

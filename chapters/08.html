@@ -54,7 +54,7 @@
 </section>
 <section id="decode"><h2>2. YOLOv2 的参数如何变成真实边界框</h2>
 <p>设网格左上角坐标为 <code>(c_x,c_y)</code>（以网格为单位），某个锚框宽高为 <code>(p_w,p_h)</code>（与解码所用的网格单位一致），网络输出 <code>t_x,t_y,t_w,t_h</code>。通过 Sigmoid 和指数函数解码：</p>
-<div class="equation" tabindex="0" role="region" aria-label="YOLOv2 锚框解码公式，可横向滚动">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="YOLOv2 锚框解码公式，可横向滚动">
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="x y 中心等于 sigmoid 偏移加网格坐标，宽高等于先验宽高乘上 e 的预测偏移次方">
 <mtable columnalign="left">
 <mtr><mtd><msub><mi>b</mi><mi>x</mi></msub><mo>=</mo><mi>σ</mi><mo>(</mo><msub><mi>t</mi><mi>x</mi></msub><mo>)</mo><mo>+</mo><msub><mi>c</mi><mi>x</mi></msub></mtd></mtr>
@@ -73,7 +73,7 @@
 </section>
 <section id="clustering"><h2>3. K-means 为什么用 1−IoU，而不是欧氏距离</h2>
 <p>若对框宽高直接使用欧氏距离，尺寸大的框容易主导聚类：一个 200 像素宽的大框和一个 180 像素宽的框相差 20，而小目标宽度 20 与 10 相差 10；但后者的尺度比例差异更大。YOLOv2 使用 <code>1 − IoU</code> 描述框形状不匹配的程度，目标是让每个真实框都能找到一个相近的宽高先验。</p>
-<div class="equation" tabindex="0" role="region" aria-label="形状 IoU 距离公式，可横向滚动">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="形状 IoU 距离公式，可横向滚动">
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="宽高模板距离等于一减两框同中心时交集面积除以并集面积">
 <mrow><mi>d</mi><mo>(</mo><mi>b</mi><mo>,</mo><mi>a</mi><mo>)</mo><mo>=</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mi>min</mi><mo>(</mo><msub><mi>w</mi><mi>b</mi></msub><mo>,</mo><msub><mi>w</mi><mi>a</mi></msub><mo>)</mo><mi>min</mi><mo>(</mo><msub><mi>h</mi><mi>b</mi></msub><mo>,</mo><msub><mi>h</mi><mi>a</mi></msub><mo>)</mo></mrow><mrow><msub><mi>w</mi><mi>b</mi></msub><msub><mi>h</mi><mi>b</mi></msub><mo>+</mo><msub><mi>w</mi><mi>a</mi></msub><msub><mi>h</mi><mi>a</mi></msub><mo>−</mo><mi>intersection</mi></mrow></mfrac></mrow>
 </math></div>

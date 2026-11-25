@@ -54,7 +54,7 @@
 <figcaption>原始 FPN 用 1×1 横向投影对齐通道，再将上采样深层特征与浅层特征逐元素<strong>相加</strong>，并用 3×3 卷积减轻上采样混叠。</figcaption>
 </figure>
 <p>FPN 先从最深层 C5 生成中间特征 M5；然后向上采样两倍，与 C4 的横向 1×1 投影相加形成 M4；再向上采样与 C3 合并形成 M3。最终在这些融合后的层上应用 3×3 卷积得到用于预测的 P3、P4、P5。这与仅在某一层放一个“大卷积核”有本质区别：特征不仅跨尺度变化，还携带来自不同语义深度的信息。</p>
-<div class="equation" tabindex="0" role="region" aria-label="特征金字塔中间融合与输出关系，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="M5 等于横向投影C5，Mi等于横向投影Ci加上邻近上采样后的M i加一，Pi是Mi经过3乘3卷积">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="特征金字塔中间融合与输出关系，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="M5 等于横向投影C5，Mi等于横向投影Ci加上邻近上采样后的M i加一，Pi是Mi经过3乘3卷积">
 <mtable columnalign="left">
 <mtr><mtd><msub><mi>M</mi><mn>5</mn></msub><mo>=</mo><msub><mi>L</mi><mn>5</mn></msub><mo>(</mo><msub><mi>C</mi><mn>5</mn></msub><mo>)</mo></mtd></mtr>
 <mtr><mtd><msub><mi>M</mi><mi>i</mi></msub><mo>=</mo><msub><mi>L</mi><mi>i</mi></msub><mo>(</mo><msub><mi>C</mi><mi>i</mi></msub><mo>)</mo><mo>+</mo><mi>Up</mi><mo>(</mo><msub><mi>M</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>)</mo></mtd></mtr>
@@ -105,7 +105,7 @@ python -m labs.fpn_shapes --size 416
 <section id="variants"><h2>5. PANet 与 BiFPN：为什么又增加反向路径和权重</h2>
 <p><a href="https://arxiv.org/abs/1803.01534" target="_blank" rel="noreferrer">PANet（CVPR 2018）</a> 在 FPN 之上增加了自底向上的路径增强，使浅层定位线索有更短路径进入深层，原论文还包含 adaptive feature pooling 等其他组件。YOLOv4 主要借用了 PAN 式多尺度融合的设计思想，不应把它视作完全复制原始实例分割 PANet。</p>
 <p><a href="https://arxiv.org/abs/1911.09070" target="_blank" rel="noreferrer">EfficientDet 的 BiFPN（2020）</a> 采用反复的双向跨尺度融合，并引入可学习权重，使不同来源的特征并非一律等权相加。快速归一化版本把非负权重按总和归一，而不是使用需要指数的 Softmax 归一化。</p>
-<div class="equation" tabindex="0" role="region" aria-label="BiFPN 快速归一化特征融合公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="融合输出等于各输入特征乘非负权重的加权和除以权重和加 epsilon">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="BiFPN 快速归一化特征融合公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="融合输出等于各输入特征乘非负权重的加权和除以权重和加 epsilon">
 <mrow><mi>O</mi><mo>=</mo><mfrac><mrow><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>w</mi><mi>i</mi></msub><msub><mi>I</mi><mi>i</mi></msub></mrow><mrow><mi>ε</mi><mo>+</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>w</mi><mi>i</mi></msub></mrow></mfrac><mo>,</mo><msub><mi>w</mi><mi>i</mi></msub><mo>≥</mo><mn>0</mn></mrow>
 </math></div>
 <p>这里 <code>I_i</code> 是已经对齐形状的输入特征，<code>w_i</code> 是非负融合权重，<code>ε</code> 是避免除零的正数。这个表达式是特征融合的核心概念，实际 EfficientDet 实现还使用可分离卷积和其他结构优化；它不表示原始 YOLOv3 已经拥有可学习加权 BiFPN。</p></section>

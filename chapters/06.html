@@ -56,7 +56,7 @@
 <section id="cfg">
 <h2>3. 三个预测头：filters、classes 与 mask 必须一致</h2>
 <p>标准 YOLOv3 对 COCO 使用三尺度预测。在 416×416 输入下，输出特征图约为 13×13、26×26、52×52；每个位置分配三个锚框。若改为 C=2 类，则三个检测头前的最后一个卷积层都必须有 <code>3×(5+2)=21</code> 个 filters；对应的 <code>[yolo]</code> 层都必须设为 <code>classes=2</code>，且与该头的三个 mask 索引一致。</p>
-<div class="equation" tabindex="0" role="region" aria-label="YOLOv3 检测头通道数公式，可横向滚动">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="YOLOv3 检测头通道数公式，可横向滚动">
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="每个检测头的输出通道数等于每格锚框数乘以五加类别数">
 <mrow><msub><mi>F</mi><mi>head</mi></msub><mo>=</mo><mi>A</mi><mo>×</mo><mo>(</mo><mn>5</mn><mo>+</mo><mi>C</mi><mo>)</mo><mo>=</mo><mn>3</mn><mo>×</mo><mn>7</mn><mo>=</mo><mn>21</mn></mrow>
 </math>
