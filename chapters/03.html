@@ -63,9 +63,9 @@
 <section id="confidence">
 <h2>2. 置信度不是单纯的“物体概率”</h2>
 <p>YOLOv1 将框置信度定义为目标存在概率与预测框和真实框的 IoU 的乘积：</p>
-<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="confidence 等于目标存在概率乘以预测框和真实框的交并比"><mrow><mi>Confidence</mi><mo>=</mo><mi>Pr</mi><mo>(</mo><mi>Object</mi><mo>)</mo><mo>·</mo><mi>IoU</mi><mo>(</mo><mi>box</mi><mo>,</mo><mi>ground truth</mi><mo>)</mo></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="confidence 等于目标存在概率乘以预测框和真实框的交并比"><mrow><mi>Confidence</mi><mo>=</mo><mi>Pr</mi><mo>(</mo><mi>Object</mi><mo>)</mo><mo>·</mo><mi>IoU</mi><mo>(</mo><mi>box</mi><mo>,</mo><mi>ground truth</mi><mo>)</mo></mrow></math></div>
 <p>若该网格没有目标，置信度目标值为 0；若有目标，负责预测的框以当前预测框和真实框的 IoU 作为置信度目标。推理时，类别条件概率与框置信度相乘，得到类别相关分数：</p>
-<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="类别分数等于类别条件概率乘以框置信度"><mrow><mi>Score</mi><mo>(</mo><mi>class</mi><mo>)</mo><mo>=</mo><mi>Pr</mi><mo>(</mo><mi>class</mi><mo>|</mo><mi>Object</mi><mo>)</mo><mo>·</mo><mi>Confidence</mi></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="类别分数等于类别条件概率乘以框置信度"><mrow><mi>Score</mi><mo>(</mo><mi>class</mi><mo>)</mo><mo>=</mo><mi>Pr</mi><mo>(</mo><mi>class</mi><mo>|</mo><mi>Object</mi><mo>)</mo><mo>·</mo><mi>Confidence</mi></mrow></math></div>
 <p>这让一个框的分数同时反映“是否有目标”“框是否贴合目标”和“目标属于该类别的可能性”。因此，置信度和类别概率不能互换，也不应把 YOLOv1 的置信度解释成现代分类头中的普通 softmax 概率。</p>
 </section>
 <section id="architecture">
@@ -84,7 +84,7 @@
 <section id="loss">
 <h2>4. 损失函数：让框、置信度与类别共同学习</h2>
 <p>YOLOv1 使用平方误差损失，并通过不同权重平衡几类目标。把完整损失按作用拆开，可写成：</p>
-<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="总损失等于加权定位损失、目标置信度损失、加权无目标置信度损失与分类损失之和"><mrow><mi>ℒ</mi><mo>=</mo><msub><mi>λ</mi><mi>coord</mi></msub><msub><mi>ℒ</mi><mi>box</mi></msub><mo>+</mo><msub><mi>ℒ</mi><mi>obj</mi></msub><mo>+</mo><msub><mi>λ</mi><mi>noobj</mi></msub><msub><mi>ℒ</mi><mi>noobj</mi></msub><mo>+</mo><msub><mi>ℒ</mi><mi>class</mi></msub></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="总损失等于加权定位损失、目标置信度损失、加权无目标置信度损失与分类损失之和"><mrow><mi>ℒ</mi><mo>=</mo><msub><mi>λ</mi><mi>coord</mi></msub><msub><mi>ℒ</mi><mi>box</mi></msub><mo>+</mo><msub><mi>ℒ</mi><mi>obj</mi></msub><mo>+</mo><msub><mi>λ</mi><mi>noobj</mi></msub><msub><mi>ℒ</mi><mi>noobj</mi></msub><mo>+</mo><msub><mi>ℒ</mi><mi>class</mi></msub></mrow></math></div>
 <div class="table-wrap"><table>
 <thead><tr><th>损失部分</th><th>计算对象</th><th>设计理由</th></tr></thead>
 <tbody>

@@ -78,7 +78,7 @@
 <section id="iou">
 <h2>2. 边界框有多准确：IoU</h2>
 <p>检测器给出一个预测框，标注数据提供一个真实框。仅仅判断二者是否相交不够：一个只覆盖目标一小角的框也可能相交。交并比（Intersection over Union，IoU）用交集面积占并集面积的比例衡量重叠程度：</p>
-<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动">
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="数学公式，可横向滚动">
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="IoU 等于预测框与真实框的交集面积除以并集面积">
 <mrow><mi>IoU</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mo>∩</mo><mi>B</mi></mrow><mrow><mi>A</mi><mo>∪</mo><mi>B</mi></mrow></mfrac></mrow>
 </math>

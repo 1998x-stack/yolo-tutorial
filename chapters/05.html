@@ -27,7 +27,7 @@
 <section id="backbone">
 <h2>1. Darknet-53：把残差骨干用于实时检测</h2>
 <p>YOLOv3 用 Darknet-53 替换 YOLOv2 的 Darknet-19。它包含 53 个卷积层，交替使用 3×3 与 1×1 卷积，并加入残差捷径。残差单元把输入特征直接加到变换后的特征上，使深层网络更容易优化。</p>
-<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="残差块输出等于输入加上残差变换"><mrow><mi>y</mi><mo>=</mo><mi>x</mi><mo>+</mo><mi>F</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="残差块输出等于输入加上残差变换"><mrow><mi>y</mi><mo>=</mo><mi>x</mi><mo>+</mo><mi>F</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow></math></div>
 <p>在 416×416 输入下，骨干网络通过步长为 2 的卷积逐级下采样，形成步长分别为 8、16、32 的特征层，空间尺寸为 52×52、26×26、13×13。它们分别保留不同程度的空间细节与语义信息。</p>
 <div class="table-wrap"><table>
 <thead><tr><th>输出层</th><th>特征图尺寸（416 输入）</th><th>相对步长</th><th>主要特点</th></tr></thead>
@@ -87,7 +87,7 @@
 <tr><td>52×52</td><td>(10,13)、(16,30)、(33,23)</td><td>3 个较小先验</td></tr>
 </tbody></table></div>
 <p>在 COCO 80 类配置下，每个位置的每个锚框预测 4 个边界框参数、1 个 objectness 和 80 个类别分数。因此每个预测头输出 3×(4+1+80)=255 个通道。对 416×416 输入，三个头合计产生：</p>
-<div class="equation" tabindex="0" role="region" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="候选框总数等于三个尺度各自网格数量乘以每个位置三个锚框的和"><mrow><mn>3</mn><mo>×</mo><msup><mn>13</mn><mn>2</mn></msup><mo>+</mo><mn>3</mn><mo>×</mo><msup><mn>26</mn><mn>2</mn></msup><mo>+</mo><mn>3</mn><mo>×</mo><msup><mn>52</mn><mn>2</mn></msup><mo>=</mo><mn>10,647</mn></mrow></math></div>
+<div class="equation" tabindex="0" role="region" data-math-scroll="true" aria-label="数学公式，可横向滚动"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML" aria-label="候选框总数等于三个尺度各自网格数量乘以每个位置三个锚框的和"><mrow><mn>3</mn><mo>×</mo><msup><mn>13</mn><mn>2</mn></msup><mo>+</mo><mn>3</mn><mo>×</mo><msup><mn>26</mn><mn>2</mn></msup><mo>+</mo><mn>3</mn><mo>×</mo><msup><mn>52</mn><mn>2</mn></msup><mo>=</mo><mn>10,647</mn></mrow></math></div>
 <p>这是解码前的候选框数量，不代表最终会输出 10,647 个检测结果。置信度阈值、类别分数筛选和 NMS 会进一步压缩候选集合。</p>
 </section>
 <section id="classification">
