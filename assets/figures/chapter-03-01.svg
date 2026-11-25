@@ -1,0 +1,28 @@
+<svg viewBox="0 0 900 320" role="img" aria-labelledby="grid-title grid-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="grid-title">YOLOv1 的 7×7 网格与中心点责任分配</title><desc id="grid-desc">左侧图像被划分为七乘七网格，中心点落在高亮网格中的目标由该网格负责；右侧展示每个网格预测两个框和一组类别概率。</desc>
+<rect x="8" y="8" width="884" height="304" rx="18" fill="#f6fafb"/>
+<g transform="translate(46 30)">
+<rect width="252" height="252" rx="10" fill="#e6eff0"/>
+<rect x="0" y="0" width="252" height="252" fill="none" stroke="#a9c0c3"/>
+<path d="M36 0 V252 M0 36 H252" stroke="#b6c9cc" stroke-width="1.4"/><path d="M72 0 V252 M0 72 H252" stroke="#b6c9cc" stroke-width="1.4"/><path d="M108 0 V252 M0 108 H252" stroke="#b6c9cc" stroke-width="1.4"/><path d="M144 0 V252 M0 144 H252" stroke="#b6c9cc" stroke-width="1.4"/><path d="M180 0 V252 M0 180 H252" stroke="#b6c9cc" stroke-width="1.4"/><path d="M216 0 V252 M0 216 H252" stroke="#b6c9cc" stroke-width="1.4"/>
+<rect x="108" y="108" width="36" height="36" fill="#a9dcda" opacity=".95"/>
+<rect x="76" y="47" width="100" height="137" rx="5" fill="none" stroke="#087f8c" stroke-width="3"/>
+<circle cx="126" cy="115" r="5" fill="#c47b31" stroke="#fff" stroke-width="2"/>
+<path d="M126 115 L126 90" stroke="#c47b31" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="126" y="280" text-anchor="middle" font-size="16" fill="#24414a" font-weight="700">7 × 7 个网格</text>
+</g>
+<g transform="translate(360 46)">
+<text x="0" y="0" font-size="18" font-weight="700" fill="#24414a">单个网格输出 30 个数值</text>
+<rect x="0" y="24" width="500" height="54" rx="9" fill="#e2f0f0" stroke="#8ab8b7"/>
+<g fill="#24535a" font-size="15" text-anchor="middle">
+<text x="48" y="56">x₁</text><text x="96" y="56">y₁</text><text x="144" y="56">w₁</text><text x="192" y="56">h₁</text><text x="240" y="56">C₁</text>
+<text x="292" y="56">x₂</text><text x="340" y="56">y₂</text><text x="388" y="56">w₂</text><text x="436" y="56">h₂</text><text x="484" y="56">C₂</text>
+</g>
+<path d="M0 90 V104 H250 V90 M250 104 H500 V90" stroke="#087f8c" stroke-width="2" fill="none"/>
+<text x="125" y="127" text-anchor="middle" font-size="14" fill="#087f8c">预测框 1：5 个值</text><text x="375" y="127" text-anchor="middle" font-size="14" fill="#087f8c">预测框 2：5 个值</text>
+<rect x="0" y="150" width="500" height="54" rx="9" fill="#fff0df" stroke="#d4a36b"/>
+<text x="250" y="182" text-anchor="middle" font-size="15" fill="#754719">20 个类别条件概率：P(class | object)</text>
+<text x="0" y="240" font-size="15" fill="#24414a">7 × 7 × (2 × 5 + 20) = 7 × 7 × 30</text>
+<text x="0" y="268" font-size="13" fill="#5c737a">全图输出共 1,470 个标量；每格只有一组类别概率。</text>
+</g>
+</svg>

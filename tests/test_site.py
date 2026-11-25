@@ -162,7 +162,7 @@ class SiteStructureTests(unittest.TestCase):
         self.assertTrue((ROOT / "assets" / "anchor-demo.js").is_file())
 
     def test_standalone_svgs_match_inline_figures_for_reviewed_chapters(self):
-        for i in range(6, 21):
+        for i in range(1, 21):
             num = f"{i:02d}"
             content = (ROOT / "chapters" / f"{num}.html").read_text(encoding="utf-8")
             svgs = re.findall(r"<svg\b[\s\S]*?</svg>", content, flags=re.IGNORECASE)

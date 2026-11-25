@@ -1,0 +1,35 @@
+<svg viewBox="0 0 900 300" role="img" aria-labelledby="det-title det-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="det-title">分类、目标检测与分割的输出差异</title><desc id="det-desc">同一张街景图像分别产生整图标签、带类别的边界框，以及像素级分割区域。</desc>
+<rect x="8" y="8" width="884" height="284" rx="18" fill="#f6fafb"/>
+<g transform="translate(28 34)">
+<rect width="250" height="176" rx="12" fill="#dbe9e9"/>
+<rect x="0" y="106" width="250" height="70" fill="#b6c9c8"/>
+<path d="M0 120 L250 120 M0 140 L250 140" stroke="#eef5f4" stroke-width="3" stroke-dasharray="18 12"/>
+<rect x="28" y="48" width="45" height="68" rx="6" fill="#536b70"/><circle cx="50" cy="36" r="16" fill="#d4a27b"/>
+<rect x="143" y="66" width="68" height="48" rx="7" fill="#2f6875"/><circle cx="159" cy="117" r="9" fill="#243b43"/><circle cx="194" cy="117" r="9" fill="#243b43"/>
+<text x="125" y="204" text-anchor="middle" fill="#24414a" font-size="18" font-weight="700">图像分类：街景</text>
+</g>
+<g transform="translate(326 34)">
+<rect width="250" height="176" rx="12" fill="#dbe9e9"/>
+<rect x="0" y="106" width="250" height="70" fill="#b6c9c8"/>
+<path d="M0 120 L250 120 M0 140 L250 140" stroke="#eef5f4" stroke-width="3" stroke-dasharray="18 12"/>
+<rect x="28" y="48" width="45" height="68" rx="6" fill="#536b70"/><circle cx="50" cy="36" r="16" fill="#d4a27b"/>
+<rect x="143" y="66" width="68" height="48" rx="7" fill="#2f6875"/><circle cx="159" cy="117" r="9" fill="#243b43"/><circle cx="194" cy="117" r="9" fill="#243b43"/>
+<rect x="23" y="16" width="58" height="106" rx="4" fill="none" stroke="#087f8c" stroke-width="3"/>
+<rect x="137" y="58" width="80" height="66" rx="4" fill="none" stroke="#c47b31" stroke-width="3"/>
+<rect x="23" y="0" width="66" height="20" rx="5" fill="#087f8c"/><text x="56" y="15" fill="white" font-size="12" text-anchor="middle">person</text>
+<rect x="137" y="38" width="66" height="20" rx="5" fill="#c47b31"/><text x="170" y="53" fill="white" font-size="12" text-anchor="middle">car</text>
+<text x="125" y="204" text-anchor="middle" fill="#24414a" font-size="18" font-weight="700">目标检测：框 + 类别</text>
+</g>
+<g transform="translate(624 34)">
+<rect width="250" height="176" rx="12" fill="#dbe9e9"/>
+<rect x="0" y="106" width="250" height="70" fill="#b6c9c8"/>
+<path d="M0 120 L250 120 M0 140 L250 140" stroke="#eef5f4" stroke-width="3" stroke-dasharray="18 12"/>
+<path d="M25 48 Q48 13 75 38 L75 118 L25 118Z" fill="#167f8b" opacity=".82"/>
+<path d="M141 65 Q177 47 214 64 L214 113 L141 113Z" fill="#c47b31" opacity=".85"/>
+<rect x="24" y="15" width="56" height="106" rx="4" fill="none" stroke="#087f8c" stroke-width="2"/>
+<rect x="139" y="57" width="77" height="59" rx="4" fill="none" stroke="#c47b31" stroke-width="2"/>
+<text x="125" y="204" text-anchor="middle" fill="#24414a" font-size="18" font-weight="700">实例分割：像素掩膜</text>
+</g>
+<text x="450" y="272" text-anchor="middle" fill="#5a7279" font-size="14">同一输入，不同输出契约：整图标签 → 目标级位置 → 像素级区域</text>
+</svg>

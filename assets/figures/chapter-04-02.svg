@@ -1,0 +1,17 @@
+<svg viewBox="0 0 900 300" role="img" aria-labelledby="tree-title tree-desc" xmlns="http://www.w3.org/2000/svg">
+<title id="tree-title">WordTree 层次化类别概率</title><desc id="tree-desc">类别沿着物理对象、动物、哺乳动物、犬科、梗犬到具体犬种形成层次路径，节点概率由路径上的条件概率相乘得到。</desc>
+<rect x="8" y="8" width="884" height="284" rx="18" fill="#f6fafb"/>
+<g stroke="#93aeb4" stroke-width="2.5" fill="none">
+<path d="M450 66 V100 M450 132 V166 M450 198 V232 M450 264 V270"/>
+</g>
+<g>
+<rect x="360" y="28" width="180" height="40" rx="9" fill="#e4eff1" stroke="#9bb7bc"/><text x="450" y="54" text-anchor="middle" font-size="15" fill="#24414a">physical object</text>
+<rect x="360" y="94" width="180" height="40" rx="9" fill="#e0f0ed" stroke="#78aaa2"/><text x="450" y="120" text-anchor="middle" font-size="15" fill="#24535a">animal</text>
+<rect x="360" y="160" width="180" height="40" rx="9" fill="#e0f0ed" stroke="#78aaa2"/><text x="450" y="186" text-anchor="middle" font-size="15" fill="#24535a">mammal</text>
+<rect x="360" y="226" width="180" height="40" rx="9" fill="#fff0df" stroke="#d4a36b"/><text x="450" y="252" text-anchor="middle" font-size="15" fill="#754719">terrier / dog breed</text>
+</g>
+<g fill="#5b7379" font-size="13">
+<text x="560" y="58">P(object)</text><text x="560" y="124">P(animal | object)</text><text x="560" y="190">P(mammal | animal)</text><text x="560" y="256">P(terrier | mammal)</text>
+</g>
+<text x="450" y="286" text-anchor="middle" font-size="13" fill="#087f8c">具体类别的绝对概率 = 从根节点到该类别路径上的条件概率乘积</text>
+</svg>
