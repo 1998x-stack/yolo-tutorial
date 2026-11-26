@@ -19,7 +19,7 @@ python -m http.server 8000
 # 浏览器访问 http://localhost:8000
 ```
 
-首页提供章节搜索与阶段筛选。01–20 章已按独立文章标准重写，包含背景、符号约定、原理图解、可运行的教学脚本、适用边界与原始参考文献。21–28 章已迁移到规范化目录，但尚未完成逐篇技术审计。
+首页提供章节搜索与阶段筛选。01–28 章均已按独立文章标准重写，每章包含背景、符号约定、原理图解、可运行的教学脚本、适用边界与原始参考文献，并配有逐篇证据台账。
 
 ## 课程路线
 
@@ -38,20 +38,25 @@ yolo-tutorial/
 ├── index.html                 # 静态课程首页：搜索、阶段筛选、学习路线
 ├── courses.json               # 28 章结构化元数据（首页的机器可读目录）
 ├── chapters/
-│   ├── 01.html ... 20.html    # 四批已重构、独立可读的技术文章
-│   └── 21.html ... 28.html    # 尚待逐篇审计的文章
+│   ├── 01.html ... 20.html    # 基础、组件、现代架构与轻量化篇（01–20）
+│   └── 21.html ... 28.html    # 部署、数据、评估与实战篇（21–28）
 ├── assets/
 │   ├── theme.css              # 首页与章节共用设计系统
-│   └── site.js                # 首页搜索与阶段筛选增强
-├── labs/                      # 数据增强、骨干、Neck、NMS、YOLOv5 等确定性教学工具\n├── pdfs/                      # 已收录论文资料
+│   ├── site.js                # 首页搜索与阶段筛选增强
+│   ├── lab-*.js / *-demo.js   # 章节内离线交互实验
+│   └── figures/               # 35 张独立可用的 SVG 机制图导出
+├── labs/                      # 数据增强、骨干、Neck、NMS、量化等确定性教学工具
+├── pdfs/                      # 已收录论文资料
 ├── docs/
 │   ├── architecture.md        # 页面、导航和发布结构说明
 │   ├── improvements.md        # 追加式工程改进记录
-│   └── evidence/
-│       ├── 01.json ... 05.json # 基础篇逐篇证据\n│       ├── 06.json ... 10.json # 第二批逐篇证据\n│       └── 11.json ... 15.json # 第三批逐篇证据
+│   └── evidence/              # 01.json ... 28.json：逐篇证据台账
 ├── tests/
-│   ├── test_site.py           # 静态结构、链接、公式和 SVG 检查\n│   ├── test_labs.py           # 第二批计算工具数值验证\n│   ├── test_labs_11_15.py     # 第三批的数值、标签和协议检查
-│   └── browser_check.py       # Playwright 桌面/移动端浏览器验收
+│   ├── test_site.py                     # 静态结构、链接、公式和 SVG 检查
+│   ├── test_labs.py                     # 06–10 章计算工具数值验证
+│   ├── test_labs_11_15.py               # 11–15 章数值、标签与协议检查
+│   ├── test_modern_yolo_contract.py     # 16–20 章契约与几何数值检查
+│   └── browser_check.py                 # Playwright 桌面/移动端浏览器验收
 ├── .github/workflows/
 │   └── quality.yml            # 静态测试与 Chromium 浏览器检查
 ├── AGENTS.md                  # 内容编辑与工程协作规范
@@ -70,7 +75,7 @@ yolo-tutorial/
 - **离线优先：** 页面不依赖外部字体、CDN、遥测或运行时网络请求；关键数学表达使用浏览器原生 MathML。
 - **如实呈现实验：** 教学示例不是论文复现；未执行的浏览器测试不能标为通过。
 
-01–05 章依据 YOLOv1、YOLO9000/YOLOv2、YOLOv3 原始论文和 COCO 官方协议重写；06–10 章依据 YOLOv4、FPN/PANet/BiFPN、GIoU/DIoU/CIoU 与 Darknet/OpenCV 实现进行交叉验证。每篇文章的证据台账存放在 `docs/evidence/01.json` 至 `20.json`，区分已核对的论文主张、推导数字和教学示例。
+01–05 章依据 YOLOv1、YOLO9000/YOLOv2、YOLOv3 原始论文和 COCO 官方协议重写；06–10 章依据 YOLOv4、FPN/PANet/BiFPN、GIoU/DIoU/CIoU 与 Darknet/OpenCV 实现进行交叉验证。每篇文章的证据台账存放在 `docs/evidence/01.json` 至 `28.json`，区分已核对的论文主张、推导数字和教学示例。11–15 章核对 Mosaic/CutMix 几何、SPPF 池化等价、NMS 语义与 YOLOv5 v7.0 标签解码；16–28 章核对 YOLOv8/9/10/11/12 架构、量化口径、COCO AP_s 面积定义与 SAHI 全局坐标。
 
 ## 本地质量检查
 
@@ -88,7 +93,7 @@ python -m playwright install chromium
 python tests/browser_check.py
 ```
 
-浏览器检查覆盖首页搜索、28 章入口、01–20 章的桌面与移动端布局、SVG/MathML、横向溢出、打印模式、锚框交互以及 NMS 阈值/算法交互实验。GitHub Actions 会在 Pull Request 和主分支更新时运行相同的检查。
+浏览器检查覆盖首页搜索、28 章入口、01–28 章的桌面与移动端布局、SVG/MathML、横向溢出、打印模式、锚框交互以及 NMS 阈值/算法交互实验。GitHub Actions 会在 Pull Request 和主分支更新时运行相同的检查。
 
 ## GitHub Pages
 
@@ -148,7 +153,20 @@ python -m unittest discover -s tests -v
 ```bash
 python -m labs.modern_yolo_contract
 python -m unittest discover -s tests -v
-python tests/browser_check.py  # 需要 Playwright + Chromium，覆盖 01–20 章
+python tests/browser_check.py  # 需要 Playwright + Chromium，覆盖 01–28 章
 ```
 
 文章源代码、演示与证据在 Pages 部署成功后可通过 `/chapters/16.html` 至 `/chapters/20.html` 访问；仅存在文件或 workflow 不等于浏览器验收通过。
+
+## 第五批：第 21–28 章深度重构（2026-11-22）
+
+- **21 部署与推理加速：** 导出（ONNX/opset）、图优化、FP16/INT8 精度校准与可复现的延迟/吞吐基准口径。
+- **22 边缘设备部署：** 功耗、带宽与内存约束下的运行时选择；区分峰值算力与可持续吞吐。
+- **23 数据标注与格式：** COCO/YOLO/VOC 坐标约定与转换幂等性、标注质量与泄漏排查。
+- **24 训练流水线：** 数据划分、超参与可复现性约束；把训练配置与结果绑定到具体版本。
+- **25 模型评估与调优：** PR/混淆矩阵、mAP 协议与误差分析；区分指标下降与分布漂移。
+- **26 YOLO+多模态：** 开放词汇、CLIP/SAM/跟踪的组合拆解；区分检测器与下游组件职责。
+- **27 行业实战案例：** 以任务契约组织案例，不编造缺出处的业务指标。
+- **28 综合实训项目：** 以验收门槛串起数据、训练、评估与部署流程。
+
+八篇均以独立 HTML 编排，提供一手来源、原创建模 SVG（同步导出 `assets/figures/chapter-21-01.svg` 至 `28-01.svg`）、离线交互与 `docs/evidence/21.json`–`28.json`（每篇 8 条证据）。页面内固定开销、吞吐等数字均标注为教学示意值，不代表任何硬件实测。
