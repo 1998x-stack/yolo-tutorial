@@ -44,3 +44,13 @@
 - Cross-checked original ECCV 2024 YOLOv9, NeurIPS 2024 YOLOv10, NeurIPS 2025 YOLOv12, Ultralytics YOLOv8/YOLO11 architecture, original RepVGG/knowledge-distillation publications, COCO area definitions and SAHI paper/code; removed ungrounded anecdotal boosts and incomparable speed claims.
 - Added per-page evidence ledgers 16–20 (>=6 claims each), standard-library deterministic computations covering DFL bin interpolation, anchor-free grid count, attention relation counts, raw weight bytes, tile starts and global coordinate offsets.
 - Expanded site/evidence/SVG source checks and Chromium checks from 15 to 20 chapters; new browser interactions test numeric updates on five pages. Pending GitHub Actions run results should be consulted before marking CI/Pages successful.
+
+### 2026-11-22 — Batch 05: deployment, data and practice chapters (21–28)
+- Rebuilt the eight remaining legacy pages as independent articles: export/graph-optimization/precision/benchmark contracts (21), power-bandwidth-latency constraints on edge runtimes (22), label-format coordinate conventions (23), reproducible training pipelines (24), evaluation and error analysis (25), detection-plus-multimodal component decomposition (26), task-contract case methodology (27) and an acceptance-gated capstone (28).
+- Removed benchmark tables that lacked a reproducible device/version/protocol; any illustrative fixed overhead or throughput figure is labelled as a teaching value in the article body.
+- Added original inline SVG (exported as `assets/figures/chapter-21-01.svg`–`28-01.svg`), native MathML, offline range/select labs driven by `assets/lab-21-28.js` and per-page evidence ledgers `docs/evidence/21.json`–`28.json` (8 claims each).
+- Extended static tests to assert the 21–28 article shell, local lab script, MathML placement, standalone SVG parity and evidence ledger for every page.
+
+### 2026-11-26 — Documentation consistency pass
+- The 21–28 rebuild had left the homepage and docs describing those chapters as "not yet audited"; synced `index.html` hero text and stats (28 rebuilt chapters, 35 exported SVG figures), `README.md` status/structure/coverage and `docs/architecture.md` migration and QA-gate descriptions with the actual repository state.
+- Removed literal `\n` line-join artifacts from the README and architecture code blocks and corrected evidence/test file listings to span 01–28.
