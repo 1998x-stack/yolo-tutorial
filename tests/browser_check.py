@@ -82,6 +82,18 @@ def main() -> None:
                     after = output.inner_text()
                     assert after != before, (num, before, after)
 
+                # Batch 05 (21–28): same range-control contract, driven by assets/lab-21-28.js.
+                for chapter in range(21, 29):
+                    num = f"{chapter:02d}"
+                    page.goto(base + "/chapters/" + num + ".html", wait_until="networkidle")
+                    slider = page.locator("#lab-input-" + num)
+                    output = page.locator("#lab-output-" + num)
+                    before = output.inner_text()
+                    assert before, (num, before)
+                    slider.focus()
+                    page.keyboard.press("End")
+                    assert output.inner_text() != before, (num, before)
+
                 for width in results["viewports"]:
                     page.set_viewport_size({"width": width, "height": 1000})
                     page.goto(base + "/index.html", wait_until="networkidle")
@@ -90,7 +102,7 @@ def main() -> None:
                     if width in (1440, 390):
                         page.screenshot(path=str(Path(temp) / f"home-{width}.png"), full_page=True)
 
-                    for chapter in range(1, 21):
+                    for chapter in range(1, 29):
                         num = f"{chapter:02d}"
                         page.goto(base + f"/chapters/{num}.html", wait_until="networkidle")
                         assert page.locator("main article h1").count() == 1, num
